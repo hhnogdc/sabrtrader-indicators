@@ -25,6 +25,20 @@ internal sealed class GammaLevelsBarValues
     public IReadOnlyList<GammaExtraLevel> Extras { get; init; } = Array.Empty<GammaExtraLevel>();
     public GammaRegime Regime { get; init; } = GammaRegime.Unknown;
     public GammaLevelSnapshot? Source { get; init; }
+
+    /// <summary>
+    /// The index→chart price factor these values were converted with (1.0 = no conversion).
+    /// Published so the strike-profile histogram scales its strikes exactly like the lines,
+    /// instead of re-deriving a ratio that could drift from them.
+    /// </summary>
+    public double Ratio { get; init; } = 1.0;
+
+    /// <summary>
+    /// The price OFFSET applied after <see cref="Ratio"/> (0 = none). Carries the cash→futures
+    /// basis when index levels are drawn on a futures chart, where the two quote on the same
+    /// scale and differ by carry rather than by a factor.
+    /// </summary>
+    public double Offset { get; init; }
 }
 
 /// <summary>
@@ -59,6 +73,7 @@ internal sealed class GammaLevelsEngine
 
     private ILevelsFeed? _feed;
     private string? _vendorSymbol;
+    private bool _chartIsFuturesContract;
 
     // Session-level cache: values are recomputed only when the session or its source
     // snapshot changes, so per-bar Compute is an O(1) reference return on the hot path.
@@ -72,11 +87,43 @@ internal sealed class GammaLevelsEngine
     public string? VendorSymbol => _vendorSymbol;
 
     /// <summary>
+    /// The bound feed's current per-strike profile, or null when the vendor cannot serve one.
+    /// Probed through the capability flag + optional interface, never a vendor-name check, so a
+    /// feed that only publishes named levels simply yields null and the histogram stays off.
+    /// </summary>
+    /// <summary>
+    /// Resolves the CHART's close at a given UTC instant, or null when that instant lies outside
+    /// the loaded bars. Load-bearing for the cash→futures basis: the vendor's underlying price is
+    /// stamped at <see cref="GammaLevelSnapshot.AsOfUtc"/>, and a cash index stops printing when
+    /// its session closes while the future keeps trading. Measuring the basis against the CURRENT
+    /// bar would therefore fold every tick the future moved since that stamp into the "basis"
+    /// (live-observed: a 70pt carry read as 165pt overnight). Both sides must be sampled at the
+    /// same instant. Null resolver = no lookup available; the current bar is used as before.
+    /// </summary>
+    public Func<DateTimeOffset, double?>? ReferenceCloseAt { get; set; }
+
+    public StrikeProfileSnapshot? StrikeProfile
+    {
+        get
+        {
+            var feed = _feed;
+            var symbol = _vendorSymbol;
+            if (feed is null || symbol is null) return null;
+            if (!feed.Capabilities.HasFlag(LevelsCapabilities.StrikeProfile)) return null;
+            return (feed as ILevelsStrikeProfile)?.GetStrikeProfile(symbol);
+        }
+    }
+
+    /// <summary>
     /// Resolve a feed covering <paramref name="instrumentId"/> from the registry and start
     /// tracking its vendor symbol. Returns false (and stays unbound) when no connected feed
     /// covers the instrument — call again on the registry's FeedsChanged.
     /// </summary>
-    public bool TryBind(ILevelsRegistry registry, string instrumentId)
+    /// <param name="continuousFutures">True when the chart is a CONTINUOUS futures series. Its
+    /// instrument id may be a venue alias ("MES", "contfut:ES") with no month-code suffix, so
+    /// <see cref="LevelsSymbolMapping.IsFuturesContract"/> alone cannot see that it is a future
+    /// and the cash→futures basis would silently not be applied.</param>
+    public bool TryBind(ILevelsRegistry registry, string instrumentId, bool continuousFutures = false)
     {
         if (registry is null || string.IsNullOrWhiteSpace(instrumentId)) return false;
 
@@ -86,6 +133,10 @@ internal sealed class GammaLevelsEngine
 
         _feed = feed;
         _vendorSymbol = symbol;
+        // A dated futures chart quotes the cash index plus carry; a cash chart does not.
+        // Captured at bind time because it depends only on the instrument.
+        _chartIsFuturesContract =
+            continuousFutures || LevelsSymbolMapping.IsFuturesContract(instrumentId);
         Reset();
         feed.Track(symbol);
         return true;
@@ -139,10 +190,18 @@ internal sealed class GammaLevelsEngine
             if (snapshot.SessionDate > session && !isLatestBarSession) return GammaLevelsBarValues.Empty;
         }
 
-        if (!ReferenceEquals(snapshot, _cachedSource) || session != _cachedSession)
+        // Keyed on the vendor's OWN identity for the data (AsOfUtc), not on object identity: the
+        // feed hands out a fresh snapshot instance on every fetch even when nothing changed, and
+        // re-measuring the basis against a chart price that has moved since the stamp made the
+        // conversion drift with the market (live-observed 17.03 → 27.03 in four seconds on one
+        // unchanged snapshot). Measure once per published stamp, then hold it.
+        bool sameData = _cachedSource is not null
+                        && _cachedSource.AsOfUtc == snapshot.AsOfUtc
+                        && session == _cachedSession;
+        if (!sameData)
         {
-            double ratio = ResolveRatio(snapshot, chartClose, autoConvert);
-            _cached = Project(snapshot, ratio);
+            var (ratio, offset) = ResolveConversion(snapshot, chartClose, autoConvert, session);
+            _cached = Project(snapshot, ratio, offset);
             _cachedSource = snapshot;
             _cachedSession = session;
             _lastApplied = snapshot;
@@ -150,18 +209,56 @@ internal sealed class GammaLevelsEngine
         return _cached;
     }
 
-    private static double ResolveRatio(GammaLevelSnapshot snapshot, double chartClose, bool autoConvert)
+    /// <summary>
+    /// Resolve how vendor prices map onto chart prices. Two genuinely different situations:
+    ///
+    /// <list type="bullet">
+    ///   <item><b>Different scale</b> (SPY levels on ES ≈ 1:10, QQQ on NQ ≈ 1:40) — a RATIO.
+    ///     Because the ratio is measured against the live chart close it already absorbs the
+    ///     basis proportionally, so no extra offset is wanted.</item>
+    ///   <item><b>Same scale, different instrument</b> (SPX levels on an ES chart) — an OFFSET.
+    ///     A future quotes its cash index plus carry (ES ≈ SPX + ~58pt two months out), which is
+    ///     an addition, not a factor; scaling by the near-1 ratio would stretch every level away
+    ///     from spot instead of shifting it.</item>
+    /// </list>
+    ///
+    /// <para>The offset is applied ONLY when all of these hold: the vendor is NOT futures-native
+    /// (native levels already sit in the chart instrument's own scale, so shifting them would
+    /// just bake in snapshot-vs-now drift), AND the chart is a dated futures contract (on the
+    /// cash index itself that same near-1 gap IS only drift, and the levels must render at
+    /// their exact vendor prices).</para>
+    /// </summary>
+    private (double Ratio, double Offset) ResolveConversion(
+        GammaLevelSnapshot snapshot, double chartClose, bool autoConvert, DateOnly session)
     {
-        if (!autoConvert) return 1.0;
-        if (snapshot.UnderlyingPrice is not (> 0 and var underlying)) return 1.0;
-        if (chartClose <= 0) return 1.0;
+        if (!autoConvert) return (1.0, 0.0);
+        if (snapshot.UnderlyingPrice is not (> 0 and var underlying)) return (1.0, 0.0);
+        if (chartClose <= 0) return (1.0, 0.0);
 
-        double ratio = chartClose / underlying;
+        // Sample the chart at the SAME instant the vendor sampled the underlying.
+        double? contemporaneous = ReferenceCloseAt?.Invoke(snapshot.AsOfUtc);
+        bool canMeasureBasis = ReferenceCloseAt is null || contemporaneous is > 0;
+        double reference = contemporaneous is > 0 and var c ? c : chartClose;
+
+        double ratio = reference / underlying;
         bool genuinelyDifferentScale = ratio >= ConversionMinRatio || ratio <= 1.0 / ConversionMinRatio;
-        return genuinelyDifferentScale ? ratio : 1.0;
+        if (genuinelyDifferentScale) return (ratio, 0.0);
+
+        // The snapshot predates the loaded bars: an honest basis cannot be measured, and a
+        // guessed one shifts every level. Draw the vendor's own prices instead.
+        if (!canMeasureBasis) return (1.0, 0.0);
+
+        bool vendorIsFuturesNative =
+            _feed?.Capabilities.HasFlag(LevelsCapabilities.FuturesNative) == true;
+
+        return _chartIsFuturesContract && !vendorIsFuturesNative
+            // Settled per vendor symbol across the whole process, so two charts of one instrument
+            // agree and a chart reload does not restart the estimate from a single sample.
+            ? (1.0, GammaBasisEstimator.Settle(_vendorSymbol ?? string.Empty, session, reference - underlying))
+            : (1.0, 0.0);
     }
 
-    private static GammaLevelsBarValues Project(GammaLevelSnapshot snapshot, double ratio)
+    private static GammaLevelsBarValues Project(GammaLevelSnapshot snapshot, double ratio, double offset)
     {
         double callResistance = double.NaN, putSupport = double.NaN, hvl = double.NaN;
         double emHigh = double.NaN, emLow = double.NaN;
@@ -169,7 +266,7 @@ internal sealed class GammaLevelsEngine
 
         foreach (var level in snapshot.Levels)
         {
-            double price = level.Price * ratio;
+            double price = level.Price * ratio + offset;
             switch (level.Type)
             {
                 case GammaLevelType.CallResistance: callResistance = price; break;
@@ -195,6 +292,8 @@ internal sealed class GammaLevelsEngine
             Extras = (IReadOnlyList<GammaExtraLevel>?)extras ?? Array.Empty<GammaExtraLevel>(),
             Regime = snapshot.Scalars?.Regime ?? GammaRegime.Unknown,
             Source = snapshot,
+            Ratio = ratio,
+            Offset = offset,
         };
     }
 }

@@ -23,7 +23,8 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 [IndicatorDescription("Options dealer-positioning levels from a connected Levels provider (Connections → Levels): call wall (resistance), put wall (support), gamma flip / HVL (volatility regime pivot), expected move band and additional vendor levels, stepped per trading session. Above the flip dealers dampen moves; below it they amplify them.")]
 [IndicatorCategory(IndicatorCategory.Structure)]
 [IndicatorInput(IndicatorInputKind.Bars)]
-public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackgroundRender, IRepaintNotifier, IRecalculateNotifier
+public sealed class GammaLevels : IndicatorBase,
+    IChartCustomRender, IChartBackgroundRender, IIndicatorToolbarMenu, IRepaintNotifier, IRecalculateNotifier
 {
     private static readonly TimeZoneInfo? Eastern = ResolveEastern();
 
@@ -75,6 +76,26 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         Group = "Display", Order = 15)]
     public bool ShowGlow { get; set; } = true;
 
+    [IndicatorParameter(DisplayName = "GEX profile histogram",
+        Description = "Draw the provider's per-strike gamma exposure as a histogram along the right edge: bar length is the exposure at that strike. Shows WHERE gamma is concentrated, which the level lines alone cannot. Only providers that publish a strike profile supply it.",
+        Group = "GEX profile", Order = 20, Primary = true)]
+    public bool ShowStrikeProfile { get; set; } = true;
+
+    [IndicatorParameter(DisplayName = "Split calls / puts",
+        Description = "Split the histogram down the middle: call gamma grows left, put gamma grows right, both scaled against the same peak. Shows strikes where heavy calls AND heavy puts sit together — those net out to nothing in the combined view. Off = one bar per strike for net gamma.",
+        Group = "GEX profile", Order = 21)]
+    public bool SplitCallPut { get; set; } = true;
+
+    [IndicatorParameter(DisplayName = "Profile width %", MinValue = 5, MaxValue = 40, Step = 1,
+        Description = "Width of the histogram as a percentage of the chart's plot area.",
+        Group = "GEX profile", Order = 22)]
+    public double ProfileWidthPercent { get; set; } = 18;
+
+    [IndicatorParameter(DisplayName = "Profile opacity", MinValue = 10, MaxValue = 255, Step = 5,
+        Description = "Alpha (0-255) of the histogram bars.",
+        Group = "GEX profile", Order = 23)]
+    public int ProfileOpacity { get; set; } = 110;
+
     [IndicatorParameter(DisplayName = "Regime badge",
         Description = "Compact badge in the top-right corner naming the current dealer-gamma regime (positive = volatility-dampening, negative = volatility-amplifying).",
         Group = "Display", Order = 16)]
@@ -109,6 +130,90 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
 
     /// <inheritdoc />
     public void RequestRepaint() => RepaintRequested?.Invoke();
+
+    // ──────────────────────────────────── toolbar dropdown (IIndicatorToolbarMenu)
+
+    /// <summary>Menu labels resolve at BuildMenu time — the host rebuilds the dropdown per
+    /// open, so a language switch reaches it without a restart. Never cache these.</summary>
+    private static string T(string slug, string english)
+        => SabrTrader.Localization.Loc.TOr("Indicator.GammaLevels.Toolbar." + slug, english);
+
+    /// <inheritdoc />
+    public string MenuTitle => T("MenuTitle", "Gamma");
+
+    /// <inheritdoc />
+    public event Action? MenuChanged;
+
+    private void RaiseMenuChanged() => MenuChanged?.Invoke();
+
+    private ToolbarCheckItem Toggle(string slug, string english, Func<bool> get, Action<bool> set)
+        => new(T(slug, english), get, v => { set(v); RaiseMenuChanged(); RequestRepaint(); });
+
+    /// <summary>Show/hide one plot slot by index — the per-level toggles.</summary>
+    private ToolbarCheckItem PlotToggle(int index, string label)
+        => new(label,
+            () => Plots[index].Visible,
+            v => { Plots[index].Visible = v; RaiseMenuChanged(); RequestRepaint(); });
+
+    /// <summary>
+    /// One entry per level the provider actually publishes, so each line can be switched off
+    /// individually. The vendor extras are listed under the names they currently carry
+    /// ("Max Pain", "Charm Flip", …) rather than "Level 1…5" — see
+    /// <see cref="SyncExtraPlotNames"/>; slots the current snapshot does not fill are omitted
+    /// instead of shown as dead rows.
+    /// </summary>
+    private IReadOnlyList<ToolbarMenuItem> BuildLevelItems()
+    {
+        var items = new List<ToolbarMenuItem>(5 + _extras.Length)
+        {
+            PlotToggle(0, T("CallWall", "Call Wall")),
+            PlotToggle(1, T("PutWall", "Put Wall")),
+            PlotToggle(2, T("GammaFlip", "Gamma Flip")),
+            PlotToggle(3, T("EmHigh", "EM High")),
+            PlotToggle(4, T("EmLow", "EM Low")),
+        };
+
+        int extras = Math.Min(_latest.Extras.Count, _extras.Length);
+        if (extras > 0) items.Add(new ToolbarSeparator());
+        for (int i = 0; i < extras; i++)
+            items.Add(PlotToggle(5 + i, Plots[5 + i].Name));   // vendor-supplied family name
+
+        return items;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<ToolbarMenuItem> BuildMenu() => new ToolbarMenuItem[]
+    {
+        new ToolbarSubmenu(T("Levels", "Levels"), BuildLevelItems(),
+            () => Plots.Any(p => p.Visible)),
+        new ToolbarSeparator(),
+        Toggle("ShowLabels", "Labels", () => ShowLabels, v => ShowLabels = v),
+        Toggle("RegimeBackground", "Regime background",
+            () => ShowRegimeBackground, v => ShowRegimeBackground = v),
+        Toggle("RegimeBadge", "Regime badge", () => ShowRegimeBadge, v => ShowRegimeBadge = v),
+        Toggle("Glow", "Level glow", () => ShowGlow, v => ShowGlow = v),
+        Toggle("ExpectedMoveFill", "Expected move fill",
+            () => ShowExpectedMoveFill, v => ShowExpectedMoveFill = v),
+        new ToolbarSeparator(),
+        Toggle("StrikeProfile", "GEX profile histogram",
+            () => ShowStrikeProfile, v => ShowStrikeProfile = v),
+        Toggle("SplitCallPut", "Split calls / puts",
+            () => SplitCallPut, v => SplitCallPut = v),
+        new ToolbarSlider(T("ProfileWidth", "Profile width %"),
+            () => ProfileWidthPercent,
+            v => { ProfileWidthPercent = v; RequestRepaint(); }, 5, 40),
+        new ToolbarSlider(T("ProfileOpacity", "Profile opacity"),
+            () => ProfileOpacity,
+            v => { ProfileOpacity = (int)v; RequestRepaint(); }, 10, 255),
+        new ToolbarSeparator(),
+        // Conversion changes every projected price, so this one needs a recalculate,
+        // not just a repaint.
+        new ToolbarCheckItem(T("AutoConvert", "Convert index levels"),
+            () => AutoConvert,
+            v => { AutoConvert = v; _engine.Invalidate(); RaiseMenuChanged(); RecalculateRequested?.Invoke(); }),
+        new ToolbarSeparator(),
+        new ToolbarCommand(T("Recalculate", "RE-CALCULATE"), () => RecalculateRequested?.Invoke()),
+    };
 
     CustomRenderLayer IChartCustomRender.Layer => CustomRenderLayer.AboveBars;
     bool IChartCustomRender.SuppressDefaultBarRendering => false;
@@ -164,8 +269,48 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
     /// yet, subscribe to the registry so the indicator binds reactively the moment a Levels
     /// connection comes up (same late-feed pattern the order-book consumers use).
     /// </summary>
+    /// <summary>
+    /// The chart's close at <paramref name="atUtc"/>, or null when that instant predates the
+    /// loaded bars. Bars are newest-first, so EndUtc decreases with barsAgo and the "first bar
+    /// that ended at or before the target" is a plain binary search. Used to sample the future
+    /// at the exact instant the vendor sampled the cash index, so the basis is carry and not
+    /// carry-plus-drift.
+    /// </summary>
+    private double? CloseAtUtc(DateTimeOffset atUtc)
+    {
+        var bars = Bars;
+        int count = bars.Count;
+        if (count == 0) return null;
+
+        var target = atUtc.UtcDateTime;
+
+        // Deliberately the last CLOSED bar, never the forming one. A bar that closed AT the stamp
+        // is the price at that stamp and reads the same no matter when we ask; the forming bar's
+        // close is the price NOW, so two charts (or the same chart after a reload) measured the
+        // same stamp seconds apart and disagreed by 15pt — live-observed 2026-07-30, stamp
+        // 13:55:00Z read as 7417.50 and 7432.25. A conversion must not depend on when it ran.
+        if (bars[0].EndUtc <= target) return bars[0].Close;
+        if (bars[count - 1].EndUtc > target) return null;            // stamp predates loaded history
+
+        int lo = 0, hi = count - 1;
+        while (lo < hi)
+        {
+            int mid = (lo + hi) / 2;
+            if (bars[mid].EndUtc <= target) hi = mid;
+            else lo = mid + 1;
+        }
+        return bars[lo].Close;
+    }
+
+    /// <summary>A continuous futures series carries its root on the spec; its instrument id may
+    /// be a venue alias ("MES", "contfut:ES") with no month-code suffix, which the symbol-level
+    /// check alone cannot recognise as a future.</summary>
+    private bool IsContinuousFuturesChart => Bars.Spec.ContinuousRoot != null;
+
     private void BindFeed(IIndicatorContext ctx)
     {
+        _engine.ReferenceCloseAt = CloseAtUtc;
+
         if (_registry is null)
         {
             _registry = LevelsAmbient.Registry;
@@ -173,7 +318,7 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         }
 
         string instrumentId = Bars.Spec.InstrumentId;
-        if (_engine.TryBind(_registry, instrumentId))
+        if (_engine.TryBind(_registry, instrumentId, IsContinuousFuturesChart))
         {
             SubscribeFeed(_engine.Feed!);
             ctx.Print($"Gamma Levels: using {_engine.Feed!.DisplayName} ({_engine.VendorSymbol}) for {instrumentId}.");
@@ -193,7 +338,7 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         if (registry is null) return;
 
         var previous = _engine.Feed;
-        if (_engine.TryBind(registry, Bars.Spec.InstrumentId))
+        if (_engine.TryBind(registry, Bars.Spec.InstrumentId, IsContinuousFuturesChart))
         {
             if (!ReferenceEquals(previous, _engine.Feed))
             {
@@ -243,6 +388,7 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         bool isLatestBarSession = Bars.Count > 0 && session == SessionDateFor(Bars[0].EndUtc);
         var values = _engine.Compute(session, bar.Close, AutoConvert, isLatestBarSession);
         _latest = values;
+        SyncExtraPlotNames(values);
         PrintAppliedOnce(values);
 
         _callWall.Append(values.CallResistance);
@@ -252,6 +398,29 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         _emLow.Append(values.ExpectedMoveLow);
         for (int i = 0; i < _extras.Length; i++)
             _extras[i].Append(ShowExtras && i < values.Extras.Count ? values.Extras[i].Price : double.NaN);
+    }
+
+    private GammaLevelSnapshot? _namedFrom;
+
+    /// <summary>
+    /// Name the extra plot slots after the vendor families they currently carry ("Max Pain",
+    /// "Charm Flip", …) instead of the generic "Level 1…5". The chart's per-plot show/hide list,
+    /// the legend and the Data Window all read <see cref="IPlot.Name"/>, so this is what makes
+    /// each vendor level individually toggleable by MEANING rather than by slot number — the
+    /// families differ per provider (and per session), which is exactly why the slots are
+    /// generic to begin with. Slots the current snapshot does not fill keep their generic name.
+    /// </summary>
+    private void SyncExtraPlotNames(GammaLevelsBarValues values)
+    {
+        var source = values.Source;
+        if (source is null || ReferenceEquals(source, _namedFrom)) return;
+        // Only the feed's CURRENT snapshot names the slots — historical sessions replaying
+        // through Consume must not rename them to families that no longer apply.
+        if (!ReferenceEquals(source, _engine.Feed?.GetSnapshot(_engine.VendorSymbol ?? string.Empty))) return;
+
+        _namedFrom = source;
+        for (int i = 0; i < _extras.Length; i++)
+            Plots[5 + i].Name = i < values.Extras.Count ? values.Extras[i].Label : $"Level {i + 1}";
     }
 
     private DateTimeOffset _lastPrintedAsOf;
@@ -269,6 +438,11 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
 
         _lastPrintedAsOf = source.AsOfUtc;
         var ctx = Context;
+        // The conversion is the part that goes wrong silently (a wrong basis shifts every level
+        // while still looking plausible), so state it outright next to the prices it produced.
+        ctx?.Print($"Gamma Levels conversion: ratio {values.Ratio:0.######}, settled basis {values.Offset:0.####} " +
+                   $"(vendor spot {source.UnderlyingPrice:0.####} @ {source.AsOfUtc:HH:mm:ss}Z, " +
+                   $"chart ref {(CloseAtUtc(source.AsOfUtc) is double r ? r.ToString("0.####") : "none")}).");
         ctx?.Print($"Gamma Levels applied (session {source.SessionDate:yyyy-MM-dd}): " +
                    $"Call Wall {values.CallResistance:0.####}, Put Wall {values.PutSupport:0.####}, " +
                    $"Gamma Flip {values.Hvl:0.####}" +
@@ -347,6 +521,8 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
         if (ShowRegimeBackground && values.Regime != GammaRegime.Unknown)
             DrawRegimeGradient(ctx, values);
 
+        if (ShowStrikeProfile) DrawStrikeProfile(ctx, values);
+
         if (ShowExpectedMoveFill
             && !double.IsNaN(values.ExpectedMoveHigh) && !double.IsNaN(values.ExpectedMoveLow)
             && Plots[3].Visible && Plots[4].Visible)
@@ -399,6 +575,65 @@ public sealed class GammaLevels : IndicatorBase, IChartCustomRender, IChartBackg
                 BandFill.WithAlpha(NTColors.LimeGreen, a));
             r.FillRect(area.X, flipY + i * stripH, area.Width, stripH + 0.5,
                 BandFill.WithAlpha(NTColors.Crimson, a));
+        }
+        r.PopClip();
+    }
+
+    /// <summary>Reused across frames so the histogram allocates nothing on the render path.</summary>
+    private readonly List<GammaProfileBar> _profileBars = new();
+
+    /// <summary>
+    /// Per-strike GEX histogram along the right edge: bar length = |gamma| at that strike against
+    /// the profile's peak. In net mode one bar per strike, green above zero (dealers long gamma
+    /// there) / red below; with <see cref="SplitCallPut"/> the band splits in two, call exposure
+    /// leftwards and put exposure rightwards, each in its wall's color so the histogram and the
+    /// Call/Put Wall lines read as the same thing. Drawn on the BACKGROUND layer so price action
+    /// stays readable on top of it, and anchored to the right edge where the level labels live.
+    ///
+    /// <para>Strikes are scaled with the SAME ratio the level lines used
+    /// (<see cref="GammaLevelsBarValues.Ratio"/>) so bars and lines can never disagree.</para>
+    /// </summary>
+    private void DrawStrikeProfile(IIndicatorRenderContext ctx, GammaLevelsBarValues values)
+    {
+        var profile = _engine.StrikeProfile;
+        if (profile is null || profile.Strikes.Count == 0) return;
+
+        var area = ctx.PlotArea;
+        double maxWidth = area.Width * Math.Clamp(ProfileWidthPercent, 5, 40) / 100.0;
+        if (maxWidth <= 0) return;
+
+        var viewport = ctx.Viewport;
+        GammaProfileLayout.Build(
+            profile.Strikes,
+            values.Ratio,
+            values.Offset,
+            viewport.PriceToPixelY,
+            area.Right,
+            maxWidth,
+            area.Y,
+            area.Bottom,
+            _profileBars,
+            SplitCallPut);
+        if (_profileBars.Count == 0) return;
+
+        byte alpha = (byte)Math.Clamp(ProfileOpacity, 10, 255);
+        var positive = BandFill.WithAlpha(NTColors.LimeGreen, alpha);
+        var negative = BandFill.WithAlpha(NTColors.Crimson, alpha);
+        // Call/put sides take the wall plots' colors, so recoloring a wall recolors its side.
+        var callSide = BandFill.WithAlpha(Plots[0].Color, alpha);
+        var putSide = BandFill.WithAlpha(Plots[1].Color, alpha);
+
+        var r = ctx.Renderer;
+        r.PushClip(area.X, area.Y, area.Width, area.Height);
+        foreach (var bar in _profileBars)
+        {
+            var color = bar.Side switch
+            {
+                GammaProfileSide.Call => callSide,
+                GammaProfileSide.Put => putSide,
+                _ => bar.Positive ? positive : negative,
+            };
+            r.FillRect(bar.Left, bar.Top, bar.Width, bar.Height, color);
         }
         r.PopClip();
     }

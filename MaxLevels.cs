@@ -138,9 +138,9 @@ public sealed class MaxLevels : IndicatorBase, IChartCustomRender
             _activeBarSeen = true;
             _activeBarStart = bar.StartUtc;
 
-            bool newSession = _tracker!.OnBar(bar.StartUtc, bar.EndUtc);
-            var week = WeekStart(bar.StartUtc);
-            var month = (bar.StartUtc.Year, bar.StartUtc.Month);
+            bool newSession = _tracker!.OnBar(bar.Start, bar.End);
+            var week = WeekStart(bar.Start);
+            var month = (bar.Start.Year, bar.Start.Month);
 
             if (!_started)
             {

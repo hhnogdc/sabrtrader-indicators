@@ -142,7 +142,7 @@ public sealed class MarginZones : IndicatorBase, IChartCustomRender
 
     private void Consume(Bar bar)
     {
-        var week = WeekStart(bar.StartUtc);
+        var week = WeekStart(bar.Start);
         if (!_started)
         {
             _started = true;

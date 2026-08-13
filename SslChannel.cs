@@ -421,9 +421,9 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         {
             // Mirror the bar (NT Opens/Highs/Lows/Closes/Times[0]).
             _opens.Add(bar.Open); _highs.Add(bar.High); _lows.Add(bar.Low);
-            _closes.Add(bar.Close); _times.Add(bar.StartUtc);
+            _closes.Add(bar.Close); _times.Add(bar.Start);
             _price = bar.Close;
-            _dateNow = bar.StartUtc;
+            _dateNow = bar.Start;
 
             // Feed the streaming cores every bar (NT advances every child indicator each bar).
             double atrRaw = _atr.Add(bar.High, bar.Low, bar.Close);
@@ -501,14 +501,14 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                     _entries.Add(new SslEntry
                     {
                         PointType = trend < 0 ? SslPointType.ReversalDown : SslPointType.ReversalUp,
-                        EntryTime = bar.StartUtc,
+                        EntryTime = bar.Start,
                         Price = trend > 0 ? bottom : top,
                         EntryBar = CurrentBar,
                         IsLong = trend > 0,
                         EntryPrice = entryPrice,
                         IsActive = true,
                         MaxBar = CurrentBar,
-                        MaxTime = bar.StartUtc,
+                        MaxTime = bar.Start,
                         MaxPrice = entryPrice,
                     });
                 }
@@ -543,14 +543,14 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                             _entries.Add(new SslEntry
                             {
                                 PointType = SslPointType.Pullback,
-                                EntryTime = bar.StartUtc,
+                                EntryTime = bar.Start,
                                 Price = trend > 0 ? prevBottom : prevTop,
                                 EntryBar = CurrentBar,
                                 IsLong = trend > 0,
                                 EntryPrice = trend > 0 ? High(1) + TickSize : Low(1) - TickSize,
                                 IsActive = true,
                                 MaxBar = CurrentBar,
-                                MaxTime = bar.StartUtc,
+                                MaxTime = bar.Start,
                                 MaxPrice = trend > 0 ? High(1) + TickSize : Low(1) - TickSize,
                             });
                             if (PullbackAlertEnabled && live)

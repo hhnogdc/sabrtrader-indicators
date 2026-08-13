@@ -128,12 +128,12 @@ public sealed class AnchoredVwap : IndicatorBase, IChartCustomRender
         for (int k = _pendingTimeAnchors.Count - 1; k >= 0; k--)
         {
             var (when, label) = _pendingTimeAnchors[k];
-            if (bar.StartUtc <= when && when < bar.EndUtc)
+            if (bar.Start <= when && when < bar.End)
             {
                 _anchors.Add(new AnchorState { AnchorBarIdx = _barIdx, Label = label });
                 _pendingTimeAnchors.RemoveAt(k);
             }
-            else if (when < bar.StartUtc && _barIdx == 0)
+            else if (when < bar.Start && _barIdx == 0)
             {
                 // Past-date anchor before series start → clamp to bar 0.
                 _anchors.Add(new AnchorState { AnchorBarIdx = 0, Label = label });

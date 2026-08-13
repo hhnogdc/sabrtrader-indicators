@@ -99,7 +99,7 @@ public sealed class FibonacciPivots : IndicatorBase, IChartCustomRender
 
     private void Consume(Bar bar)
     {
-        bool newSession = _tracker!.OnBar(bar.StartUtc, bar.EndUtc);
+        bool newSession = _tracker!.OnBar(bar.Start, bar.End);
         if (_tracker.InSession)
         {
             if (newSession)

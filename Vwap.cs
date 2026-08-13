@@ -265,7 +265,7 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
         // stale value across the overnight gap).
         if (_tracker is not null)
         {
-            bool newSession = _tracker.OnBar(bar.StartUtc, bar.EndUtc);
+            bool newSession = _tracker.OnBar(bar.Start, bar.End);
             if (!_tracker.InSession)
             {
                 AppendNaN();                // out-of-session → clean break

@@ -356,7 +356,12 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         for (int absIdx = 0; absIdx < bars.Count; absIdx++)
         {
             int barsAgo = bars.Count - 1 - absIdx;
-            Step(bars[barsAgo], of[barsAgo], isClosed: true, rowCount: absIdx + 1, ctx, isLive: false);
+            // OF may be SHORTER than the bars (a chart session built without
+            // orderflow backfill: the registry runs this init pass before its
+            // late-add reload request lands). Missing snapshot = zero delta,
+            // never an index throw — same guard as DynamicLevels / MaxLevels.
+            var ofb = barsAgo < of.Count ? of[barsAgo] : default;
+            Step(bars[barsAgo], in ofb, isClosed: true, rowCount: absIdx + 1, ctx, isLive: false);
         }
     }
 
@@ -364,7 +369,9 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     {
         var bars = Bars;
         if (bars.Count == 0) return;
-        Step(bars[0], ctx.OrderFlow(0)[0], ctx.IsBarClosed, rowCount: bars.Count, ctx, isLive: ctx.IsLive);
+        var of = ctx.OrderFlow(0);
+        var ofb = of.Count > 0 ? of[0] : default;
+        Step(bars[0], in ofb, ctx.IsBarClosed, rowCount: bars.Count, ctx, isLive: ctx.IsLive);
     }
 
     /// <summary>
@@ -391,7 +398,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
                 // Trading-hours mode: reset at the SELECTED template's session open (a new
                 // trading day per the iterator). The trace stays continuous between sessions
                 // (we don't gate accumulation on InSession), just zeroed at each open.
-                reset = _tracker.OnBar(bar.StartUtc, bar.EndUtc);
+                reset = _tracker.OnBar(bar.Start, bar.End);
             }
             else
             {
@@ -399,8 +406,8 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
                 // at-or-after SessionStart anchor to today; bars before it to YESTERDAY
                 // (their session began the prior day and continues across midnight).
                 reset = _prevBarTime != default
-                    && SessionAnchorDay(bar.StartUtc, SessionStart) != SessionAnchorDay(_prevBarTime, SessionStart);
-                _prevBarTime = bar.StartUtc;
+                    && SessionAnchorDay(bar.Start, SessionStart) != SessionAnchorDay(_prevBarTime, SessionStart);
+                _prevBarTime = bar.Start;
             }
             _entering = reset ? 0 : _cumDelta;
         }
@@ -454,12 +461,18 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         // of the NEXT bar; same data, fires one bar earlier in wall-clock). Keep the
         // Divergence plot row-aligned on every bar event so the data window can read
         // the hovered bar by absolute index (same contract as OHLC / Trend).
+        //
+        // Dedup on absolute barIdx — NOT StartUtc. RangeBarBuilder (and Volume-split)
+        // can emit consecutive closed bars that share StartUtc on a gap-jump; a
+        // StartUtc gate then skips CommitClosedBar and DetectPriceSwings indexes
+        // _pHigh[barIdx] past Count (ArgumentOutOfRangeException Parameter 'index'
+        // — sam MNQ 80-range, 08-09/08-10).
         if (isClosed)
         {
             Upsert(_signal, 0, rowCount);
-            if (ShowDivergence && bar.StartUtc != _lastDetectBarStart)
+            if (ShowDivergence && barIdx != _lastDetectBarIdx)
             {
-                _lastDetectBarStart = bar.StartUtc;
+                _lastDetectBarIdx = barIdx;
                 CommitClosedBar(barIdx, bar.High, bar.Low, oscHigh: high, oscLow: low, oscClose: close);
                 DetectPriceSwings(barIdx);
                 DetectDivergence(barIdx, ctx, isLive);
@@ -537,7 +550,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     private readonly Dictionary<int, DivLine> _bear = new();
     private int _lastBullIndex, _lastBullBar = int.MinValue;
     private int _lastBearIndex;
-    private DateTime _lastDetectBarStart = default;
+    private int _lastDetectBarIdx = -1;
 
     private void ClearDivergenceState()
     {
@@ -547,20 +560,27 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         _bull.Clear(); _bear.Clear();
         _lastBullIndex = 0; _lastBullBar = int.MinValue;
         _lastBearIndex = 0;
-        _lastDetectBarStart = default;
+        _lastDetectBarIdx = -1;
     }
 
     private void CommitClosedBar(int barIdx, double priceHigh, double priceLow, double oscHigh, double oscLow, double oscClose)
     {
-        // Closes arrive in strictly increasing order, so each new bar appends
-        // at its own absolute index. A re-close of the same bar is filtered out
-        // by the _lastDetectBarStart guard in Step.
+        // Absolute indices must stay dense. A skipped prior close (historical
+        // StartUtc-dedup bug, or a live close that arrived without a full
+        // OnDataLoaded replay) used to no-op here and then crash in
+        // DetectPriceSwings on _pHigh[barIdx]. Pad forward so the commit at
+        // barIdx always lands; placeholder OHLC equals this bar's values.
+        while (_pHigh.Count < barIdx)
+        {
+            _pHigh.Add(priceHigh); _pLow.Add(priceLow);
+            _oHigh.Add(oscHigh);   _oLow.Add(oscLow);   _oClose.Add(oscClose);
+        }
         if (_pHigh.Count == barIdx)
         {
             _pHigh.Add(priceHigh); _pLow.Add(priceLow);
             _oHigh.Add(oscHigh);   _oLow.Add(oscLow);   _oClose.Add(oscClose);
         }
-        else if (barIdx < _pHigh.Count)
+        else
         {
             _pHigh[barIdx] = priceHigh; _pLow[barIdx] = priceLow;
             _oHigh[barIdx] = oscHigh;   _oLow[barIdx] = oscLow;   _oClose[barIdx] = oscClose;

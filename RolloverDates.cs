@@ -53,7 +53,7 @@ public sealed class RolloverDates : IndicatorBase, IChartCustomRender
     public ChartColor LineColor { get; set; } = NTColors.Goldenrod;
     public ChartColor LabelColor { get; set; } = NTColors.Goldenrod;
 
-    /// <summary>The rollover instants currently held (bar timeline). Exposed for tests/diagnostics.</summary>
+    /// <summary>The rollover instants currently held (true venue UTC). Exposed for tests/diagnostics.</summary>
     public IReadOnlyList<DateTime> Rollovers => _rollovers;
 
     public override void OnInit(IIndicatorContext ctx)

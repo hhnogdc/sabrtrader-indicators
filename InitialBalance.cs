@@ -501,8 +501,8 @@ public sealed partial class InitialBalance : IndicatorBase,
         // NT AddDataSeries(BarsPeriodType.Minute, 1) — all levels compute from
         // 1-minute bars so they are identical on every chart bar type. When the
         // primary series already is 1-minute (or finer) the primary IS the tape:
-        // no secondary subscription, which also keeps the indicator usable in
-        // strategy hosts that reject additional series (declarative ORB rules).
+        // no secondary subscription. Otherwise the host loads venue 1-minute bars
+        // (strategy hosting, charts, analyzer) — never a tick rebuild.
         _minuteSeriesIndex = -1;
         _minuteSpec = null;
         if (Bars.Spec is not TimeBarSpec primaryTime || primaryTime.Period > TimeSpan.FromMinutes(1))
@@ -561,7 +561,7 @@ public sealed partial class InitialBalance : IndicatorBase,
         for (int p = primary.Count - 1; p >= 0; p--)
         {
             Bar pb = primary[p];
-            _now = pb.EndUtc;
+            _now = pb.End;
 
             while (m < minuteCount)
             {
@@ -599,7 +599,7 @@ public sealed partial class InitialBalance : IndicatorBase,
             // NT BarsInProgress == 0: stamp the plot row for the chart bar. With no
             // separate 1-minute series the primary IS the tape — absorb it first.
             if (Bars.Count == 0) return;
-            _now = Bars[0].EndUtc;
+            _now = Bars[0].End;
             if (_minuteSeriesIndex < 1)
             {
                 Bar bar0 = Bars[0];
@@ -637,9 +637,16 @@ public sealed partial class InitialBalance : IndicatorBase,
     private void ResolveMinuteSeriesIndex(IIndicatorContext ctx)
     {
         if (_minuteSeriesIndex >= 0 || _minuteSpec is null) return;
+        // Match by (instrument, period) — NOT full spec equality. The host stamps
+        // the secondary with the PRIMARY's trading-hours template
+        // (SecondarySpecTradingHours.InheritFromPrimary), so on RTH/ETH futures
+        // the stored spec no longer .Equals the bare _minuteSpec. Same fix as
+        // Market Profile / TduPivots.
         for (int i = 1; i < ctx.SeriesCount; i++)
         {
-            if (ctx.Bars(i).Spec.Equals(_minuteSpec))
+            if (ctx.Bars(i).Spec is TimeBarSpec t
+                && t.Period == TimeSpan.FromMinutes(1)
+                && string.Equals(t.InstrumentId, _minuteSpec.InstrumentId, StringComparison.OrdinalIgnoreCase))
             {
                 _minuteSeriesIndex = i;
                 return;
@@ -652,7 +659,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     private void AbsorbMinuteBar(in Bar bar, in Bar prevBar)
     {
         // NT Times[1][0] — its 1-minute bars are end-stamped.
-        DateTime t = bar.EndUtc;
+        DateTime t = bar.End;
         _chartTime = t;
 
         // Pre-market accumulation (NT lines: premarket window vs midnight wrap).

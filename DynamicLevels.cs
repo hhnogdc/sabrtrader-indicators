@@ -158,7 +158,7 @@ public sealed class DynamicLevels : IndicatorBase, IChartCustomRender
             _activeBarSeen = true;
             _activeBarStart = bar.StartUtc;
 
-            bool newSession = _tracker!.OnBar(bar.StartUtc, bar.EndUtc);
+            bool newSession = _tracker!.OnBar(bar.Start, bar.End);
             if (!_started) { _started = true; StartNewSession(); }
             else if (newSession) { StartNewSession(); EvictBeyondWindow(); }
         }

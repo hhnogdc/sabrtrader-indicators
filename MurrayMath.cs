@@ -118,7 +118,7 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
         for (int i = 0; i < n; i++)
         {
             var b = bars[n - 1 - i];
-            if (_counter!.OnBar(b.StartUtc, b.EndUtc)) sessionStarts.Add(i);
+            if (_counter!.OnBar(b.Start, b.End)) sessionStarts.Add(i);
         }
         int targetBar = sessionStarts.Count > Days ? sessionStarts[sessionStarts.Count - Days] : 0;
 

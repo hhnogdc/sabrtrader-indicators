@@ -86,7 +86,7 @@ public sealed class CurrentDayOhl : IndicatorBase
 
     private void Consume(Bar bar)
     {
-        bool newSession = _tracker!.OnBar(bar.StartUtc, bar.EndUtc);
+        bool newSession = _tracker!.OnBar(bar.Start, bar.End);
         if (newSession)
         {
             _started = true;

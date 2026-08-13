@@ -181,7 +181,7 @@ public sealed partial class InitialBalance
             {
                 // NT checks the bar's (end-stamped) time against the same windows
                 // it uses for the calculation.
-                DateTime t = bars[count - 1 - abs].EndUtc;
+                DateTime t = bars[count - 1 - abs].End;
                 double x = vp.BarIndexToPixelX(abs);
 
                 if (session && InSession(t, SessionStartTime, SessionEndTime))
@@ -214,12 +214,12 @@ public sealed partial class InitialBalance
 
         int count = bars.Count;
         _time = new SessionBarTimeIndex(count,
-            a => bars[count - 1 - a].StartUtc, a => bars[count - 1 - a].EndUtc, _vp);
+            a => bars[count - 1 - a].Start, a => bars[count - 1 - a].End, _vp);
 
         int firstAbs = Math.Clamp(_vp.FirstVisibleBarIdx, 0, count - 1);
         int lastAbs = Math.Clamp(_vp.LastVisibleBarIdx, 0, count - 1);
-        _firstVisible = bars[count - 1 - firstAbs].StartUtc;
-        _lastVisible = bars[count - 1 - lastAbs].EndUtc;
+        _firstVisible = bars[count - 1 - firstAbs].Start;
+        _lastVisible = bars[count - 1 - lastAbs].End;
 
         // NT Strokes, resolved once per frame from the flattened parameters.
         var preMarketStroke = new StrokeDef(PreMarketColor, PreMarketWidth, PreMarketStyle);

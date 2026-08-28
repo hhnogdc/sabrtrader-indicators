@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Mass Index — 1-on-1 port of NT @MassIndex.
+/// Mass Index.
 /// Σ over last Period bars of EMA(Range, EmaPeriod) / EMA(EMA(Range, EmaPeriod), EmaPeriod).
 /// Defaults EmaPeriod=9, Period=25. DodgerBlue, sub-panel.
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class MassIndex : IndicatorBase, IIndicatorPanelHint
 
     public MassIndex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Mass Index", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Mass Index", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "EmaPeriod", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

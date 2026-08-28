@@ -30,8 +30,8 @@ public sealed class CoppockCurve : IndicatorBase, IIndicatorPanelHint
 
     public CoppockCurve(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Coppock", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Coppock", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "LongRoc",   MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

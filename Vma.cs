@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Variable Moving Average (VIDYA) — 1-on-1 port of NT @VMA.
+/// Variable Moving Average (VIDYA).
 /// VI = |CMO(VolatilityPeriod)| / 100.
 /// Value = sc·VI·Input + (1 − sc·VI)·prev where sc = 2/(Period+1).
 /// Bar 0 → Input. Defaults Period=9, VolatilityPeriod=9, DodgerBlue, overlay.
@@ -24,7 +24,7 @@ public sealed class Vma : IndicatorBase
 
     public Vma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("VMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("VMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",          MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

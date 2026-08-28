@@ -38,9 +38,9 @@ public sealed class DeMarker : IndicatorBase, IIndicatorPanelHint
 
     public DeMarker(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("DeMarker", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0.3 oversold / 0.7 overbought") });
-        AddLine("Oversold",   0.3, NTColors.DarkCyan);
-        AddLine("Overbought", 0.7, NTColors.DarkCyan);
+        AddPlot(new Plot("DeMarker", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0.3 oversold / 0.7 overbought") });
+        AddLine("Oversold",   0.3, PlotColors.DarkCyan);
+        AddLine("Overbought", 0.7, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "SMA window over DeMax / DeMin.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

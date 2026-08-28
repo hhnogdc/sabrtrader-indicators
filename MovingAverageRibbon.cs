@@ -4,11 +4,11 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>MA flavour for <see cref="MovingAverageRibbon"/>. Matches NT's RibbonMAType.</summary>
+/// <summary>MA flavour for <see cref="MovingAverageRibbon"/>. Matches the original's RibbonMAType.</summary>
 public enum RibbonMAType { Exponential = 0, Hull = 1, Simple = 2, Weighted = 3 }
 
 /// <summary>
-/// Moving Average Ribbon — 1-on-1 port of NT @MovingAverageRibbon.
+/// Moving Average Ribbon.
 /// 8 MAs at periods BasePeriod, BasePeriod+IncrementalPeriod, …, gradient
 /// Yellow → Red. Defaults MovingAverage=Exponential, BasePeriod=10,
 /// IncrementalPeriod=10. Overlay.
@@ -23,8 +23,8 @@ public sealed class MovingAverageRibbon : IndicatorBase
     private IndicatorBase[] _mas = null!;
     private static readonly ChartColor[] _colors =
     {
-        NTColors.Yellow, NTColors.Gold, NTColors.Goldenrod, NTColors.Orange,
-        NTColors.DarkOrange, NTColors.Chocolate, NTColors.OrangeRed, NTColors.Red
+        PlotColors.Yellow, PlotColors.Gold, PlotColors.Goldenrod, PlotColors.Orange,
+        PlotColors.DarkOrange, PlotColors.Chocolate, PlotColors.OrangeRed, PlotColors.Red
     };
 
     public MovingAverageRibbon(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)

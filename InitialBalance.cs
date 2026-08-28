@@ -7,14 +7,14 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>Which sessions the Initial Balance indicator paints (NT <c>TDUInitialBalanceDisplay</c>).</summary>
+/// <summary>Which sessions the Initial Balance indicator paints (the original <c>TDUInitialBalanceDisplay</c>).</summary>
 public enum InitialBalanceDisplay
 {
     AllDays,
     CurrentDayOnly,
 }
 
-/// <summary>Where the level lines are drawn (NT <c>TDUInitialBalanceLinePlacement</c>).</summary>
+/// <summary>Where the level lines are drawn (the original <c>TDUInitialBalanceLinePlacement</c>).</summary>
 public enum InitialBalanceLinePlacement
 {
     /// <summary>Lines span each session from its open, extending past the last bar.</summary>
@@ -25,7 +25,7 @@ public enum InitialBalanceLinePlacement
 }
 
 /// <summary>
-/// Initial Balance — 1-on-1 port of NT8 <c>TDUInitialBalance</c> (licensing dropped).
+/// Initial Balance.
 ///
 /// Tracks, per trading day, the manual session window (default 09:30–16:00):
 /// <list type="bullet">
@@ -39,16 +39,16 @@ public enum InitialBalanceLinePlacement
 ///   <item><b>Session</b> high/low.</item>
 /// </list>
 ///
-/// All state is computed from a dedicated 1-minute secondary series (NT's
+/// All state is computed from a dedicated 1-minute secondary series (the original's
 /// <c>BarsArray[1]</c>) so the levels are identical on every chart bar type. The visuals
-/// are painted through <see cref="IChartCustomRender"/> exactly like NT's
+/// are painted through <see cref="IChartCustomRender"/> exactly like the original's
 /// <c>OnRender</c> — lines, translucent building/committed areas, price/range labels with
 /// collision avoidance, an optional statistics card, and optional session / pre-market
 /// background shading (painted behind the candles via <see cref="IChartBackgroundRender"/>).
-/// The chart-toolbar "IB" dropdown mirrors NT's toolbar menu 1-on-1.
+/// The chart-toolbar "IB" dropdown mirrors the original's toolbar menu .
 ///
 /// Ten transparent plots publish the levels to the data box / automation surface,
-/// matching NT's plot set (Initial Balance High/Mid/Low, Opening Range High/Low,
+/// matching the original's plot set (Initial Balance High/Mid/Low, Opening Range High/Low,
 /// Pre-market High/Low, Session High/Low, Signal State 0–3).
 /// </summary>
 [IndicatorInput(IndicatorInputKind.Bars)]
@@ -56,9 +56,9 @@ public sealed partial class InitialBalance : IndicatorBase,
     IChartCustomRender, IChartBackgroundRender,
     IIndicatorToolbarMenu, IRepaintNotifier, IRecalculateNotifier
 {
-    // ───── Per-session model (NT inner class InitialBalance) ───────────────
+    // ───── Per-session model (the original inner class InitialBalance) ───────────────
 
-    /// <summary>One trading day's running OR/IB/session state (NT's inner <c>InitialBalance</c> class).</summary>
+    /// <summary>One trading day's running OR/IB/session state (the original's inner <c>InitialBalance</c> class).</summary>
     internal sealed class IbSession
     {
         public bool ORSet;
@@ -80,7 +80,7 @@ public sealed partial class InitialBalance : IndicatorBase,
         public DateTime IBHighBreakDateTime;
     }
 
-    // ───── Plots (NT-parity: ten transparent data-box channels) ────────────
+    // ───── Plots (parity with the original: ten transparent data-box channels) ────────────
 
     public const int PlotCount = 10;
 
@@ -107,11 +107,11 @@ public sealed partial class InitialBalance : IndicatorBase,
     private readonly ChunkedSeries<double>[] _plots = new ChunkedSeries<double>[PlotCount];
     private readonly IndicatorOutputSeries?[] _plotWrappers = new IndicatorOutputSeries?[PlotCount];
 
-    // ───── Calculation state (NT fields) ───────────────────────────────────
+    // ───── Calculation state (the original fields) ───────────────────────────────────
 
     private readonly object _gate = new();                  // guards _sessions vs the render thread
-    private readonly List<IbSession> _sessions = new();     // NT _initialBalances
-    private IbSession? _current;                            // NT _currentInitialBalance
+    private readonly List<IbSession> _sessions = new();     // the original _initialBalances
+    private IbSession? _current;                            // the original _currentInitialBalance
     private IbSession[] _renderSnapshot = Array.Empty<IbSession>();
 
     private bool _preMarketSet;
@@ -119,14 +119,14 @@ public sealed partial class InitialBalance : IndicatorBase,
     private double _preMarketHigh;
     private double _preMarketLow;
     private DateTime _prevDate = DateTime.MinValue;
-    private DateTime _chartTime;                            // NT _chartTime  (latest 1-min bar time)
-    private DateTime _now;                                  // NT _now        (latest primary bar time)
+    private DateTime _chartTime;                            // the original _chartTime  (latest 1-min bar time)
+    private DateTime _now;                                  // the original _now        (latest primary bar time)
 
-    // Derived session windows, NT State.Configure (all TimeSpan time-of-day).
+    // Derived session windows, the original State.Configure (all TimeSpan time-of-day).
     private TimeSpan _sessionStart, _sessionEnd, _preMarketStart;
     private TimeSpan _ibOpenTime, _ibEndTime, _orEndTime;
 
-    // Secondary 1-minute series (NT AddDataSeries(Minute, 1)).
+    // Secondary 1-minute series (the original AddDataSeries(Minute, 1)).
     private BarSpecification? _minuteSpec;
     private int _minuteSeriesIndex = -1;
     private DateTime _lastMinuteEndUtc = DateTime.MinValue;
@@ -135,13 +135,13 @@ public sealed partial class InitialBalance : IndicatorBase,
 
     public InitialBalance(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // NT: Calculate = Calculate.OnPriceChange.
+        // The original: Calculate = Calculate.OnPriceChange.
         Calculate = CalculationMode.OnPriceChange;
 
         for (int i = 0; i < PlotCount; i++)
         {
             _plots[i] = new ChunkedSeries<double>();
-            // NT AddPlot(Brushes.Transparent, ...) — data-box channels only;
+            // The original AddPlot(Brushes.Transparent, ...) — data-box channels only;
             // the indicator paints its own visuals via OnCustomRender.
             var semantics = i == PlotSignalState
                 ? new PlotSemantics(PlotKind.Signal, 0, 3, PlotValueUnit.Raw, PlotBullishDirection.None,
@@ -155,7 +155,7 @@ public sealed partial class InitialBalance : IndicatorBase,
         }
     }
 
-    // ───── Parameters — 01. Parameters (NT GroupName "01. Parameters") ─────
+    // ───── Parameters — 01. Parameters (the original GroupName "01. Parameters") ─────
 
     [IndicatorParameter]
     public bool ShowAll { get; set; } = true;
@@ -214,11 +214,11 @@ public sealed partial class InitialBalance : IndicatorBase,
     [IndicatorParameter]
     public bool ShowPreMarketBackground { get; set; }
 
-    // ───── Parameters — 02. Colors (NT GroupName "02. Colors") ─────────────
-    // Each NT Stroke (brush + dash style + width + opacity) flattens to
-    // colour / width / line-style parameters; fill-only strokes (NT only used
+    // ───── Parameters — 02. Colors (the original GroupName "02. Colors") ─────────────
+    // Each the original Stroke (brush + dash style + width + opacity) flattens to
+    // colour / width / line-style parameters; fill-only strokes (the original only used
     // their Brush + Opacity) flatten to colour + opacity %. Defaults are the
-    // exact NT SetDefaults values (Azure F0FFFF, DarkSlateGray 2F4F4F,
+    // exact the original SetDefaults values (Azure F0FFFF, DarkSlateGray 2F4F4F,
     // SlateGray 708090, MediumSlateBlue 7B68EE).
 
     [IndicatorParameter]
@@ -228,7 +228,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public double TextFontSize { get; set; } = 10;
 
     [IndicatorParameter]
-    public ChartColor TextColor { get; set; } = NTColors.White;
+    public ChartColor TextColor { get; set; } = PlotColors.White;
 
     [IndicatorParameter]
     public ChartColor PreMarketColor { get; set; } = new(0x2F, 0x4F, 0x4F);          // DarkSlateGray
@@ -246,7 +246,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public double PremarketAreaOpacity { get; set; }
 
     [IndicatorParameter]
-    public ChartColor IbDevelopingColor { get; set; } = NTColors.DimGray;
+    public ChartColor IbDevelopingColor { get; set; } = PlotColors.DimGray;
 
     [IndicatorParameter]
     public double IbDevelopingWidth { get; set; } = 3;
@@ -264,7 +264,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle IbVirginStyle { get; set; } = LineStyle.Solid;
 
     [IndicatorParameter]
-    public ChartColor IbBrokenColor { get; set; } = NTColors.DimGray;
+    public ChartColor IbBrokenColor { get; set; } = PlotColors.DimGray;
 
     [IndicatorParameter]
     public double IbBrokenWidth { get; set; } = 1;
@@ -273,7 +273,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle IbBrokenStyle { get; set; } = LineStyle.Solid;
 
     [IndicatorParameter]
-    public ChartColor IbMidColor { get; set; } = NTColors.DeepSkyBlue;
+    public ChartColor IbMidColor { get; set; } = PlotColors.DeepSkyBlue;
 
     [IndicatorParameter]
     public double IbMidWidth { get; set; } = 1;
@@ -321,7 +321,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle SessionOpenStyle { get; set; } = LineStyle.Solid;
 
     [IndicatorParameter]
-    public ChartColor OrDevelopingColor { get; set; } = NTColors.Gold;
+    public ChartColor OrDevelopingColor { get; set; } = PlotColors.Gold;
 
     [IndicatorParameter]
     public double OrDevelopingWidth { get; set; } = 3;
@@ -330,7 +330,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle OrDevelopingStyle { get; set; } = LineStyle.Dashed;
 
     [IndicatorParameter]
-    public ChartColor OrHiLoColor { get; set; } = NTColors.Gold;
+    public ChartColor OrHiLoColor { get; set; } = PlotColors.Gold;
 
     [IndicatorParameter]
     public double OrHiLoWidth { get; set; } = 1;
@@ -339,7 +339,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle OrHiLoStyle { get; set; } = LineStyle.Solid;
 
     [IndicatorParameter]
-    public ChartColor OrMidColor { get; set; } = NTColors.Gold;
+    public ChartColor OrMidColor { get; set; } = PlotColors.Gold;
 
     [IndicatorParameter]
     public double OrMidWidth { get; set; } = 1;
@@ -348,18 +348,18 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle OrMidStyle { get; set; } = LineStyle.Dotted;
 
     [IndicatorParameter]
-    public ChartColor OrBackgroundColor { get; set; } = NTColors.DarkOrange;
+    public ChartColor OrBackgroundColor { get; set; } = PlotColors.DarkOrange;
 
     [IndicatorParameter]
     public double OrBackgroundOpacity { get; set; }
 
     [IndicatorParameter]
-    public ChartColor OrBuildingAreaColor { get; set; } = NTColors.DarkOrange;
+    public ChartColor OrBuildingAreaColor { get; set; } = PlotColors.DarkOrange;
 
     [IndicatorParameter]
     public double OrBuildingAreaOpacity { get; set; }
 
-    // NT defaults the six extension strokes to Azure / Dot / 1 px at 80% opacity —
+    // The original defaults the six extension strokes to Azure / Dot / 1 px at 80% opacity —
     // the 80% is folded into the colour's alpha (0xCC).
 
     [IndicatorParameter]
@@ -417,7 +417,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     public LineStyle Ib600ExtensionStyle { get; set; } = LineStyle.Dotted;
 
     [IndicatorParameter]
-    public ChartColor StatisticsBackgroundColor { get; set; } = NTColors.DimGray;
+    public ChartColor StatisticsBackgroundColor { get; set; } = PlotColors.DimGray;
 
     [IndicatorParameter]
     public double StatisticsBackgroundOpacity { get; set; } = 30;
@@ -434,7 +434,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     [IndicatorParameter]
     public double PreMarketBackgroundOpacity { get; set; } = 10;
 
-    // ───── Outputs (NT public Series<double> accessors) ────────────────────
+    // ───── Outputs (the original public Series<double> accessors) ────────────────────
 
     public ISeries<double> InitialBalanceHigh => Output(PlotInitialBalanceHigh);
     public ISeries<double> InitialBalanceMid  => Output(PlotInitialBalanceMid);
@@ -460,8 +460,8 @@ public sealed partial class InitialBalance : IndicatorBase,
         get { lock (_gate) return _sessions.ToArray(); }
     }
 
-    // ───── Session-window accessors (NT derived TimeSpans) ─────────────────
-    // NT end-stamps its 1-minute bars, so every window shifts one minute:
+    // ───── Session-window accessors (the original derived TimeSpans) ─────────────────
+    // The original end-stamps its 1-minute bars, so every window shifts one minute:
     // SessionStartTime/IbOpenTime = start + 1 min; IbEndTime/OrEndTime =
     // start + duration (configured as duration - 1, then + 1 min).
 
@@ -472,7 +472,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     internal TimeSpan IbEndTime  => _ibEndTime.Add(TimeSpan.FromMinutes(1));
     internal TimeSpan OrEndTime  => _orEndTime.Add(TimeSpan.FromMinutes(1));
 
-    /// <summary>NT <c>InSession</c> — inclusive time-of-day window, wrapping midnight when end &lt; start.</summary>
+    /// <summary>The original <c>InSession</c> — inclusive time-of-day window, wrapping midnight when end &lt; start.</summary>
     private static bool InSession(DateTime dateTime, TimeSpan startTime, TimeSpan endTime)
     {
         if (endTime >= startTime)
@@ -486,7 +486,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     {
         base.OnInit(ctx);
 
-        // NT State.Configure.
+        // The original State.Configure.
         _sessionStart = SessionStart.ToTimeSpan();
         _sessionEnd = SessionEnd.ToTimeSpan();
         _preMarketStart = PremarketStart.ToTimeSpan();
@@ -498,7 +498,7 @@ public sealed partial class InitialBalance : IndicatorBase,
 
         _tickSize = ctx.TickSize ?? _tickSize;
 
-        // NT AddDataSeries(BarsPeriodType.Minute, 1) — all levels compute from
+        // The original AddDataSeries(BarsPeriodType.Minute, 1) — all levels compute from
         // 1-minute bars so they are identical on every chart bar type. When the
         // primary series already is 1-minute (or finer) the primary IS the tape:
         // no secondary subscription. Otherwise the host loads venue 1-minute bars
@@ -537,7 +537,7 @@ public sealed partial class InitialBalance : IndicatorBase,
     /// <summary>
     /// Full (re)build: replay the backfilled 1-minute series against the primary
     /// series in chronological interleave — absorb every minute bar up to each
-    /// primary bar's close, then stamp that primary bar's plot row (the NT
+    /// primary bar's close, then stamp that primary bar's plot row (the original
     /// BarsInProgress 1 / 0 interleave).
     /// </summary>
     private void RebuildFromSeries(IIndicatorContext ctx)
@@ -596,7 +596,7 @@ public sealed partial class InitialBalance : IndicatorBase,
         int bip = ctx.BarsInProgress;
         if (bip == 0)
         {
-            // NT BarsInProgress == 0: stamp the plot row for the chart bar. With no
+            // The original BarsInProgress == 0: stamp the plot row for the chart bar. With no
             // separate 1-minute series the primary IS the tape — absorb it first.
             if (Bars.Count == 0) return;
             _now = Bars[0].End;
@@ -624,7 +624,7 @@ public sealed partial class InitialBalance : IndicatorBase,
         if (bar.EndUtc < _lastMinuteEndUtc) return;   // stale dispatch
 
         Bar prevBar = minute.Count > 1 ? minute[1] : bar;
-        // NT runs the same OnBarUpdate body on every price change of the forming
+        // The original runs the same OnBarUpdate body on every price change of the forming
         // 1-minute bar; the accumulation is monotone (min/max + latches), so
         // re-absorbing the same forming bar as it grows reproduces that exactly.
         AbsorbMinuteBar(in bar, in prevBar);
@@ -654,15 +654,15 @@ public sealed partial class InitialBalance : IndicatorBase,
         }
     }
 
-    // ───── Core accumulation (NT OnBarUpdate, BarsInProgress == 1) ─────────
+    // ───── Core accumulation (the original OnBarUpdate, BarsInProgress == 1) ─────────
 
     private void AbsorbMinuteBar(in Bar bar, in Bar prevBar)
     {
-        // NT Times[1][0] — its 1-minute bars are end-stamped.
+        // The original Times[1][0] — its 1-minute bars are end-stamped.
         DateTime t = bar.End;
         _chartTime = t;
 
-        // Pre-market accumulation (NT lines: premarket window vs midnight wrap).
+        // Pre-market accumulation (the original lines: premarket window vs midnight wrap).
         if (_preMarketStart < _sessionStart)
         {
             // e.g. 04:00 - 09:30
@@ -711,7 +711,7 @@ public sealed partial class InitialBalance : IndicatorBase,
             }
         }
 
-        // New calendar day → forget the current session (NT _prevDate latch).
+        // New calendar day → forget the current session (the original _prevDate latch).
         if (_prevDate.Date != t.Date)
         {
             _current = null;
@@ -788,7 +788,7 @@ public sealed partial class InitialBalance : IndicatorBase,
 
     /// <summary>
     /// Write the ten plot values for the current primary bar from the running state —
-    /// NT's BarsInProgress == 0 stamping. Appends a new row for a new bar and
+    /// the original's BarsInProgress == 0 stamping. Appends a new row for a new bar and
     /// re-stamps the forming bar on intra-bar updates.
     /// </summary>
     private void StampPrimaryRow()
@@ -831,7 +831,12 @@ public sealed partial class InitialBalance : IndicatorBase,
         for (int i = 0; i < PlotCount; i++)
         {
             var series = _plots[i];
-            while (series.Count < barCount) series.Append(v[i]);
+            // One row per call. Filling every missing slot with THIS bar's values
+            // (while Count < barCount) is correct for a live forming bar that is
+            // one behind, but on rebuild the first stamp is the oldest pre-session
+            // zero — so the data window reads 0s on every historical bar while
+            // custom render (session snapshots) still looks correct.
+            if (series.Count < barCount) series.Append(v[i]);
             if (series.Count > 0) series.UpdateLast(v[i]);
         }
     }
@@ -851,9 +856,9 @@ public sealed partial class InitialBalance : IndicatorBase,
     }
 
     // ───── Toolbar dropdown (IIndicatorToolbarMenu) + notifiers ────────────
-    // 1-on-1 with NT addToolBar(): the chart-toolbar "IB" menu with the same
+    // with the original addToolBar(): the chart-toolbar "IB" menu with the same
     // items in the same order. Render-only toggles fire RequestRepaint;
-    // RE-CALCULATE asks the host to replay OnInit + OnDataLoaded (NT's F5).
+    // RE-CALCULATE asks the host to replay OnInit + OnDataLoaded (the original's F5).
 
     public string MenuTitle => "IB";
 

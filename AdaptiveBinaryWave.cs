@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Adaptive Binary Wave — 1-on-1 port of ATAS's <c>AdaptiveBinaryWaveMA</c>
+/// Adaptive Binary Wave
 /// (Technical/AdaptiveBinaryWaveMA.cs). A three-state trend signal built
 /// on the <see cref="Ama"/>: it tracks the running high/low of the AMA and
 /// emits <b>+1</b> once the AMA has risen more than a volatility band above
@@ -17,7 +17,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///
 /// Reuses <see cref="Ama"/> (child) and <see cref="RollingStdDev"/> rather
 /// than re-implementing either. The AMA's warm-up bars (NaN) are treated
-/// as 0 here, matching ATAS's unset-series-reads-as-0 semantics so the wave
+/// as 0 here, matching the original's unset-series-reads-as-0 semantics so the wave
 /// stays neutral until the AMA is established. Sub-panel.
 /// Defaults: Period=15, ShortPeriod=3, LongPeriod=20, Percent=30.
 /// </summary>
@@ -38,12 +38,12 @@ public sealed class AdaptiveBinaryWave : IndicatorBase, IIndicatorPanelHint
 
     public AdaptiveBinaryWave(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Wave", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0)
+        AddPlot(new Plot("Wave", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0)
         {
             Semantics = new PlotSemantics(PlotKind.Oscillator, RangeMin: -1, RangeMax: 1,
                 PlotValueUnit.Raw, PlotBullishDirection.Up, Reference: "+1 up / 0 neutral / -1 down")
         });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "AMA + StdDev look-back.",
@@ -96,14 +96,14 @@ public sealed class AdaptiveBinaryWave : IndicatorBase, IIndicatorPanelHint
 
     private void Compute(double amaRaw)
     {
-        // ATAS reads an unset AMA slot as 0 during warm-up.
+        // The original reads an unset AMA slot as 0 during warm-up.
         double a = double.IsNaN(amaRaw) ? 0.0 : amaRaw;
         _std.Push(a);
 
         if (_barIdx == 0)
         {
             _amaHigh = _amaLow = a;
-            _output.Append(double.NaN);     // ATAS leaves bar 0 unset
+            _output.Append(double.NaN);     // the original leaves bar 0 unset
             _prevAma = a;
             _barIdx++;
             return;

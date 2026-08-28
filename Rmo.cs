@@ -51,10 +51,10 @@ public sealed class Rmo : IndicatorBase, IIndicatorPanelHint
 
     public Rmo(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("RMO",       _rmo,    PlotStyle.Line, NTColors.DarkCyan,   1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("SwingTrd2", _swing2, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("SwingTrd3", _swing3, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("RMO",       _rmo,    PlotStyle.Line, PlotColors.DarkCyan,   1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("SwingTrd2", _swing2, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("SwingTrd3", _swing3, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "SwingPeriod", Description = "EMA period for the SwingTrd2 / SwingTrd3 pair.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

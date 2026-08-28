@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// SMA with extra error metrics — 1-on-1 port of Skender SmaAnalysis.
+/// SMA with extra error metrics — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   Sma  = SMA(value, Period)
 ///   Mad  = Σ |value − sma| / Period             (mean absolute deviation)
 ///   Mse  = Σ (value − sma)² / Period            (mean squared error)
@@ -32,10 +32,10 @@ public sealed class SmaAnalysis : IndicatorBase
 
     public SmaAnalysis(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("SMA",  _sma,  PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("MAD",  _mad,  PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("MSE",  _mse,  PlotStyle.Line, NTColors.Crimson,    1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("MAPE", _mape, PlotStyle.Line, NTColors.SlateBlue,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SMA",  _sma,  PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MAD",  _mad,  PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MSE",  _mse,  PlotStyle.Line, PlotColors.Crimson,    1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MAPE", _mape, PlotStyle.Line, PlotColors.SlateBlue,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

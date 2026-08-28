@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Smoothed Moving Average (SMMA) — 1-on-1 port of Skender Smma.
+/// Smoothed Moving Average (SMMA) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Wilder's MA: SMMA[i] = (SMMA[i−1] · (P−1) + value[i]) / P.
 /// Seeded with SMA(value, P) at bar P−1; bars 0..P−2 emit NaN per Skender.
 /// (Mathematically identical to EMA with α = 1/P after seeding.)
@@ -25,7 +25,7 @@ public sealed class Smma : IndicatorBase
 
     public Smma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("SMMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SMMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

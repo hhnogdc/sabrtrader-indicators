@@ -5,9 +5,9 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Rate-of-Change (%) — 1-on-1 port of NT @ROC.
+/// Rate-of-Change (%).
 /// <c>Value = 100·(Input[0] − Input[min(CurrentBar,Period)]) / Input[min(CurrentBar,Period)]</c>.
-/// When the denominator ≤ 0, NT skips assignment (leaves previous value);
+/// When the denominator ≤ 0, the original skips assignment (leaves previous value);
 /// we emit 0 to keep the series dense and the chart line continuous.
 /// Default Period=14, DodgerBlue plot, zero reference line DarkGray, sub-panel.
 /// </summary>
@@ -24,8 +24,8 @@ public sealed class Roc : IndicatorBase, IIndicatorPanelHint
 
     public Roc(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddLine("Zero line", 0, NTColors.DarkGray);
-        AddPlot(new Plot("ROC", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
+        AddPlot(new Plot("ROC", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Bars back for the comparison.",

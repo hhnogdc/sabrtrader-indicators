@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Per-bar range (High − Low) — 1-on-1 port of NT @Range.
+/// Per-bar range (High − Low).
 /// Single histogram-style plot, Goldenrod 2px, sub-panel.
 /// No parameters.
 /// </summary>
@@ -21,7 +21,7 @@ public sealed class Range : IndicatorBase, IIndicatorPanelHint
 
     public Range(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Range", _output, PlotStyle.Histogram, NTColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Range", _output, PlotStyle.Histogram, PlotColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

@@ -5,15 +5,13 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Simple Moving Average — 1-on-1 port of NinjaTrader's
-/// <c>@SMA</c> built-in. Defaults to <see cref="Period"/>=14 with
-/// the Goldenrod plot colour, matching NT's
-/// <c>State.SetDefaults</c>.
+/// Simple Moving Average. Defaults to <see cref="Period"/>=14 with
+/// the Goldenrod plot colour, the conventional default for this study.
 ///
 /// Math: rolling mean over the last <see cref="Period"/> input
 /// values. During warmup (fewer than <see cref="Period"/> samples
 /// available) emits the running mean over what IS available —
-/// NinjaTrader emits a value from bar 0 onwards, not NaN.
+/// the original emits a value from bar 0 onwards, not NaN.
 ///
 /// Use standalone or chain:
 /// <code>
@@ -32,7 +30,7 @@ public sealed class Sma : IndicatorBase
     // Running sum over the most-recent up-to-Period samples. We store
     // an explicit ring buffer of input values so window subtraction is
     // O(1) once the window is full. RollingSum from Incremental works
-    // identically but the inlined version keeps NT's "running mean
+    // identically but the inlined version keeps the original's "running mean
     // during warmup" branch trivial to read.
     private double[] _window = [];
     private double _sum;
@@ -46,13 +44,13 @@ public sealed class Sma : IndicatorBase
             name: "SMA",
             values: _output,
             style: PlotStyle.Line,
-            color: NTColors.Goldenrod,
+            color: PlotColors.Goldenrod,
             lineWidthPx: 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(
         DisplayName = "Period",
-        Description = "Number of inputs averaged. NT range: 1..int.MaxValue.",
+        Description = "Number of inputs averaged. The original range: 1..int.MaxValue.",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Period { get; set; } = 14;
 
@@ -63,7 +61,7 @@ public sealed class Sma : IndicatorBase
     /// <summary>True once the rolling window holds <see cref="Period"/> samples.</summary>
     public bool IsFull => _count >= Period;
 
-    /// <summary>Latest SMA value. NT-style: defined from the first bar (running mean during warmup).</summary>
+    /// <summary>Latest SMA value. original-style: defined from the first bar (running mean during warmup).</summary>
     public double Value => _output.Count == 0 ? 0 : _output[0];
 
     public override void OnInit(IIndicatorContext ctx)
@@ -97,7 +95,7 @@ public sealed class Sma : IndicatorBase
     }
 
     /// <summary>
-    /// NT semantics: when <see cref="Period"/>=1 the output equals
+    /// the original semantics: when <see cref="Period"/>=1 the output equals
     /// the current input. When the window isn't full yet
     /// (<c>CurrentBar &lt; Period - 1</c>), output is the simple mean
     /// over the samples seen so far. Once the window fills, each new

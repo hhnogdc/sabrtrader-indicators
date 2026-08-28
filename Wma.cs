@@ -5,8 +5,8 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Weighted Moving Average — 1-on-1 port of NT @WMA.
-/// Linear weights 1..N (most recent gets weight N). NT: bar 0 = Input.
+/// Weighted Moving Average.
+/// Linear weights 1..N (most recent gets weight N). The original: bar 0 = Input.
 /// Default Period=14, Goldenrod, range [1, int.MaxValue].
 /// </summary>
 [IndicatorDescription("Weighted Moving Average. Linearly weights the last Period bars from 1 (oldest) to N (most recent), giving more emphasis to recent price than a simple SMA but less smoothing than an EMA.")]
@@ -22,7 +22,7 @@ public sealed class Wma : IndicatorBase
 
     public Wma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("WMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("WMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window size.",

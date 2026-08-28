@@ -10,7 +10,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Gaps — 1-on-1 port of ATAS <c>Gaps</c>. Detects BAR-TO-BAR price gaps (distinct from the
+/// Gaps. Detects BAR-TO-BAR price gaps (distinct from the
 /// 3-bar imbalance <see cref="Fvg"/>):
 /// <list type="bullet">
 ///   <item><b>Bullish</b> when <c>bar.Low &gt; prevBar.High</c> — gap band [prevBar.High, bar.Low].</item>
@@ -78,8 +78,8 @@ public sealed class Gaps : IndicatorBase, IChartCustomRender
 
     public Gaps(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        var up = new ChartColor(NTColors.Green.R, NTColors.Green.G, NTColors.Green.B, 0x66);
-        var dn = new ChartColor(NTColors.Red.R, NTColors.Red.G, NTColors.Red.B, 0x66);
+        var up = new ChartColor(PlotColors.Green.R, PlotColors.Green.G, PlotColors.Green.B, 0x66);
+        var dn = new ChartColor(PlotColors.Red.R, PlotColors.Red.G, PlotColors.Red.B, 0x66);
         AddPlot(new Plot("Up Gap", _upMid, PlotStyle.Dots, up, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
         AddPlot(new Plot("Down Gap", _downMid, PlotStyle.Dots, dn, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
     }
@@ -120,9 +120,9 @@ public sealed class Gaps : IndicatorBase, IChartCustomRender
     [IndicatorParameter(DisplayName = "Label Size", Group = "02. Display", Order = 5, MinValue = 5, MaxValue = 40, Step = 1)]
     public int LabelSize { get; set; } = 10;
 
-    public ChartColor BullishColor { get; set; } = NTColors.Green;
-    public ChartColor BearishColor { get; set; } = NTColors.Red;
-    public ChartColor LabelColor { get; set; } = NTColors.Gray;
+    public ChartColor BullishColor { get; set; } = PlotColors.Green;
+    public ChartColor BearishColor { get; set; } = PlotColors.Red;
+    public ChartColor LabelColor { get; set; } = PlotColors.Gray;
 
     /// <summary>Currently-open gaps (oldest first).</summary>
     public IReadOnlyList<Gap> OpenGaps => _gaps;

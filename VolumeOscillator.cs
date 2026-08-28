@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Oscillator — 1-on-1 port of NT @VolumeOscillator.
+/// Volume Oscillator.
 /// Value = SMA(Volume, Fast) − SMA(Volume, Slow).
 /// Defaults Fast=12, Slow=26, DodgerBlue 2px Bar plot, sub-panel.
 /// CryptoCurrency volume normalisation is host-specific; the pipeline does not
@@ -26,7 +26,7 @@ public sealed class VolumeOscillator : IndicatorBase, IIndicatorPanelHint
 
     public VolumeOscillator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Volume Oscillator", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Volume Oscillator", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Fast", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
@@ -62,7 +62,7 @@ public sealed class VolumeOscillator : IndicatorBase, IIndicatorPanelHint
         double v = bar.Volume;
         _fastSum.Push(v);
         _slowSum.Push(v);
-        // SMAs use simple running average regardless of fill level (matches NT @SMA).
+        // SMAs use simple running average regardless of fill level (matches the original @SMA).
         double smaFast = _fastSum.Sum / _fastSum.Count;
         double smaSlow = _slowSum.Sum / _slowSum.Count;
         _output.Append(smaFast - smaSlow);

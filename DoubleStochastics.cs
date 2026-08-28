@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Double Stochastics — 1-on-1 port of NT @DoubleStochastics.
+/// Double Stochastics.
 /// p1 = 100*(C-minLow)/(maxHigh-minLow) clamped 0..100 (or prev p1 / 50 if range=0).
 /// p2 = EMA(p1, 3).
 /// p3 = 100*(p2-minP2)/(maxP2-minP2) clamped 0..100 (or prev p3 / 50 if range=0).
@@ -32,9 +32,9 @@ public sealed class DoubleStochastics : IndicatorBase, IIndicatorPanelHint
 
     public DoubleStochastics(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("K", _output, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "10 oversold / 90 overbought") });
-        AddLine("Overbought", 90, NTColors.DodgerBlue);
-        AddLine("Oversold",   10, NTColors.DodgerBlue);
+        AddPlot(new Plot("K", _output, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "10 oversold / 90 overbought") });
+        AddLine("Overbought", 90, PlotColors.DodgerBlue);
+        AddLine("Oversold",   10, PlotColors.DodgerBlue);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

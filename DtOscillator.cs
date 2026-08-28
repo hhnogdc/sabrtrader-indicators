@@ -49,10 +49,10 @@ public sealed class DtOscillator : IndicatorBase, IIndicatorPanelHint
     public DtOscillator(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var osc = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "25 oversold / 75 overbought");
-        AddPlot(new Plot("DTosc",  _sk, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = osc });
-        AddPlot(new Plot("Signal", _sd, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = osc });
-        AddLine("Oversold",   25, NTColors.DarkCyan);
-        AddLine("Overbought", 75, NTColors.DarkCyan);
+        AddPlot(new Plot("DTosc",  _sk, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = osc });
+        AddPlot(new Plot("Signal", _sd, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = osc });
+        AddLine("Oversold",   25, PlotColors.DarkCyan);
+        AddLine("Overbought", 75, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "RsiPeriod", Description = "Wilder RSI period.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

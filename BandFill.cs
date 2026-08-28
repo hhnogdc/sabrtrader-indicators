@@ -43,9 +43,8 @@ internal static class BandFill
         for (int i = first; i <= last; i++)
         {
             int barsAgo = total - 1 - i;
-            double u = upper[barsAgo];
-            double l = lower[barsAgo];
-            if (double.IsNaN(u) || double.IsNaN(l))
+            if (!upper.TryGet(barsAgo, out double u) || !lower.TryGet(barsAgo, out double l)
+                || double.IsNaN(u) || double.IsNaN(l))
             {
                 Flush(renderer, topPath, botPath, color);
                 continue;

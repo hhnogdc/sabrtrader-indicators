@@ -19,7 +19,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///   - Trend signal series (+1/−1) sub-panel histogram (DarkCyan/Crimson are rendered via
 ///     IChartCustomRender bar-coloring on the price panel).
 ///   - The custom render colors the price bars themselves green (bullish) / red (bearish) so
-///     the indicator behaves like NT's BarBrushes assignment.
+///     the indicator behaves like the original's BarBrushes assignment.
 /// </summary>
 [IndicatorDescription("John Carter's TTM Trend bar-color regime detector. Paints bars bullish or bearish based on whether Close sits above or below the SMA of HL2 over the last Length bars.")]
 [IndicatorCategory(IndicatorCategory.Trend)]
@@ -32,15 +32,15 @@ public sealed class TtmTrend : IndicatorBase, IChartCustomRender
 
     public TtmTrend(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Trend", _trend, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Trend", _trend, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Length", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Length { get; set; } = 6;
 
-    public ChartColor BullishColor { get; set; } = NTColors.LimeGreen;
-    public ChartColor BearishColor { get; set; } = NTColors.Crimson;
-    public ChartColor NeutralColor { get; set; } = NTColors.DarkGray;
+    public ChartColor BullishColor { get; set; } = PlotColors.LimeGreen;
+    public ChartColor BearishColor { get; set; } = PlotColors.Crimson;
+    public ChartColor NeutralColor { get; set; } = PlotColors.DarkGray;
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_trend, Bars);
 

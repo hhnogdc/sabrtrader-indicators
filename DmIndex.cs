@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Dynamic Momentum Index — 1-on-1 port of NT @DMIndex.
+/// Dynamic Momentum Index.
 /// rsiPeriod = max(1, 14 / (StdDev(5) / SMA(StdDev(5), 10))).
 /// Value = RSI(rsiPeriod, Smooth).
 /// Bar 0 → Input[0]. Defaults Smooth=3. DarkCyan, sub-panel.
@@ -26,7 +26,7 @@ public sealed class DmIndex : IndicatorBase, IIndicatorPanelHint
 
     public DmIndex(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("DM Index", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("DM Index", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Smooth", Description = "RSI smoothing period.",
@@ -49,7 +49,7 @@ public sealed class DmIndex : IndicatorBase, IIndicatorPanelHint
 
     public override void OnDataLoaded(IIndicatorContext ctx)
     {
-        // NT's per-bar variable RSI period would require dynamic re-allocation
+        // The original's per-bar variable RSI period would require dynamic re-allocation
         // each bar — not supported by our framework. Best-effort port: use a
         // fixed RSI(14, Smooth). Variable-period exact match needs a custom
         // RSI implementation that accepts a dynamic period per bar. Marked

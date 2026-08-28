@@ -6,12 +6,12 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Stochastic Oscillator (slow) — 1-on-1 port of NT's @Stochastics.
+/// Stochastic Oscillator (slow).
 ///
 /// Plots: <b>D</b> (DodgerBlue) + <b>K</b> (Goldenrod). Reference
 /// lines at 20 (oversold) + 80 (overbought) DarkCyan.
 ///
-/// Math (NT slow stochastic):
+/// Math (the original slow stochastic):
 ///   <code>
 ///   raw_fastK = (close − min(Low, PeriodK)) / (max(High, PeriodK) − min(Low, PeriodK)) × 100
 ///   K = SMA(raw_fastK, Smooth)
@@ -19,7 +19,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///   </code>
 ///
 /// Flat-window singularity (max == min): raw_fastK is 50 on bar 0,
-/// otherwise carries forward the previous value (NT behaviour).
+/// otherwise carries forward the previous value (the original behaviour).
 ///
 /// Defaults: PeriodK=14, PeriodD=7, Smooth=3. Range [1, int.MaxValue].
 /// </summary>
@@ -48,10 +48,10 @@ public sealed class Stochastic : IndicatorBase, IIndicatorPanelHint
     public Stochastic(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("D", _d, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
-        AddPlot(new Plot("K", _k, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
-        AddLine("Oversold",   20, NTColors.DarkCyan);
-        AddLine("Overbought", 80, NTColors.DarkCyan);
+        AddPlot(new Plot("D", _d, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddPlot(new Plot("K", _k, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddLine("Oversold",   20, PlotColors.DarkCyan);
+        AddLine("Overbought", 80, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "PeriodD", Description = "SMA period over K (gives D).",
@@ -85,7 +85,7 @@ public sealed class Stochastic : IndicatorBase, IIndicatorPanelHint
         _smoothDSum = new RollingSum(PeriodD);
         _rawKCount = 0;
         _kCount = 0;
-        _prevRawK = 50;   // NT: bar 0 with flat window → 50
+        _prevRawK = 50;   // the original: bar 0 with flat window → 50
         _barIdx = 0;
     }
 
@@ -114,7 +114,7 @@ public sealed class Stochastic : IndicatorBase, IIndicatorPanelHint
         double hh = _highWindow.Value;
         double ll = _lowWindow.Value;
         double range = hh - ll;
-        // NT: flat window → bar 0 = 50, else carry previous raw %K.
+        // The original: flat window → bar 0 = 50, else carry previous raw %K.
         double rawK = range > 0 ? Math.Min(100, Math.Max(0, 100.0 * (bar.Close - ll) / range))
                                 : (_barIdx == 0 ? 50.0 : _prevRawK);
         _rawK.Append(rawK);

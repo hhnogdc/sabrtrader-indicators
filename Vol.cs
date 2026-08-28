@@ -5,9 +5,9 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume — 1-on-1 port of NT @VOL.
+/// Volume.
 /// Single Histogram-style plot DodgerBlue 2px + zero reference line
-/// DarkGray. Sub-panel. No parameters. NT runs OnEachTick by default;
+/// DarkGray. Sub-panel. No parameters. The original runs OnEachTick by default;
 /// our framework's Calculate cadence covers that via CalculationMode.
 /// </summary>
 [IndicatorDescription("Per-bar volume histogram. Plots raw bar volume in a sub-panel as the simplest volume display.")]
@@ -22,8 +22,8 @@ public sealed class Vol : IndicatorBase, IIndicatorPanelHint
 
     public Vol(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Volume", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Volume", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

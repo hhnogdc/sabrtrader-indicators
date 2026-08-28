@@ -38,9 +38,9 @@ public sealed class MomentumOscillator : IndicatorBase, IIndicatorPanelHint
     public MomentumOscillator(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var sem = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline");
-        AddPlot(new Plot("Momentum", _mom,    PlotStyle.Line, NTColors.DarkCyan,  1.0) { Semantics = sem });
-        AddPlot(new Plot("Signal",   _signal, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = sem });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Momentum", _mom,    PlotStyle.Line, PlotColors.DarkCyan,  1.0) { Semantics = sem });
+        AddPlot(new Plot("Signal",   _signal, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = sem });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Bars back for the momentum comparison.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

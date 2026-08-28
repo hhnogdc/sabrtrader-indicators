@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Connors RSI — 1-on-1 port of Skender ConnorsRsi.
+/// Connors RSI — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   1. RSI(Close, RsiPeriods)
 ///   2. Streak = signed consecutive up/down day count;
 ///      Wilder-RSI on the Streak series, length StreakPeriods.
@@ -53,9 +53,9 @@ public sealed class ConnorsRsi : IndicatorBase, IIndicatorPanelHint
 
     public ConnorsRsi(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("ConnorsRSI", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "10 oversold / 90 overbought") });
-        AddLine("Overbought", 90, NTColors.DarkGray);
-        AddLine("Oversold",   10, NTColors.DarkGray);
+        AddPlot(new Plot("ConnorsRSI", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "10 oversold / 90 overbought") });
+        AddLine("Overbought", 90, PlotColors.DarkGray);
+        AddLine("Oversold",   10, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "RsiPeriods",    MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

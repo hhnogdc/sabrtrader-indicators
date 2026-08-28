@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Force Index — 1-on-1 port of NT @ForceIndex.
+/// Force Index.
 /// raw = (Close[0] − Close[1]) · Volume. Bar 0 → 0.
 /// Value = EMA(raw, Period); split across Positive (DarkCyan) and
 /// Negative (Crimson) histogram plots. Zero line. Sub-panel.
@@ -28,9 +28,9 @@ public sealed class ForceIndex : IndicatorBase, IIndicatorPanelHint
 
     public ForceIndex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Positive", _positive, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("Negative", _negative, PlotStyle.Histogram, NTColors.Crimson, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Positive", _positive, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Negative", _negative, PlotStyle.Histogram, PlotColors.Crimson, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period over raw force.",

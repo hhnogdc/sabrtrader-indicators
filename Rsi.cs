@@ -6,12 +6,12 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Relative Strength Index — 1-on-1 port of NT's @RSI.
+/// Relative Strength Index.
 ///
 /// Two plots: RSI (DodgerBlue, Default), Avg (Goldenrod, EMA of RSI
 /// with α=2/(Smooth+1)). Two reference lines: 30 / 70 (DarkCyan).
 ///
-/// NT formula:
+/// the original formula:
 ///   Per bar (post-warmup): up = max(close-prevClose, 0),
 ///   down = max(prevClose-close, 0). Until bar (Period-1) accumulate
 ///   sums; at bar Period seed avgUp/avgDown = SMA(up,Period) /
@@ -55,10 +55,10 @@ public sealed class Rsi : IndicatorBase, IIndicatorPanelHint
             PlotKind.Oscillator, RangeMin: 0, RangeMax: 100,
             PlotValueUnit.Percent, PlotBullishDirection.Up,
             Reference: "30 oversold / 70 overbought");
-        AddPlot(new Plot("RSI", _rsi, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = oscillator });
-        AddPlot(new Plot("Avg", _avg, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = oscillator });
-        AddLine("Lower", 30, NTColors.DarkCyan);
-        AddLine("Upper", 70, NTColors.DarkCyan);
+        AddPlot(new Plot("RSI", _rsi, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = oscillator });
+        AddPlot(new Plot("Avg", _avg, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = oscillator });
+        AddLine("Lower", 30, PlotColors.DarkCyan);
+        AddLine("Upper", 70, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period",
@@ -114,7 +114,7 @@ public sealed class Rsi : IndicatorBase, IIndicatorPanelHint
     {
         if (_prevClose is null)
         {
-            // NT bar 0: no delta; emit NaN for RSI and (if Period<3) 50 for Avg.
+            // The original bar 0: no delta; emit NaN for RSI and (if Period<3) 50 for Avg.
             _rsi.Append(double.NaN);
             if (Period < 3) { _avgValue = 50; _avgInitialised = true; _avg.Append(50); }
             else            _avg.Append(double.NaN);
@@ -132,7 +132,7 @@ public sealed class Rsi : IndicatorBase, IIndicatorPanelHint
         {
             _seedUp   += up;
             _seedDown += down;
-            // NT seeds Avg at bar Period-1 with value 50, AVANT RSI exists.
+            // The original seeds Avg at bar Period-1 with value 50, AVANT RSI exists.
             if (_deltaCount + 1 == Period - 1 && !_avgInitialised && Period >= 3)
             {
                 _avgValue = 50;

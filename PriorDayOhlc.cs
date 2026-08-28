@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Prior Day OHLC — port of NT @PriorDayOHLC. Four plots showing the PREVIOUS session's
+/// Prior Day OHLC. Four plots showing the PREVIOUS session's
 /// Open/High/Low/Close as flat reference lines. Session-boundary detection (delegated to
 /// the shared <see cref="SessionResetTracker"/>):
 /// <list type="bullet">
@@ -35,10 +35,10 @@ public sealed class PriorDayOhlc : IndicatorBase
 
     public PriorDayOhlc(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Prior Open",  _open,  PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Prior High",  _high,  PlotStyle.Line, NTColors.DarkCyan,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Prior Low",   _low,   PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Prior Close", _close, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Prior Open",  _open,  PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Prior High",  _high,  PlotStyle.Line, PlotColors.DarkCyan,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Prior Low",   _low,   PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Prior Close", _close, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Session Times",

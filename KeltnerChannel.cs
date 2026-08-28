@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Keltner Channel — 1-on-1 port of NT @KeltnerChannel.
+/// Keltner Channel.
 /// Midline = SMA(Typical, Period). Offset = SMA(High−Low, Period) · OffsetMultiplier.
 /// Upper/Lower = Midline ± offset.
 /// Defaults Period=10, OffsetMultiplier=1.5.
@@ -28,9 +28,9 @@ public sealed class KeltnerChannel : IndicatorBase
 
     public KeltnerChannel(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Midline", _mid,   PlotStyle.Line, NTColors.DarkGray,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Upper",   _upper, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower",   _lower, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Midline", _mid,   PlotStyle.Line, PlotColors.DarkGray,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper",   _upper, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower",   _lower, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "OffsetMultiplier", Description = "Multiplier on SMA(H−L).",

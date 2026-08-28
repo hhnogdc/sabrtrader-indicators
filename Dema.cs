@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Double EMA — 1-on-1 port of NT @DEMA.
+/// Double EMA.
 /// Value = 2·EMA(input) − EMA(EMA(input)). Default Period=14, Goldenrod.
 /// </summary>
 [IndicatorDescription("Double Exponential Moving Average: 2·EMA(input) − EMA(EMA(input)). Reduces EMA lag while keeping the smoothing.")]
@@ -20,7 +20,7 @@ public sealed class Dema : IndicatorBase
 
     public Dema(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("DEMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("DEMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period.",

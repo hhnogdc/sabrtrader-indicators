@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Current Day OHL — port of NT @CurrentDayOHL with session awareness.
+/// Current Day OHL.
 ///
 /// Three plots showing today's (or today's session's) Open / High / Low as horizontal
 /// lines that update through the day. Session-boundary detection is selected by the
@@ -38,9 +38,9 @@ public sealed class CurrentDayOhl : IndicatorBase
     public CurrentDayOhl(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         var ohlLevel = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null);
-        AddPlot(new Plot("Open", _open, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = ohlLevel });
-        AddPlot(new Plot("High", _high, PlotStyle.Line, NTColors.DarkCyan,   1.0) { Semantics = ohlLevel });
-        AddPlot(new Plot("Low",  _low,  PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = ohlLevel });
+        AddPlot(new Plot("Open", _open, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = ohlLevel });
+        AddPlot(new Plot("High", _high, PlotStyle.Line, PlotColors.DarkCyan,   1.0) { Semantics = ohlLevel });
+        AddPlot(new Plot("Low",  _low,  PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = ohlLevel });
     }
 
     [IndicatorParameter(DisplayName = "Session Times",

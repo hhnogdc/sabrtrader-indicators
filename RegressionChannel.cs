@@ -6,9 +6,9 @@ using SabrTrader.Pipeline.Indicators;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Regression Channel — 1-on-1 port of NT @RegressionChannel.
+/// Regression Channel.
 /// OLS linear regression of last Period bars; channels are middle ± Width·stdDev,
-/// where stdDev is the population stddev of the *absolute residuals* (NT formula).
+/// where stdDev is the population stddev of the *absolute residuals* (the original formula).
 /// Middle[i] = intercept + slope·(Period-1).
 /// Bar 0 → all three plots = Input[0]. When stdDev is 0 or infinite → bands collapse to Input[0].
 /// Defaults Period=35, Width=2. Plots Middle (DarkGray), Upper / Lower (DodgerBlue), overlay.
@@ -27,7 +27,7 @@ public sealed class RegressionChannel : IndicatorBase, IChartCustomRender
     // Plot-backing series are DELIBERATELY never appended to. The three plots
     // exist only to carry the channel's per-line colour/width into the legend
     // (and OnCustomRender reads Plots[i].Color from them); the channel itself is
-    // drawn as three straight lines in OnCustomRender, exactly like NT. Backing
+    // drawn as three straight lines in OnCustomRender, exactly like the original. Backing
     // the plots with the per-bar _middle/_upper/_lower series — as the first port
     // did — made the chart ALSO draw wavy per-bar polylines (a Bollinger-band
     // look) on top of the straight channel. Empty series ⇒ PlotRenderPass draws
@@ -41,9 +41,9 @@ public sealed class RegressionChannel : IndicatorBase, IChartCustomRender
 
     public RegressionChannel(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Middle", _midPlot, PlotStyle.Line, NTColors.DarkGray,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Upper",  _upPlot,  PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower",  _loPlot,  PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Middle", _midPlot, PlotStyle.Line, PlotColors.DarkGray,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper",  _upPlot,  PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower",  _loPlot,  PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 2, MaxValue = int.MaxValue, Step = 1)]
@@ -131,7 +131,7 @@ public sealed class RegressionChannel : IndicatorBase, IChartCustomRender
             double regV = intercept + slope * (Period - 1 - count);
             sumResiduals += Math.Abs(src[barsAgoOfCurrent + count] - regV);
         }
-        double avg = sumResiduals / Math.Min(Math.Max(_barIdx, 1), Period); // NT: Math.Min(CurrentBar-1, Period); barIdx maps to CurrentBar+1 → CurrentBar-1 = barIdx-1, but NT uses /(barCount-something); pin to NT exactly: divide by Min(CurrentBar-1, Period). For barIdx==1, CurrentBar==0 in NT terms, so divisor would be 0 — guard with Max(...,1).
+        double avg = sumResiduals / Math.Min(Math.Max(_barIdx, 1), Period); // the original: Math.Min(CurrentBar-1, Period); barIdx maps to CurrentBar+1 → CurrentBar-1 = barIdx-1, but the original uses /(barCount-something); pin to the original exactly: divide by Min(CurrentBar-1, Period). For barIdx==1, CurrentBar==0 in the original terms, so divisor would be 0 — guard with Max(...,1).
 
         sumResiduals = 0;
         for (int count = 0; count < barCount; count++)
@@ -155,7 +155,7 @@ public sealed class RegressionChannel : IndicatorBase, IChartCustomRender
     }
 
     /// <summary>
-    /// Custom render — NT draws ONE straight line for Middle/Upper/Lower spanning
+    /// Custom render — the original draws ONE straight line for Middle/Upper/Lower spanning
     /// the regression window (last Period bars), not a per-bar plot. We replicate that.
     /// </summary>
     public void OnCustomRender(IIndicatorRenderContext ctx)
@@ -181,7 +181,7 @@ public sealed class RegressionChannel : IndicatorBase, IChartCustomRender
         int startAbs = Math.Max(0, currentAbs - (Period - 1));
 
         // y at the start of the window: intercept (i.e., y at count=0 of the regression which corresponds to current bar).
-        // NT: middle line goes from (xStart, intercept) at oldest bar to (xEnd, intercept + slope*(Period-1)) at newest.
+        // The original: middle line goes from (xStart, intercept) at oldest bar to (xEnd, intercept + slope*(Period-1)) at newest.
         double xStart = vp.BarIndexToPixelX(startAbs);
         double xEnd = vp.BarIndexToPixelX(currentAbs);
         double yStartMid = vp.PriceToPixelY(intercept);

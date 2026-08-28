@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Triple EMA — 1-on-1 port of NT @TEMA.
+/// Triple EMA.
 /// Value = 3·EMA1 − 3·EMA2 + EMA3. Default Period=14, Goldenrod.
 /// </summary>
 [IndicatorDescription("Triple Exponential Moving Average. Value = 3*EMA - 3*EMA(EMA) + EMA(EMA(EMA)), reducing lag compared with a single EMA of the same period.")]
@@ -21,7 +21,7 @@ public sealed class Tema : IndicatorBase
 
     public Tema(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("TEMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("TEMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period.",

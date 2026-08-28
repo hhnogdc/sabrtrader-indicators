@@ -6,7 +6,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
 /// Linear Regression Intercept (the y-axis intercept of the OLS fit)
-/// — 1-on-1 port of NT @LinRegIntercept. Period=14 (range [2,∞)),
+///. Period=14 (range [2,∞)),
 /// Goldenrod, overlay.
 /// </summary>
 [IndicatorDescription("Linear Regression Intercept: the y-intercept of the least-squares best-fit line over the last N inputs (the projected value at the start of the regression window).")]
@@ -20,7 +20,7 @@ public sealed class LinRegIntercept : IndicatorBase
 
     public LinRegIntercept(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Intercept", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Intercept", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window.",

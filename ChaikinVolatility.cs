@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Chaikin Volatility — 1-on-1 port of NT @ChaikinVolatility.
+/// Chaikin Volatility.
 /// ema = EMA(H−L, MAPeriod). Value = (ema[0] − ema[min(barIdx, ROCPeriod)]) / ema[…] · 100.
 /// Bar 0 → ema[0].
 /// Defaults MAPeriod=10, ROCPeriod=10, Crimson, sub-panel.
@@ -26,7 +26,7 @@ public sealed class ChaikinVolatility : IndicatorBase, IIndicatorPanelHint
 
     public ChaikinVolatility(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Chaikin Volatility", _output, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Chaikin Volatility", _output, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "MAPeriod",  Description = "EMA period over H-L.",

@@ -6,10 +6,10 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume-Weighted Moving Average — 1-on-1 port of NT @VWMA.
+/// Volume-Weighted Moving Average.
 /// Value = Σ(price·vol) / Σ(vol) over the trailing Period bars.
-/// When Σvol ≈ 0, falls back to the price sum (NT div-by-zero guard).
-/// Default Period=14, DodgerBlue, sub-panel (NT DrawOnPricePanel=false).
+/// When Σvol ≈ 0, falls back to the price sum (the original div-by-zero guard).
+/// Default Period=14, DodgerBlue, sub-panel (the original DrawOnPricePanel=false).
 /// </summary>
 [IndicatorDescription("Volume-Weighted Moving Average. Sum(price*volume)/Sum(volume) over the trailing Period bars, giving heavier weight to bars with more participation than a simple SMA.")]
 [IndicatorCategory(IndicatorCategory.Trend)]
@@ -27,7 +27,7 @@ public sealed class Vwma : IndicatorBase, IIndicatorPanelHint
 
     public Vwma(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("VWMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("VWMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window size.",

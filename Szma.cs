@@ -5,8 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// SZMA — "Simple Moving Average, Skip Zeros". 1-on-1 port of ATAS's
-/// <c>SZMA</c> (Technical/SZMA.cs).
+/// SZMA — "Simple Moving Average, Skip Zeros".
 ///
 /// For each bar the average is taken over the window
 /// <c>[max(0, bar − Period) … bar]</c> (inclusive on both ends, so the
@@ -38,10 +37,10 @@ public sealed class Szma : IndicatorBase
 
     public Szma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("SZMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SZMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
-    [IndicatorParameter(DisplayName = "Period", Description = "Look-back window (spans Period+1 samples, ATAS-faithful).",
+    [IndicatorParameter(DisplayName = "Period", Description = "Look-back window (spans Period+1 samples, original-faithful).",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Period { get; set; } = 10;
 
@@ -51,7 +50,7 @@ public sealed class Szma : IndicatorBase
     {
         base.OnInit(ctx);
         if (Period < 1) throw new ArgumentOutOfRangeException(nameof(Period), "Period must be at least 1.");
-        // ATAS sums i = max(0, bar-Period) .. bar inclusive ⇒ Period+1 slots.
+        // The original sums i = max(0, bar-Period) .. bar inclusive ⇒ Period+1 slots.
         _capacity = Period + 1;
         _window = new double[_capacity];
         _count = 0;

@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Awesome Oscillator (Bill Williams) — 1-on-1 port of Skender Awesome.
+/// Awesome Oscillator (Bill Williams) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Source = HL2 (Median price). AO = SMA(HL2, Fast) − SMA(HL2, Slow).
 /// Normalized = 100·AO/HL2 (NaN when HL2 = 0).
 /// Defaults Fast=5, Slow=34. DarkCyan histogram, zero line, sub-panel.
@@ -27,8 +27,8 @@ public sealed class Awesome : IndicatorBase, IIndicatorPanelHint
 
     public Awesome(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Awesome", _output, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Awesome", _output, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

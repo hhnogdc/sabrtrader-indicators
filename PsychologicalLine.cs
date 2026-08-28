@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Psychological Line — 1-on-1 port of NT @PsychologicalLine.
+/// Psychological Line.
 /// % of up-bars (Close &gt; Open) over the last Period bars · 100.
 /// Defaults Period=10, DodgerBlue, 25/75 reference lines (DarkCyan),
 /// sub-panel.
@@ -25,9 +25,9 @@ public sealed class PsychologicalLine : IndicatorBase, IIndicatorPanelHint
 
     public PsychologicalLine(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Psychological Line", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
-        AddLine("Overbought", 75, NTColors.DarkCyan);
-        AddLine("Oversold",   25, NTColors.DarkCyan);
+        AddPlot(new Plot("Psychological Line", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
+        AddLine("Overbought", 75, PlotColors.DarkCyan);
+        AddLine("Oversold",   25, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window for up-bar percentage.",
@@ -59,7 +59,7 @@ public sealed class PsychologicalLine : IndicatorBase, IIndicatorPanelHint
     {
         _upBars.Push(bar.Close > bar.Open ? 1 : 0);
         // Running-mean during warmup: divide by samples seen so far.
-        // NT divides by min(barIdx+1, Period). RollingSum.Sum / count.
+        // The original divides by min(barIdx+1, Period). RollingSum.Sum / count.
         int count = Math.Min(_upBars.Count, Period);
         _output.Append(_upBars.Sum / count * 100);
     }

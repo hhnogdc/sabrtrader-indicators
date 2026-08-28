@@ -39,9 +39,9 @@ public sealed class Rmi : IndicatorBase, IIndicatorPanelHint
 
     public Rmi(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("RMI", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30 oversold / 70 overbought") });
-        AddLine("Oversold",   30, NTColors.DarkCyan);
-        AddLine("Overbought", 70, NTColors.DarkCyan);
+        AddPlot(new Plot("RMI", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30 oversold / 70 overbought") });
+        AddLine("Oversold",   30, PlotColors.DarkCyan);
+        AddLine("Overbought", 70, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Wilder smoothing period for the momentum gains/losses.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

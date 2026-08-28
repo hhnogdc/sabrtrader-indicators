@@ -35,13 +35,13 @@ public sealed class WoodiesCci : IndicatorBase, IIndicatorPanelHint
     public WoodiesCci(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         // Histogram added first so the Turbo line renders on top of it.
-        AddPlot(new Plot("CCI",   _hist,  PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram,  null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 / +/-100 / +/-200") });
-        AddPlot(new Plot("Turbo", _turbo, PlotStyle.Line,      NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Level 2",  200, NTColors.DarkGray, participatesInAutoScale: false);
-        AddLine("Level 1",  100, NTColors.DarkGray, participatesInAutoScale: false);
-        AddLine("Zero line",  0, NTColors.DarkGray);
-        AddLine("Level -1", -100, NTColors.DarkGray, participatesInAutoScale: false);
-        AddLine("Level -2", -200, NTColors.DarkGray, participatesInAutoScale: false);
+        AddPlot(new Plot("CCI",   _hist,  PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram,  null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 / +/-100 / +/-200") });
+        AddPlot(new Plot("Turbo", _turbo, PlotStyle.Line,      PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Level 2",  200, PlotColors.DarkGray, participatesInAutoScale: false);
+        AddLine("Level 1",  100, PlotColors.DarkGray, participatesInAutoScale: false);
+        AddLine("Zero line",  0, PlotColors.DarkGray);
+        AddLine("Level -1", -100, PlotColors.DarkGray, participatesInAutoScale: false);
+        AddLine("Level -2", -200, PlotColors.DarkGray, participatesInAutoScale: false);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Standard CCI period (the histogram).", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -32,8 +32,8 @@ public sealed class QStick : IndicatorBase, IIndicatorPanelHint
 
     public QStick(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("QStick", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("QStick", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "SMA window over the candle body.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

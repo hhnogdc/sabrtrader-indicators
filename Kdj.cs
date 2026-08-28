@@ -49,11 +49,11 @@ public sealed class Kdj : IndicatorBase, IIndicatorPanelHint
         var bounded = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "20/80");
         // J is intentionally unbounded — it overshoots the 0-100 band, which is the whole point.
         var jSem = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Percent, PlotBullishDirection.Up, "leads K/D; overshoots 0/100");
-        AddPlot(new Plot("K", _k, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = bounded });
-        AddPlot(new Plot("D", _d, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = bounded });
-        AddPlot(new Plot("J", _j, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = jSem });
-        AddLine("Oversold",   20, NTColors.DarkCyan);
-        AddLine("Overbought", 80, NTColors.DarkCyan);
+        AddPlot(new Plot("K", _k, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = bounded });
+        AddPlot(new Plot("D", _d, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = bounded });
+        AddPlot(new Plot("J", _j, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = jSem });
+        AddLine("Oversold",   20, PlotColors.DarkCyan);
+        AddLine("Overbought", 80, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "RSV high/low lookback.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

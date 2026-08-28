@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Balance of Power — 1-on-1 port of NT @BOP.
+/// Balance of Power.
 /// Per-bar BOP = (close − open) / (high − low). Flat bars → 0.
 /// Output = SMA(BOP, Smooth). Default Smooth=14, DodgerBlue 2px Bar
 /// plot, zero reference line DarkGray, sub-panel.
@@ -25,8 +25,8 @@ public sealed class Bop : IndicatorBase, IIndicatorPanelHint
 
     public Bop(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("BOP", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("BOP", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Smooth", Description = "SMA period.",

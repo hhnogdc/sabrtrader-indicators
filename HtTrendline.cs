@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Hilbert Transform Instantaneous Trendline (HTL, Ehlers) — 1-on-1 port of Skender HtTrendline.
+/// Hilbert Transform Instantaneous Trendline (HTL, Ehlers) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Operates on HL2. Identifies dominant-cycle period via the homodyne discriminator and outputs
 /// an instantaneous trendline = WMA( running mean of price over the smoothed dominant-cycle
 /// period, [4,3,2,1]/10 ). SmoothPrice = WMA(price, [4,3,2,1]/10).
@@ -41,9 +41,9 @@ public sealed class HtTrendline : IndicatorBase
 
     public HtTrendline(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("HT Trendline", _trend,  PlotStyle.Line, NTColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("SmoothPrice",  _smooth, PlotStyle.Line, NTColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("DC Periods",   _dcPeriods, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HT Trendline", _trend,  PlotStyle.Line, PlotColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SmoothPrice",  _smooth, PlotStyle.Line, PlotColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("DC Periods",   _dcPeriods, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Trendline   => _tW ??= new IndicatorOutputSeries(_trend,     Bars);

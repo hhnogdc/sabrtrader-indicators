@@ -6,10 +6,10 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Population Standard Deviation — 1-on-1 port of NT @StdDev.
+/// Population Standard Deviation.
 /// Bar 0 → 0. Subsequent bars compute √(Σ(x−μ)² / n) where μ is
 /// the rolling-window mean over min(CurrentBar+1, Period) samples.
-/// Default Period=14, DarkCyan, sub-panel (NT IsOverlay=false).
+/// Default Period=14, DarkCyan, sub-panel (the original IsOverlay=false).
 /// </summary>
 [IndicatorDescription("Population Standard Deviation: sqrt(sum((x - mean)^2) / n) over the rolling Period window. A direct volatility measure of the input series in price units.")]
 [IndicatorCategory(IndicatorCategory.Volatility)]
@@ -25,7 +25,7 @@ public sealed class StdDev : IndicatorBase, IIndicatorPanelHint
 
     public StdDev(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("StdDev", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("StdDev", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window size.",
@@ -57,7 +57,7 @@ public sealed class StdDev : IndicatorBase, IIndicatorPanelHint
     private void Consume(double v)
     {
         _window.Push(v);
-        // NT bar 0 = 0; subsequent bars = population stddev.
+        // The original bar 0 = 0; subsequent bars = population stddev.
         _output.Append(_barIdx == 0 ? 0 : _window.StdDev);
         _barIdx++;
     }

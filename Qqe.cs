@@ -52,9 +52,9 @@ public sealed class Qqe : IndicatorBase, IIndicatorPanelHint
     public Qqe(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var sem = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "50 centerline");
-        AddPlot(new Plot("RsiMa", _fast, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = sem });
-        AddPlot(new Plot("QQE",   _slow, PlotStyle.Line, NTColors.Goldenrod,  1.5) { Semantics = sem });
-        AddLine("Centerline", 50, NTColors.DarkGray);
+        AddPlot(new Plot("RsiMa", _fast, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = sem });
+        AddPlot(new Plot("QQE",   _slow, PlotStyle.Line, PlotColors.Goldenrod,  1.5) { Semantics = sem });
+        AddLine("Centerline", 50, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "RsiPeriod", Description = "Wilder RSI period.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

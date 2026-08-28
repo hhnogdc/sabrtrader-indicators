@@ -53,12 +53,12 @@ public sealed class OiAnalyzer : IndicatorBase, IIndicatorPanelHint
     public OiAnalyzer(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("DeltaOI", _delta, PlotStyle.Histogram, NTColors.DodgerBlue, 1.0)
+        AddPlot(new Plot("DeltaOI", _delta, PlotStyle.Histogram, PlotColors.DodgerBlue, 1.0)
         {
             Semantics = new PlotSemantics(PlotKind.Histogram, null, null,
                 PlotValueUnit.Raw, PlotBullishDirection.None, "0 centerline")
         });
-        AddPlot(new Plot("OIState", _state, PlotStyle.Dots, NTColors.Goldenrod, 2.0)
+        AddPlot(new Plot("OIState", _state, PlotStyle.Dots, PlotColors.Goldenrod, 2.0)
         {
             Semantics = new PlotSemantics(PlotKind.Oscillator, -2, 2,
                 PlotValueUnit.Raw, PlotBullishDirection.Up,

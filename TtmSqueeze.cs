@@ -53,9 +53,9 @@ public sealed class TtmSqueeze : IndicatorBase, IIndicatorPanelHint
 
     public TtmSqueeze(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Momentum",  _momentum,  PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("Squeeze",   _squeezeOn, PlotStyle.Dots,      NTColors.Yellow,     3.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Momentum",  _momentum,  PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Squeeze",   _squeezeOn, PlotStyle.Dots,      PlotColors.Yellow,     3.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Length",     MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Adaptive Price Zone — 1-on-1 port of NT @APZ (Lee Leibfarth, S&amp;C Sep 2006).
+/// Adaptive Price Zone.
 /// emaEma = EMA(EMA(Input, sqrt(Period)), sqrt(Period)).
 /// emaRange = EMA(Range, Period).
 /// Bar &lt; Period → both bands = Input. Else:
@@ -29,8 +29,8 @@ public sealed class Apz : IndicatorBase
 
     public Apz(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Lower", _lower, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Upper", _upper, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower", _lower, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper", _upper, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "BandPct", Description = "Band multiplier on EMA(range).",

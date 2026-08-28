@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// True Range — 1-on-1 port of Skender Tr.
+/// True Range — derived from Skender.Stock.Indicators (Apache-2.0).
 /// TR[i] = max(H − L, |H − prevClose|, |L − prevClose|). Bar 0 = NaN.
 /// No parameters. DarkCyan Histogram, sub-panel.
 /// </summary>
@@ -23,7 +23,7 @@ public sealed class Tr : IndicatorBase, IIndicatorPanelHint
 
     public Tr(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("TR", _output, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("TR", _output, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

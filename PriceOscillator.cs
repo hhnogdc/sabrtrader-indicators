@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Price Oscillator — 1-on-1 port of NT @PriceOscillator.
+/// Price Oscillator.
 /// raw = EMA(Fast) − EMA(Slow); Value = EMA(raw, Smooth).
 /// Defaults Fast=12, Slow=26, Smooth=9, Goldenrod, zero line, sub-panel.
 /// </summary>
@@ -23,8 +23,8 @@ public sealed class PriceOscillator : IndicatorBase, IIndicatorPanelHint
 
     public PriceOscillator(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddLine("Zero line", 0, NTColors.DarkGray);
-        AddPlot(new Plot("Price Oscillator", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
+        AddPlot(new Plot("Price Oscillator", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Fast",   Description = "Fast EMA period.",   MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

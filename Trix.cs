@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// TRIX — 1-on-1 port of NT @TRIX.
+/// TRIX.
 /// Triple EMA + 1-bar % rate-of-change of that triple EMA, plus a
 /// Signal EMA of the result.
 /// Defaults Period=14, SignalPeriod=3.
@@ -28,9 +28,9 @@ public sealed class Trix : IndicatorBase, IIndicatorPanelHint
 
     public Trix(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Default", _default, PlotStyle.Line, NTColors.DimGray, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Signal",  _signal,  PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Default", _default, PlotStyle.Line, PlotColors.DimGray, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Signal",  _signal,  PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period applied 3x.",
@@ -68,7 +68,7 @@ public sealed class Trix : IndicatorBase, IIndicatorPanelHint
             double triple = _ema3.Output[b];
             if (!_hasPrev)
             {
-                // NT bar 0: Value = Input[0]; we just emit Input here.
+                // The original bar 0: Value = Input[0]; we just emit Input here.
                 // But our Input may not have a known value at this point —
                 // use 0 as conservative seed; Signal stays 0 too.
                 _default.Append(0);

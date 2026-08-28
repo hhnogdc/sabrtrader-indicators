@@ -5,8 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// BWMA — Bill Williams Moving Average. 1-on-1 port of ATAS's
-/// <c>BWMA</c> (Technical/BWMA.cs).
+/// BWMA — Bill Williams Moving Average.
 ///
 /// A recursive smoother seeded with the first input:
 /// <c>BWMA[0] = value[0]</c>, then
@@ -27,7 +26,7 @@ public sealed class Bwma : IndicatorBase
 
     public Bwma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("BWMA", _output, PlotStyle.Line, NTColors.Blue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("BWMA", _output, PlotStyle.Line, PlotColors.Blue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Smoothing period — α = 1/Period.",

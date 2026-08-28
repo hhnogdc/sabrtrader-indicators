@@ -9,7 +9,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Rollover Dates — marks futures contract-rollover dates with a vertical line (ATAS
+/// Rollover Dates — marks futures contract-rollover dates with a vertical line (the original
 /// <c>Rollover</c>). The roll instants come from the host through the agnostic
 /// <see cref="IIndicatorContext.GetContractRolloversUtc"/> seam (the desktop platform wires it to
 /// the existing contract calendar / roll-schedule services); the indicator itself is venue-agnostic
@@ -50,8 +50,8 @@ public sealed class RolloverDates : IndicatorBase, IChartCustomRender
     [IndicatorParameter(DisplayName = "Label Size", Group = "01. Display", Order = 3, MinValue = 5, MaxValue = 40, Step = 1)]
     public int LabelSize { get; set; } = 10;
 
-    public ChartColor LineColor { get; set; } = NTColors.Goldenrod;
-    public ChartColor LabelColor { get; set; } = NTColors.Goldenrod;
+    public ChartColor LineColor { get; set; } = PlotColors.Goldenrod;
+    public ChartColor LabelColor { get; set; } = PlotColors.Goldenrod;
 
     /// <summary>The rollover instants currently held (true venue UTC). Exposed for tests/diagnostics.</summary>
     public IReadOnlyList<DateTime> Rollovers => _rollovers;

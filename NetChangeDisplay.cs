@@ -7,11 +7,11 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>Unit options for <see cref="NetChangeDisplay"/>. Matches NT's <c>Cbi.PerformanceUnit</c>.</summary>
+/// <summary>Unit options for <see cref="NetChangeDisplay"/>. Matches the original's <c>Cbi.PerformanceUnit</c>.</summary>
 public enum NetChangeUnit { Percent, Points, Ticks, Pips, Currency }
 
 /// <summary>
-/// Net Change Display — port of NT @NetChangeDisplay. NT renders this
+/// Net Change Display. The original renders this
 /// as a top-right text overlay via <c>Draw.TextFixed</c>; without a
 /// text-drawing primitive we surface the same number as a single-plot
 /// value so chart layers can render it however they want
@@ -45,7 +45,7 @@ public sealed class NetChangeDisplay : IndicatorBase, IChartCustomRender
 
     public NetChangeDisplay(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Net Change", _output, PlotStyle.Line, NTColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Net Change", _output, PlotStyle.Line, PlotColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Unit", Description = "Display unit.")]
@@ -128,10 +128,10 @@ public sealed class NetChangeDisplay : IndicatorBase, IChartCustomRender
         _output.Append(v);
     }
 
-    public ChartColor TextColor { get; set; } = NTColors.LimeGreen;
+    public ChartColor TextColor { get; set; } = PlotColors.LimeGreen;
     public double TextSizePx { get; set; } = 14;
 
-    /// <summary>Render the current value as a top-right text overlay (NT Draw.TextFixed parity).</summary>
+    /// <summary>Render the current value as a top-right text overlay (the original Draw.TextFixed parity).</summary>
     public void OnCustomRender(IIndicatorRenderContext ctx)
     {
         if (_output.Count == 0) return;

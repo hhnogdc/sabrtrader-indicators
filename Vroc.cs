@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Rate-of-Change — 1-on-1 port of NT @VROC.
+/// Volume Rate-of-Change.
 /// raw = 100·(vol[0] − vol[min(barIdx, Period-1)]) / vol[min(barIdx, Period-1)]
 /// = 100·vol[0]/back − 100. Result = SMA(raw, Smooth).
 /// Defaults Period=14, Smooth=3, Goldenrod, zero reference line DarkGray,
@@ -27,8 +27,8 @@ public sealed class Vroc : IndicatorBase, IIndicatorPanelHint
 
     public Vroc(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("VROC", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("VROC", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback for volume comparison.",

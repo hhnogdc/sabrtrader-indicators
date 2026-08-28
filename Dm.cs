@@ -6,15 +6,22 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Directional Movement (DM) — 1-on-1 port of NT @DM.
-/// Combines ADX + DI+ + DI- in one indicator (three plots).
+/// Directional Movement (DM).
+/// Combines ADX + DI+ + DI- + DX in one indicator (four plots).
 /// Bar 0 → ADX=50. Then Wilder-smoothed TR/DM+/DM- sums, derived
-/// DI+ = 100·sumDM+/sumTR, DI- = 100·sumDM-/sumTR, and
-/// ADX = ((P-1)·prev + 100·|DI+-DI-|/(DI++DI-)) / P.
-/// Defaults Period=14. Plots: ADX (DarkSeaGreen 2px), +DI (DodgerBlue), −DI (Crimson).
+/// DI+ = 100·sumDM+/sumTR, DI- = 100·sumDM-/sumTR,
+/// DX = 100·|DI+-DI-|/(DI++DI-), and
+/// ADX = ((P-1)·prev + DX) / P — i.e. ADX is the Wilder average of DX.
+/// DX is what TradeStation's <c>DMI(Length)</c> returns, so a strategy
+/// ported from there reads this plot rather than the smoothed ADX.
+/// Singularity DI++DI-=0 → DX=50, matching the value the original hands ADX in
+/// that same case (the original snaps ADX straight to 50 there instead of
+/// smoothing toward it, so the two agree on the degenerate bar).
+/// Defaults Period=14. Plots: ADX (DarkSeaGreen 2px), +DI (DodgerBlue),
+/// −DI (Crimson), DX (Goldenrod, dashed).
 /// Lines 25 / 75 DarkCyan. Sub-panel.
 /// </summary>
-[IndicatorDescription("Directional Movement: ADX with +DI and −DI on one panel. Wilder-smoothed TR and DM±; trend strength via ADX, direction via DI± crossovers.")]
+[IndicatorDescription("Directional Movement: ADX with +DI, −DI and the raw DX on one panel. Wilder-smoothed TR and DM±; trend strength via ADX, direction via DI± crossovers. DX is the unsmoothed trend-strength reading ADX averages, useful as a faster regime filter.")]
 [IndicatorCategory(IndicatorCategory.Trend)]
 [IndicatorInput(IndicatorInputKind.Bars)]
 public sealed class Dm : IndicatorBase, IIndicatorPanelHint
@@ -24,7 +31,8 @@ public sealed class Dm : IndicatorBase, IIndicatorPanelHint
     private readonly ChunkedSeries<double> _adx     = new();
     private readonly ChunkedSeries<double> _plusDi  = new();
     private readonly ChunkedSeries<double> _minusDi = new();
-    private IndicatorOutputSeries? _adxW, _plW, _miW;
+    private readonly ChunkedSeries<double> _dx      = new();
+    private IndicatorOutputSeries? _adxW, _plW, _miW, _dxW;
     private double _sumTr, _sumDmPlus, _sumDmMinus, _adxValue;
     private double? _prevHigh, _prevLow, _prevClose;
     private int _barIdx;
@@ -32,12 +40,17 @@ public sealed class Dm : IndicatorBase, IIndicatorPanelHint
     public Dm(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         AddPlot(new Plot("ADX",  _adx,     PlotStyle.Line, new ChartColor(0x8F, 0xBC, 0x8F), 2.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "25 strong / 75 very strong trend") });  // DarkSeaGreen
-        AddPlot(new Plot("+DI",  _plusDi,  PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("-DI",  _minusDi, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, null) });
+        AddPlot(new Plot("+DI",  _plusDi,  PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("-DI",  _minusDi, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, null) });
+        // DX LAST: IndicatorCodec index-matches saved plots onto this list and
+        // stops at the saved count, so a workspace written before DX existed
+        // still restores ADX/+DI/-DI and leaves DX on these defaults. Dashed so
+        // the unsmoothed line reads apart from the three solid ones.
+        AddPlot(new Plot("DX",   _dx,      PlotStyle.Dashed, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "unsmoothed ADX input; 25 strong / 75 very strong trend") });
         // ADX-family (unbounded): keep the 25/75 references off the auto-scale
         // so a typical 10-30 ADX reading isn't compressed into a sliver.
-        AddLine("Strong Trend",      25, NTColors.DarkCyan, participatesInAutoScale: false);
-        AddLine("Very Strong Trend", 75, NTColors.DarkCyan, participatesInAutoScale: false);
+        AddLine("Strong Trend",      25, PlotColors.DarkCyan, participatesInAutoScale: false);
+        AddLine("Very Strong Trend", 75, PlotColors.DarkCyan, participatesInAutoScale: false);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
@@ -46,6 +59,9 @@ public sealed class Dm : IndicatorBase, IIndicatorPanelHint
     public ISeries<double> ADXPlot => _adxW ??= new IndicatorOutputSeries(_adx,     Bars);
     public ISeries<double> DiPlus  => _plW  ??= new IndicatorOutputSeries(_plusDi,  Bars);
     public ISeries<double> DiMinus => _miW  ??= new IndicatorOutputSeries(_minusDi, Bars);
+
+    /// <summary>Raw DX — the per-bar trend-strength reading ADX smooths. Chainable.</summary>
+    public ISeries<double> DX      => _dxW  ??= new IndicatorOutputSeries(_dx,      Bars);
 
     public override void OnInit(IIndicatorContext ctx)
     {
@@ -77,7 +93,9 @@ public sealed class Dm : IndicatorBase, IIndicatorPanelHint
             _sumDmPlus = _sumDmMinus = 0;
             _adxValue = 50;
             _prevHigh = bar.High; _prevLow = bar.Low; _prevClose = bar.Close;
-            _adx.Append(_adxValue); _plusDi.Append(0); _minusDi.Append(0);
+            // DI+ = DI- = 0 here, so DX is the 0/0 singularity → 50, the same
+            // value the original seeds ADX with.
+            _adx.Append(_adxValue); _plusDi.Append(0); _minusDi.Append(0); _dx.Append(50);
             _barIdx = 1;
             return;
         }
@@ -100,8 +118,9 @@ public sealed class Dm : IndicatorBase, IIndicatorPanelHint
         double diM = _sumTr == 0 ? 0 : 100 * _sumDmMinus / _sumTr;
         double diff = Math.Abs(diP - diM);
         double sum = diP + diM;
-        _adxValue = sum == 0 ? 50 : ((Period - 1) * _adxValue + 100 * diff / sum) / Period;
-        _adx.Append(_adxValue); _plusDi.Append(diP); _minusDi.Append(diM);
+        double dx = sum == 0 ? 50 : 100 * diff / sum;
+        _adxValue = sum == 0 ? 50 : ((Period - 1) * _adxValue + dx) / Period;
+        _adx.Append(_adxValue); _plusDi.Append(diP); _minusDi.Append(diM); _dx.Append(dx);
         _prevHigh = bar.High; _prevLow = bar.Low; _prevClose = bar.Close;
         _barIdx++;
     }

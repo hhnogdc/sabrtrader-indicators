@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Hull Moving Average — 1-on-1 port of NT @HMA.
+/// Hull Moving Average.
 /// HMA = WMA(2·WMA(Period/2) − WMA(Period), √Period).
 /// Default Period=14, Goldenrod, range [2, int.MaxValue].
 /// </summary>
@@ -24,10 +24,10 @@ public sealed class Hma : IndicatorBase
 
     public Hma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("HMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
-    [IndicatorParameter(DisplayName = "Period", Description = "Window size; NT range [2, ∞).",
+    [IndicatorParameter(DisplayName = "Period", Description = "Window size; the original range [2, ∞).",
         MinValue = 2, MaxValue = int.MaxValue, Step = 1)]
     public int Period { get; set; } = 14;
 

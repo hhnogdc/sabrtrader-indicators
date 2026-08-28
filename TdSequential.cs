@@ -54,13 +54,13 @@ public sealed class TdSequential : IndicatorBase, IIndicatorPanelHint
 
     public TdSequential(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Setup",     _setup,     PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -13, 13, PlotValueUnit.Raw, PlotBullishDirection.None, "+9 sell setup / -9 buy setup") });
-        AddPlot(new Plot("Countdown", _countdown, PlotStyle.Histogram, NTColors.Crimson,    2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -13, 13, PlotValueUnit.Raw, PlotBullishDirection.None, "+/-13 countdown completion") });
-        AddLine("Sell countdown",  13, NTColors.DarkGray, participatesInAutoScale: false);
-        AddLine("Sell setup",       9, NTColors.DarkCyan, participatesInAutoScale: false);
-        AddLine("Zero line",        0, NTColors.DarkGray);
-        AddLine("Buy setup",       -9, NTColors.DarkCyan, participatesInAutoScale: false);
-        AddLine("Buy countdown",  -13, NTColors.DarkGray, participatesInAutoScale: false);
+        AddPlot(new Plot("Setup",     _setup,     PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -13, 13, PlotValueUnit.Raw, PlotBullishDirection.None, "+9 sell setup / -9 buy setup") });
+        AddPlot(new Plot("Countdown", _countdown, PlotStyle.Histogram, PlotColors.Crimson,    2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -13, 13, PlotValueUnit.Raw, PlotBullishDirection.None, "+/-13 countdown completion") });
+        AddLine("Sell countdown",  13, PlotColors.DarkGray, participatesInAutoScale: false);
+        AddLine("Sell setup",       9, PlotColors.DarkCyan, participatesInAutoScale: false);
+        AddLine("Zero line",        0, PlotColors.DarkGray);
+        AddLine("Buy setup",       -9, PlotColors.DarkCyan, participatesInAutoScale: false);
+        AddLine("Buy countdown",  -13, PlotColors.DarkGray, participatesInAutoScale: false);
     }
 
     public ISeries<double> Setup     => _setupWrap ??= new IndicatorOutputSeries(_setup, Bars);

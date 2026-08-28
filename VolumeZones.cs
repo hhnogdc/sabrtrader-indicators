@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Zones — 1-on-1 port of NT @VolumeZones.
+/// Volume Zones.
 /// Splits the visible price range into <see cref="BarCount"/> bins (default 10) and
 /// accumulates Volume from each visible bar into its bin, split up (Close &gt; Open)
 /// vs down (Close ≤ Open). Renders horizontal histograms anchored at the chart's
@@ -25,7 +25,7 @@ public sealed class VolumeZones : IndicatorBase, IChartCustomRender
         // No standard plot series — custom render only. Add a placeholder
         // plot for legend / settings dialog discoverability.
         AddPlot(new Plot("Volume Zones", new ChunkedSeries<double>(),
-            PlotStyle.Histogram, NTColors.DarkCyan, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+            PlotStyle.Histogram, PlotColors.DarkCyan, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "BarCount", MinValue = 2, MaxValue = 20, Step = 1)]
@@ -40,9 +40,9 @@ public sealed class VolumeZones : IndicatorBase, IChartCustomRender
     [IndicatorParameter(DisplayName = "DrawLines")]
     public bool DrawLines { get; set; } = false;
 
-    public ChartColor BarUpBrush   { get; set; } = NTColors.DarkCyan;
-    public ChartColor BarDownBrush { get; set; } = NTColors.Crimson;
-    public ChartColor LineBrush    { get; set; } = NTColors.DarkGray;
+    public ChartColor BarUpBrush   { get; set; } = PlotColors.DarkCyan;
+    public ChartColor BarDownBrush { get; set; } = PlotColors.Crimson;
+    public ChartColor LineBrush    { get; set; } = PlotColors.DarkGray;
 
     public override void OnInit(IIndicatorContext ctx)
     {
@@ -99,7 +99,7 @@ public sealed class VolumeZones : IndicatorBase, IChartCustomRender
 
         double plotX = ctx.PlotArea.X;
         double plotH = ctx.PlotArea.Height;
-        double halfW = plotH / 2;       // matches NT's chartScale.Height / 2 horizontal scaling.
+        double halfW = plotH / 2;       // matches the original's chartScale.Height / 2 horizontal scaling.
 
         // Apply opacity to colors.
         var upColor = WithOpacity(BarUpBrush, Opacity);

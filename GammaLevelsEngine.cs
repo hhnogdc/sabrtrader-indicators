@@ -74,6 +74,11 @@ internal sealed class GammaLevelsEngine
     private ILevelsFeed? _feed;
     private string? _vendorSymbol;
     private bool _chartIsFuturesContract;
+    private ExpirySelection _expiry = ExpirySelection.VendorDefault;
+
+    /// <summary>The hold on the feed's per-selection projection; disposing it lets the feed
+    /// stop keeping that projection warm. Null whenever the default reading is in use.</summary>
+    private IDisposable? _expiryHold;
 
     // Session-level cache: values are recomputed only when the session or its source
     // snapshot changes, so per-bar Compute is an O(1) reference return on the hot path.
@@ -110,7 +115,44 @@ internal sealed class GammaLevelsEngine
             var symbol = _vendorSymbol;
             if (feed is null || symbol is null) return null;
             if (!feed.Capabilities.HasFlag(LevelsCapabilities.StrikeProfile)) return null;
+            // Under a selection the histogram MUST come from the same boards as the lines,
+            // so it is read through the selection surface rather than the default one.
+            if (SelectingExpiry(feed) is { } selecting)
+                return selecting.GetStrikeProfile(symbol, _expiry);
             return (feed as ILevelsStrikeProfile)?.GetStrikeProfile(symbol);
+        }
+    }
+
+    /// <summary>
+    /// The feed's expiration-selection surface when one is BOTH advertised and actually in
+    /// use. Null for the default reading, which deliberately keeps every existing consumer
+    /// on the exact code path it had before selection existed.
+    /// </summary>
+    private ILevelsExpirySelection? SelectingExpiry(ILevelsFeed feed)
+        => _expiry.Kind != ExpirySelectionKind.VendorDefault
+           && feed.Capabilities.HasFlag(LevelsCapabilities.ExpirySelection)
+            ? feed as ILevelsExpirySelection
+            : null;
+
+    /// <summary>The expiration selection currently bound, as the feed will report it.</summary>
+    public ExpirySelection Expiry => _expiry;
+
+    /// <summary>
+    /// The feed's CURRENT snapshot for this binding, read through whichever surface is in
+    /// use. Callers comparing "is this the live snapshot" must come here rather than calling
+    /// the feed directly: under a selection the live snapshot is a different instance from
+    /// the default reading, so a direct comparison silently answers no forever.
+    /// </summary>
+    public GammaLevelSnapshot? CurrentSnapshot
+    {
+        get
+        {
+            var feed = _feed;
+            var symbol = _vendorSymbol;
+            if (feed is null || symbol is null) return null;
+            return SelectingExpiry(feed) is { } selecting
+                ? selecting.GetSnapshot(symbol, _expiry)
+                : feed.GetSnapshot(symbol);
         }
     }
 
@@ -123,28 +165,74 @@ internal sealed class GammaLevelsEngine
     /// instrument id may be a venue alias ("MES", "contfut:ES") with no month-code suffix, so
     /// <see cref="LevelsSymbolMapping.IsFuturesContract"/> alone cannot see that it is a future
     /// and the cash→futures basis would silently not be applied.</param>
-    public bool TryBind(ILevelsRegistry registry, string instrumentId, bool continuousFutures = false)
+    /// <param name="preferredProviderKey">The vendor the user pinned for this chart
+    /// (<see cref="ILevelsFeed.ProviderKey"/>); null or empty takes the registry's default.
+    /// A pin no connected feed satisfies binds NOTHING rather than falling back to another
+    /// vendor: drawing someone else's walls under the name the user picked is precisely the
+    /// silent-wrong-vendor failure this parameter exists to end.</param>
+    /// <param name="expiry">Which option expirations the levels should be computed from.
+    /// <see cref="ExpirySelectionKind.VendorDefault"/> (the default) takes whatever the vendor
+    /// publishes, on exactly the code path that existed before selection was added. A
+    /// selection a feed cannot serve is NOT silently downgraded to the default: the feed
+    /// reports what it actually produced and the caller labels it accordingly.</param>
+    public bool TryBind(ILevelsRegistry registry, string instrumentId, bool continuousFutures = false,
+        string? preferredProviderKey = null, ExpirySelection expiry = default)
     {
         if (registry is null || string.IsNullOrWhiteSpace(instrumentId)) return false;
 
-        var feed = registry.ResolveFeed(instrumentId);
+        var feed = SelectFeed(registry, instrumentId, preferredProviderKey);
         var symbol = feed?.MapInstrument(instrumentId);
         if (feed is null || symbol is null) return false;
 
+        // Release any hold from a previous binding BEFORE taking a new one. Rebinding without
+        // an intervening Unbind is normal (OnFeedsChanged fires on every vendor connect and
+        // disconnect), and overwriting the field instead would orphan the old hold, pinning a
+        // projection in the feed for the rest of the process with nothing left to release it.
+        _expiryHold?.Dispose();
+        _expiryHold = null;
+
         _feed = feed;
         _vendorSymbol = symbol;
+        _expiry = expiry;
         // A dated futures chart quotes the cash index plus carry; a cash chart does not.
         // Captured at bind time because it depends only on the instrument.
         _chartIsFuturesContract =
             continuousFutures || LevelsSymbolMapping.IsFuturesContract(instrumentId);
         Reset();
-        feed.Track(symbol);
+
+        if (SelectingExpiry(feed) is { } selecting)
+            _expiryHold = selecting.Track(symbol, expiry);
+        else
+            feed.Track(symbol);
         return true;
+    }
+
+    /// <summary>
+    /// The pinned vendor among the feeds covering the instrument, or the registry's default
+    /// when nothing is pinned. Returns null for a pin that is not connected (or no longer
+    /// covers the instrument) so the caller can say so instead of substituting a vendor.
+    /// </summary>
+    private static ILevelsFeed? SelectFeed(
+        ILevelsRegistry registry, string instrumentId, string? preferredProviderKey)
+    {
+        if (string.IsNullOrWhiteSpace(preferredProviderKey))
+            return registry.ResolveFeed(instrumentId);
+
+        foreach (var candidate in registry.ResolveFeeds(instrumentId))
+            if (string.Equals(candidate.ProviderKey, preferredProviderKey, StringComparison.OrdinalIgnoreCase))
+                return candidate;
+        return null;
     }
 
     /// <summary>Drop the feed binding (feed disconnected); values become empty until rebound.</summary>
     public void Unbind()
     {
+        // Release the projection hold FIRST: a feed keeps a per-selection projection warm for
+        // as long as anyone holds it, so an indicator that unbinds without disposing would
+        // make the feed pay for a selection nothing is looking at, for the rest of the session.
+        _expiryHold?.Dispose();
+        _expiryHold = null;
+        _expiry = ExpirySelection.VendorDefault;
         _feed = null;
         _vendorSymbol = null;
         Reset();
@@ -176,6 +264,16 @@ internal sealed class GammaLevelsEngine
         var symbol = _vendorSymbol;
         if (feed is null || symbol is null) return GammaLevelsBarValues.Empty;
 
+        // A selection has no per-session history: the feed keeps only the CURRENT expiration
+        // board in memory, so there is nothing to slice yesterday's levels out of. Rather
+        // than paint all-expiration levels onto historical bars under a label that names one
+        // board, a selected reading applies to the chart's newest session and leaves history
+        // blank. Blank is recoverable by switching back; a mislabelled wall is not.
+        if (SelectingExpiry(feed) is { } selecting)
+            return isLatestBarSession
+                ? ComputeFrom(selecting.GetSnapshot(symbol, _expiry), session, chartClose, autoConvert)
+                : GammaLevelsBarValues.Empty;
+
         var snapshot = feed.GetSnapshot(symbol, session) ?? _lastApplied;
         if (snapshot is null)
         {
@@ -195,6 +293,21 @@ internal sealed class GammaLevelsEngine
         // re-measuring the basis against a chart price that has moved since the stamp made the
         // conversion drift with the market (live-observed 17.03 → 27.03 in four seconds on one
         // unchanged snapshot). Measure once per published stamp, then hold it.
+        return ComputeFrom(snapshot, session, chartClose, autoConvert);
+    }
+
+    /// <summary>
+    /// Project one snapshot for a session, reusing the cached result while the vendor's own
+    /// stamp is unchanged. Shared by the default and selected paths so the conversion is
+    /// measured once per published stamp in both.
+    /// </summary>
+    private GammaLevelsBarValues ComputeFrom(
+        GammaLevelSnapshot? snapshot, DateOnly session, double chartClose, bool autoConvert)
+    {
+        if (snapshot is null) return GammaLevelsBarValues.Empty;
+
+        // Keyed on the vendor's stamp, NOT object identity: see Compute. Switching selection
+        // cannot alias here because a selection change rebinds, and Reset clears this cache.
         bool sameData = _cachedSource is not null
                         && _cachedSource.AsOfUtc == snapshot.AsOfUtc
                         && session == _cachedSession;

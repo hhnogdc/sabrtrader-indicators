@@ -10,11 +10,11 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>Time scope a <see cref="MaxLevels"/> profile is reset over (ATAS Period).</summary>
+/// <summary>Time scope a <see cref="MaxLevels"/> profile is reset over (the original Period).</summary>
 public enum MaxLevelsPeriod { CurrentDay = 0, LastDay = 1, CurrentWeek = 2, CurrentMonth = 3, Contract = 4 }
 
 /// <summary>
-/// Max Levels — 1-on-1 port of ATAS <c>MaxLevels</c>. Tracks the single price level carrying the
+/// Max Levels. Tracks the single price level carrying the
 /// maximum of a selectable order-flow <see cref="ProfileMetric"/> (Volume / Delta / Bid / Ask /
 /// Ticks) over a chosen <see cref="Period"/> (current/last day, current week/month, or the whole
 /// contract) and plots it as a horizontal level.
@@ -56,11 +56,11 @@ public sealed class MaxLevels : IndicatorBase, IChartCustomRender
 
     public MaxLevels(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // ATAS parity: the max level drifts tick-by-tick with the developing
+        // The original parity: the max level drifts tick-by-tick with the developing
         // bar. The OnBarClose default freezes it one bar behind.
         Calculate = CalculationMode.OnEachTick;
         OrderFlowResolution = OrderFlowResolution.Second;
-        AddPlot(new Plot("Max Level", _level, PlotStyle.Step, NTColors.Gold, 1.5)
+        AddPlot(new Plot("Max Level", _level, PlotStyle.Step, PlotColors.Gold, 1.5)
         { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "price level holding the maximum metric over the period") });
     }
 

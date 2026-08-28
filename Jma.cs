@@ -23,7 +23,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///   e2 = (e0 + phaseRatio·e1 − jma₋₁)·(1−alpha)² + alpha²·e2₋₁
 ///   jma = e2 + jma₋₁
 ///
-/// Seeded NT-style with the first input (jma[0] = src[0]) so there is no NaN
+/// Seeded original-style with the first input (jma[0] = src[0]) so there is no NaN
 /// warmup and no startup spike — matches <see cref="Ema"/>'s convention.
 ///
 /// Params: Length (smoothing window), Phase (−100..100, lag↔overshoot trade),
@@ -48,7 +48,7 @@ public sealed class Jma : IndicatorBase
 
     public Jma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("JMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("JMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Length", Description = "Smoothing window (larger = smoother/slower).",
@@ -100,7 +100,7 @@ public sealed class Jma : IndicatorBase
     {
         if (!_hasValue)
         {
-            // NT-style seed: first bar = first input. No NaN warmup, no startup spike.
+            // original-style seed: first bar = first input. No NaN warmup, no startup spike.
             _e0 = src; _e1 = 0; _e2 = 0; _jma = src;
             _hasValue = true;
             _output.Append(_jma);

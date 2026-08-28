@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Forecast Oscillator — 1-on-1 port of NT @FOSC (Chande).
+/// Forecast Oscillator.
 /// Value = 100·(Input − TSF(Input,Period)) / Input. Input ≤ 0 skips.
 /// Defaults Period=14, DarkCyan, zero line, sub-panel.
 /// </summary>
@@ -22,8 +22,8 @@ public sealed class Fosc : IndicatorBase, IIndicatorPanelHint
 
     public Fosc(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("FOSC", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("FOSC", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

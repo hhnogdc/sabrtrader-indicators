@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Performance (PERF) — 1-on-1 port of NT @Performance.
+/// Performance (PERF).
 /// Value = ((current − firstValue) / firstValue) · 100. Percent change of the current
 /// value relative to the first value in the loaded series. No parameters.
 /// Defaults: DodgerBlue, sub-panel.
@@ -23,7 +23,7 @@ public sealed class Performance : IndicatorBase, IIndicatorPanelHint
 
     public Performance(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Performance", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Performance", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

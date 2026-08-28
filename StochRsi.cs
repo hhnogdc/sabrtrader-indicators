@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Stochastic RSI — 1-on-1 port of NT @StochRSI.
+/// Stochastic RSI.
 /// Value = (RSI − minRSI) / (maxRSI − minRSI) over Period bars. Range 0..1.
 /// Defaults Period=14, DarkCyan, lines 0.2 (Crimson), 0.5 (DodgerBlue),
 /// 0.8 (Crimson), sub-panel.
@@ -25,10 +25,10 @@ public sealed class StochRsi : IndicatorBase, IIndicatorPanelHint
 
     public StochRsi(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("StochRSI", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0.8/0.2") });
-        AddLine("Overbought", 0.8, NTColors.Crimson);
-        AddLine("Neutral",    0.5, NTColors.DodgerBlue);
-        AddLine("Oversold",   0.2, NTColors.Crimson);
+        AddPlot(new Plot("StochRSI", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0.8/0.2") });
+        AddLine("Overbought", 0.8, PlotColors.Crimson);
+        AddLine("Neutral",    0.5, PlotColors.DodgerBlue);
+        AddLine("Oversold",   0.2, PlotColors.Crimson);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

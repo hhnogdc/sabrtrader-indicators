@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Williams Alligator — 1-on-1 port of Skender Alligator.
+/// Williams Alligator — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Three SMMA (Wilder) lines on HL2 (Median price), each displaced FORWARD by their own offset:
 ///   Jaw    = SMMA(HL2, 13)  displaced +8 bars
 ///   Teeth  = SMMA(HL2, 8)   displaced +5 bars
@@ -47,9 +47,9 @@ public sealed class Alligator : IndicatorBase, IChartCustomRender
         // line). Visible = true so the settings show/hide toggle gates each displaced line (and
         // the line-style picker works); the per-bar plot values still expose the un-shifted
         // SMMA for chaining regardless of Visible.
-        _jawPlot   = new Plot("Jaw",   _jaw,   PlotStyle.Line, NTColors.Blue,      1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
-        _teethPlot = new Plot("Teeth", _teeth, PlotStyle.Line, NTColors.Red,       1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
-        _lipsPlot  = new Plot("Lips",  _lips,  PlotStyle.Line, NTColors.LimeGreen, 1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
+        _jawPlot   = new Plot("Jaw",   _jaw,   PlotStyle.Line, PlotColors.Blue,      1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
+        _teethPlot = new Plot("Teeth", _teeth, PlotStyle.Line, PlotColors.Red,       1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
+        _lipsPlot  = new Plot("Lips",  _lips,  PlotStyle.Line, PlotColors.LimeGreen, 1.0) { IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
         AddPlot(_jawPlot); AddPlot(_teethPlot); AddPlot(_lipsPlot);
     }
 

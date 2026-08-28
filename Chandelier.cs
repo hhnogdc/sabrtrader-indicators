@@ -9,7 +9,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum ChandelierDirection { Long, Short }
 
 /// <summary>
-/// Chandelier Exit — 1-on-1 port of Skender Chandelier.
+/// Chandelier Exit — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   Long  : maxHigh(P) − Multiplier · ATR(P)
 ///   Short : minLow(P)  + Multiplier · ATR(P)
 /// Defaults Period=22, Multiplier=3, Direction=Long. Goldenrod overlay.
@@ -32,7 +32,7 @@ public sealed class Chandelier : IndicatorBase
 
     public Chandelier(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Chandelier Exit", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Chandelier Exit", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",     MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Range Counter — 1-on-1 port of NT @RangeCounter. Per-bar high-low
+/// Range Counter. Per-bar high-low
 /// range as a histogram. DodgerBlue 2px, sub-panel.
 /// </summary>
 [IndicatorDescription("Range Counter: per-bar High - Low rendered as a histogram. Visualises volatility bar-by-bar.")]
@@ -20,7 +20,7 @@ public sealed class RangeCounter : IndicatorBase, IIndicatorPanelHint
 
     public RangeCounter(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Range Counter", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, 0, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Range Counter", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, 0, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

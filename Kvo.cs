@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Klinger Volume Oscillator (KVO) — 1-on-1 port of Skender Kvo.
+/// Klinger Volume Oscillator (KVO) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   hlc          = High + Low + Close
 ///   dm           = High − Low                          (daily measurement)
 ///   t            = sign(hlc[i] − hlc[i−1])              (trend direction)
@@ -48,9 +48,9 @@ public sealed class Kvo : IndicatorBase, IIndicatorPanelHint
 
     public Kvo(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("KVO",    _osc,    PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("KVO",    _osc,    PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast",          MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

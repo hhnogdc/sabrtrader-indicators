@@ -9,7 +9,7 @@ using SabrTrader.Pipeline.Plots;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Rendering half of <see cref="SslChannel"/> — a 1-on-1 translation of NT
+/// Rendering half of <see cref="SslChannel"/> — a translation of the original
 /// <c>OnRender</c> and its helpers (<c>RenderEntry</c>, <c>RenderStatistics</c>): the
 /// per-bar trend-coloured channel lines + translucent fill, the reversal (R) /
 /// pull-back (PB) markers, entry &amp; max-favourable target lines with tick labels, and
@@ -34,9 +34,9 @@ public sealed partial class SslChannel
     private static ChartColor WithAlpha(ChartColor c, byte a) => new(c.R, c.G, c.B, a);
 
     /// <summary>
-    /// NT <c>DrawTextLabel</c>: a text layout of <paramref name="width"/> px anchored at
+    /// the original <c>DrawTextLabel</c>: a text layout of <paramref name="width"/> px anchored at
     /// (<paramref name="x"/>, <paramref name="topY"/> − 2). Centre alignment centres the
-    /// glyphs within [x, x+width] (NT's default); leading left-aligns at x.
+    /// glyphs within [x, x+width] (the original's default); leading left-aligns at x.
     /// </summary>
     private void DrawLabel(string text, double x, double topY, double width, double size, ChartColor color, bool center = true)
     {
@@ -81,7 +81,7 @@ public sealed partial class SslChannel
         _r.FillPolygon(pts, color);
     }
 
-    // ─── Main pass (NT OnRender) ─────────────────────────────────────────────
+    // ─── Main pass (the original OnRender) ─────────────────────────────────────────────
 
     public void OnCustomRender(IIndicatorRenderContext ctx)
     {
@@ -106,7 +106,7 @@ public sealed partial class SslChannel
                 if (Plots[0].Visible) RenderChannelLine(count, _upV, Plots[0].Style);
                 if (Plots[1].Visible) RenderChannelLine(count, _downV, Plots[1].Style);
 
-                // NT OnRender: per-entry markers, then the statistics panel.
+                // The original OnRender: per-entry markers, then the statistics panel.
                 double radius = Math.Max(TextW("PB", FontSize), TextH("PB", FontSize));
                 for (int i = 0; i < _entries.Count; i++)
                 {
@@ -121,7 +121,7 @@ public sealed partial class SslChannel
         }
         catch (Exception)
         {
-            // NT OnRender swallows everything per frame.
+            // The original OnRender swallows everything per frame.
         }
     }
 
@@ -173,7 +173,7 @@ public sealed partial class SslChannel
         }
     }
 
-    // ─── Per-entry markers + lines + tick labels (NT RenderEntry) ────────────
+    // ─── Per-entry markers + lines + tick labels (the original RenderEntry) ────────────
 
     private void RenderEntry(SslEntry entry, double radius)
     {
@@ -235,7 +235,7 @@ public sealed partial class SslChannel
         }
     }
 
-    // ─── Statistics panel (NT RenderStatistics) ──────────────────────────────
+    // ─── Statistics panel (the original RenderStatistics) ──────────────────────────────
 
     private void RenderStatistics()
     {

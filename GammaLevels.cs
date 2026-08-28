@@ -35,6 +35,16 @@ public sealed class GammaLevels : IndicatorBase,
     private ILevelsRegistry? _registry;
     private ILevelsFeed? _subscribedFeed;
     private GammaLevelsBarValues _latest = GammaLevelsBarValues.Empty;
+    private string _levelsProvider = string.Empty;
+    private string _levelExpiry = string.Empty;
+
+    /// <summary>
+    /// The registry to read from. <see cref="_registry"/> is claimed (and hooked for late
+    /// connects) by <see cref="BindFeed"/> on the indicator's own thread; the toolbar menu
+    /// runs on the UI thread and only READS, so it falls back to the same ambient instance
+    /// rather than racing that hook.
+    /// </summary>
+    private ILevelsRegistry ActiveRegistry => _registry ?? LevelsAmbient.Registry;
 
     [IndicatorParameter(DisplayName = "Convert index levels",
         Description = "When the provider computes levels on an index/ETF proxy (QQQ for NQ, SPY for ES), scale them to chart prices using the snapshot's underlying price. Leave on unless the provider serves native futures levels.",
@@ -45,6 +55,38 @@ public sealed class GammaLevels : IndicatorBase,
         Description = "Also plot the provider's additional levels (ranked GEX strikes, 0DTE magnet, max OI, …) as thin gray lines next to the three primary levels.",
         Group = "Levels", Order = 1)]
     public bool ShowExtras { get; set; } = true;
+
+    [IndicatorParameter(DisplayName = "Levels provider",
+        Description = "Which connected Levels vendor feeds this chart, by provider key. Empty = whichever covering provider connected first. Pick it from the chart's Gamma toolbar menu, which lists the vendors connected right now.",
+        Group = "Levels", Order = 2,
+        // The vendor list is whatever is connected at this moment, so a static settings-dialog
+        // row cannot render it; the toolbar menu is the single editing surface.
+        Editor = ParameterEditorKind.Hidden,
+        ContentKeyDefault = "")]
+    public string LevelsProvider
+    {
+        get => _levelsProvider;
+        // Restored values arrive from chart templates, workspaces and declarative overrides,
+        // and the catalog's coercion passes a JSON null straight through. Empty is the value
+        // that MEANS Auto, so normalise here once instead of null-checking every read.
+        set => _levelsProvider = value ?? string.Empty;
+    }
+
+    [IndicatorParameter(DisplayName = "Expiration",
+        Description = "Which option expirations the levels are computed from. Empty = the provider's own reading, which for a full-chain provider sums every expiration. Pick it from the chart's Gamma toolbar menu, which lists the boards the provider is serving right now. Only providers that can slice by expiration offer it.",
+        Group = "Levels", Order = 3,
+        // Same reason as LevelsProvider: the live board list cannot be rendered by a static
+        // settings-dialog row, so the toolbar menu is the single editing surface.
+        Editor = ParameterEditorKind.Hidden,
+        ContentKeyDefault = "")]
+    public string LevelExpiry
+    {
+        get => _levelExpiry;
+        // Restored values arrive from chart templates and workspaces, where a JSON null
+        // passes straight through the catalog's coercion. Empty is the value that MEANS
+        // the provider default, so normalise once here rather than at every read.
+        set => _levelExpiry = value ?? string.Empty;
+    }
 
     [IndicatorParameter(DisplayName = "Show labels",
         Description = "Name each level at the right edge of the chart.",
@@ -105,17 +147,17 @@ public sealed class GammaLevels : IndicatorBase,
         : base(parent, bars: bars)
     {
         var levelSemantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null);
-        AddPlot(new Plot("Call Wall", _callWall, PlotStyle.Line, NTColors.Crimson, 1.5) { Semantics = levelSemantics });
-        AddPlot(new Plot("Put Wall", _putWall, PlotStyle.Line, NTColors.LimeGreen, 1.5) { Semantics = levelSemantics });
-        AddPlot(new Plot("Gamma Flip", _hvl, PlotStyle.Line, NTColors.Gold, 1.5) { Semantics = levelSemantics });
-        AddPlot(new Plot("EM High", _emHigh, PlotStyle.Dashed, NTColors.SteelBlue, 1.0) { Semantics = levelSemantics });
-        AddPlot(new Plot("EM Low", _emLow, PlotStyle.Dashed, NTColors.SteelBlue, 1.0) { Semantics = levelSemantics });
+        AddPlot(new Plot("Call Wall", _callWall, PlotStyle.Line, PlotColors.Crimson, 1.5) { Semantics = levelSemantics });
+        AddPlot(new Plot("Put Wall", _putWall, PlotStyle.Line, PlotColors.LimeGreen, 1.5) { Semantics = levelSemantics });
+        AddPlot(new Plot("Gamma Flip", _hvl, PlotStyle.Line, PlotColors.Gold, 1.5) { Semantics = levelSemantics });
+        AddPlot(new Plot("EM High", _emHigh, PlotStyle.Dashed, PlotColors.SteelBlue, 1.0) { Semantics = levelSemantics });
+        AddPlot(new Plot("EM Low", _emLow, PlotStyle.Dashed, PlotColors.SteelBlue, 1.0) { Semantics = levelSemantics });
 
         _extras = new ChunkedSeries<double>[GammaLevelsEngine.MaxExtraLevels];
         for (int i = 0; i < _extras.Length; i++)
         {
             _extras[i] = new ChunkedSeries<double>();
-            AddPlot(new Plot($"Level {i + 1}", _extras[i], PlotStyle.Dotted, NTColors.Gray, 1.0) { Semantics = levelSemantics });
+            AddPlot(new Plot($"Level {i + 1}", _extras[i], PlotStyle.Dotted, PlotColors.Gray, 1.0) { Semantics = levelSemantics });
         }
     }
 
@@ -181,9 +223,146 @@ public sealed class GammaLevels : IndicatorBase,
         return items;
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<ToolbarMenuItem> BuildMenu() => new ToolbarMenuItem[]
+    /// <summary>
+    /// The chart's instrument, or null before the init pass has run. The host builds this
+    /// menu as soon as the indicator is ATTACHED, which is earlier than "initialised":
+    /// <c>ChartIndicatorRegistry.AddDeferred</c> (workspace restore, in-place reload) raises
+    /// PlotsChanged and hands the init pass to a scheduler, and an inert premium indicator
+    /// never gets an init pass at all. Everything the menu reads off the chart has to cope
+    /// with that.
+    /// </summary>
+    private string? ChartInstrumentId => Bars is { } bars ? bars.Spec.InstrumentId : null;
+
+    /// <summary>
+    /// The vendor picker: "Auto" plus every connected Levels feed that covers THIS chart's
+    /// instrument. Vendors overlap on purpose (FlashAlpha and QuantData both serve the whole
+    /// US board), and the registry can only answer with the earliest-connected one, so which
+    /// vendor a chart reads has to be the user's call. Rebuilt per open, so the rows are what
+    /// is connected right now.
+    ///
+    /// <para>Before the init pass there is no instrument to resolve vendors against, so the
+    /// group is the Auto row plus the user's pin. <see cref="BindFeed"/> raises
+    /// <see cref="MenuChanged"/> once the chart's instrument is known, which rebuilds this
+    /// with the real vendor rows.</para>
+    /// </summary>
+    private ToolbarRadioGroup BuildProviderGroup()
     {
+        var options = new List<ToolbarRadioOption>(4)
+        {
+            new(T("ProviderAuto", "Auto (first connected)"),
+                () => LevelsProvider.Length == 0,
+                () => SelectProvider(string.Empty)),
+        };
+
+        string pinned = LevelsProvider;
+        bool pinnedIsConnected = false;
+        foreach (var feed in ChartInstrumentId is { } instrumentId
+                     ? ActiveRegistry.ResolveFeeds(instrumentId)
+                     : [])
+        {
+            string key = feed.ProviderKey;
+            pinnedIsConnected |= string.Equals(key, pinned, StringComparison.OrdinalIgnoreCase);
+            options.Add(new ToolbarRadioOption(feed.DisplayName,
+                () => string.Equals(LevelsProvider, key, StringComparison.OrdinalIgnoreCase),
+                () => SelectProvider(key)));
+        }
+
+        // A pin the user can still SEE is a pin they can undo. Dropping the row would leave a
+        // chart with no levels and nothing on screen saying why.
+        if (pinned.Length > 0 && !pinnedIsConnected)
+            options.Add(new ToolbarRadioOption(
+                $"{pinned} ({T("ProviderNotConnected", "not connected")})",
+                () => true, () => { }, IsEnabled: false));
+
+        return new ToolbarRadioGroup(T("Provider", "Levels provider :"), options);
+    }
+
+    /// <summary>
+    /// Pin a Levels vendor for this chart (empty key = back to Auto) and rebind at once. The
+    /// previous feed is dropped unconditionally: leaving its cached walls on screen after the
+    /// user chose a different vendor is the same wrong-vendor lie from the other side.
+    /// </summary>
+    private void SelectProvider(string providerKey)
+    {
+        if (string.Equals(LevelsProvider, providerKey, StringComparison.OrdinalIgnoreCase)) return;
+        LevelsProvider = providerKey;
+
+        UnsubscribeFeed();
+        _engine.Unbind();
+        if (_engine.TryBind(ActiveRegistry, Bars.Spec.InstrumentId, IsContinuousFuturesChart, providerKey, SelectedExpiry))
+            SubscribeFeed(_engine.Feed!);
+
+        RaiseMenuChanged();
+        RecalculateRequested?.Invoke();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<ToolbarMenuItem> BuildMenu()
+    {
+        var items = new List<ToolbarMenuItem> { BuildProviderGroup() };
+        // Only vendors that can actually slice get the row; the rest keep today's menu.
+        if (BuildExpiryGroup() is { } expiry) items.Add(expiry);
+        items.AddRange(CommonMenuItems());
+        return items;
+    }
+
+    /// <summary>
+    /// The expiration picker for the bound vendor, or null when it cannot slice by
+    /// expiration. Rebuilt per open so the dated rows are the boards live right now.
+    /// </summary>
+    private ToolbarRadioGroup? BuildExpiryGroup()
+        => GammaLevelsExpiryMenu.Build(
+            _engine.Feed, _engine.VendorSymbol, LevelExpiry, MenuSessionDate, SelectExpiry, T);
+
+    /// <summary>
+    /// The session the expiration menu counts days-to-expiry from. The chart's newest session,
+    /// the same clock every other date decision in this indicator uses — NOT UTC today, which
+    /// rolls over during the US evening and would label a board that expires today as
+    /// tomorrow's, and hide it as already expired.
+    /// </summary>
+    private DateOnly MenuSessionDate
+    {
+        get
+        {
+            var bars = Bars;
+            return bars is { Count: > 0 }
+                ? SessionDateFor(bars[0].EndUtc)
+                : SessionDateFor(DateTime.UtcNow);
+        }
+    }
+
+    /// <summary>
+    /// Switch this chart to another expiration selection and rebind at once. The previous
+    /// levels are dropped unconditionally, for the same reason switching vendor drops them:
+    /// leaving one board's walls on screen after the user picked another is the same lie.
+    /// </summary>
+    private void SelectExpiry(string token)
+    {
+        if (string.Equals(LevelExpiry, token, StringComparison.OrdinalIgnoreCase)) return;
+        LevelExpiry = token;
+
+        UnsubscribeFeed();
+        _engine.Unbind();
+        if (_engine.TryBind(ActiveRegistry, Bars.Spec.InstrumentId, IsContinuousFuturesChart,
+                LevelsProvider, SelectedExpiry))
+            SubscribeFeed(_engine.Feed!);
+
+        RaiseMenuChanged();
+        RecalculateRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// The parameter as a selection. An empty or unparseable token means the vendor's own
+    /// unsliced reading, which is what every chart written before this feature carries.
+    /// </summary>
+    private ExpirySelection SelectedExpiry
+        => ExpirySelection.TryParse(LevelExpiry, out var selection)
+            ? selection
+            : ExpirySelection.VendorDefault;
+
+    private ToolbarMenuItem[] CommonMenuItems() => new ToolbarMenuItem[]
+    {
+        new ToolbarSeparator(),
         new ToolbarSubmenu(T("Levels", "Levels"), BuildLevelItems(),
             () => Plots.Any(p => p.Visible)),
         new ToolbarSeparator(),
@@ -228,7 +407,7 @@ public sealed class GammaLevels : IndicatorBase,
 
         // One diagnostic line per replay: answers "why is nothing drawn" from the Log tab
         // (bar sessions vs the provider's snapshot session is the usual mismatch).
-        var snapshot = _engine.Feed?.GetSnapshot(_engine.VendorSymbol ?? string.Empty);
+        var snapshot = _engine.CurrentSnapshot;
         ctx.Print($"Gamma Levels: replayed {bars.Count} bars" +
                   (bars.Count > 0
                       ? $" (newest end {bars[0].EndUtc:yyyy-MM-dd HH:mm}Z, session {SessionDateFor(bars[0].EndUtc):yyyy-MM-dd})"
@@ -254,6 +433,11 @@ public sealed class GammaLevels : IndicatorBase,
     public override void OnDispose()
     {
         UnsubscribeFeed();
+        // Unbind, not just unsubscribe: the engine holds the feed's per-selection projection
+        // open, and a feed keeps one warm for as long as anyone holds it. Skipping this leaks
+        // the hold for the life of the process, so every closed chart would leave the vendor
+        // still computing (and paying for) an expiration nothing is looking at.
+        _engine.Unbind();
         if (_registry != null)
         {
             _registry.FeedsChanged -= OnFeedsChanged;
@@ -318,16 +502,45 @@ public sealed class GammaLevels : IndicatorBase,
         }
 
         string instrumentId = Bars.Spec.InstrumentId;
-        if (_engine.TryBind(_registry, instrumentId, IsContinuousFuturesChart))
+        if (_engine.TryBind(_registry, instrumentId, IsContinuousFuturesChart, LevelsProvider, SelectedExpiry))
         {
             SubscribeFeed(_engine.Feed!);
-            ctx.Print($"Gamma Levels: using {_engine.Feed!.DisplayName} ({_engine.VendorSymbol}) for {instrumentId}.");
+            ctx.Print($"Gamma Levels: using {_engine.Feed!.DisplayName} ({_engine.VendorSymbol}) " +
+                      $"for {instrumentId}.{OtherProvidersHint(instrumentId)}");
+        }
+        else if (LevelsProvider.Length > 0)
+        {
+            ctx.Print($"Gamma Levels: provider \"{LevelsProvider}\" is pinned for {instrumentId} but is not " +
+                      "connected — connect it under Connections → Levels, or pick another one from the " +
+                      "chart's Gamma menu (Levels provider).");
         }
         else
         {
             ctx.Print("Gamma Levels: no Levels provider connected for this instrument — " +
                       "add one under Connections → Levels; the indicator binds automatically.");
         }
+
+        // The toolbar seeded its dropdown when the indicator was ATTACHED, which is before
+        // this ran — so it is showing the no-instrument menu (Auto + pin, no expiry group).
+        // Now the chart's instrument and the bound feed are known, so the rows it could not
+        // compute exist. The host rebuilds this button's items off the back of this.
+        RaiseMenuChanged();
+    }
+
+    /// <summary>
+    /// Names the OTHER connected vendors covering this instrument. Overlapping coverage used to
+    /// be invisible: the earliest-connected feed won every chart and nothing said a second
+    /// vendor was standing right behind it with different levels.
+    /// </summary>
+    private string OtherProvidersHint(string instrumentId)
+    {
+        var others = ActiveRegistry.ResolveFeeds(instrumentId)
+            .Where(f => !ReferenceEquals(f, _engine.Feed))
+            .Select(f => f.DisplayName)
+            .ToArray();
+        return others.Length == 0
+            ? string.Empty
+            : $" Also covering it: {string.Join(", ", others)} — pick one under Gamma → Levels provider.";
     }
 
     private void OnFeedsChanged()
@@ -338,7 +551,7 @@ public sealed class GammaLevels : IndicatorBase,
         if (registry is null) return;
 
         var previous = _engine.Feed;
-        if (_engine.TryBind(registry, Bars.Spec.InstrumentId, IsContinuousFuturesChart))
+        if (_engine.TryBind(registry, Bars.Spec.InstrumentId, IsContinuousFuturesChart, LevelsProvider, SelectedExpiry))
         {
             if (!ReferenceEquals(previous, _engine.Feed))
             {
@@ -346,10 +559,12 @@ public sealed class GammaLevels : IndicatorBase,
                 RecalculateRequested?.Invoke();
             }
         }
-        else if (previous != null && registry.ResolveFeed(Bars.Spec.InstrumentId) is null)
+        else if (previous != null)
         {
-            // Our feed disconnected: keep the last-drawn levels (stale but honest via the
-            // label badge) rather than blanking the chart mid-session.
+            // Nothing left that we MAY bind to: our feed disconnected, or the pinned vendor did.
+            // Keep the last-drawn levels (stale but honest via the label badge) rather than
+            // blanking the chart mid-session. Deliberately not "no feed covers it any more" —
+            // with a pin in place another vendor still covering the symbol is not our feed.
             UnsubscribeFeed();
         }
     }
@@ -416,12 +631,36 @@ public sealed class GammaLevels : IndicatorBase,
         if (source is null || ReferenceEquals(source, _namedFrom)) return;
         // Only the feed's CURRENT snapshot names the slots — historical sessions replaying
         // through Consume must not rename them to families that no longer apply.
-        if (!ReferenceEquals(source, _engine.Feed?.GetSnapshot(_engine.VendorSymbol ?? string.Empty))) return;
+        if (!ReferenceEquals(source, _engine.CurrentSnapshot)) return;
 
         _namedFrom = source;
+
+        // Name the expiration only when the SNAPSHOT says so, never from the selection that
+        // was requested. A provider that cannot slice reports VendorDefault, and drawing its
+        // full-chain wall under a "0 DTE" label would be a trading error, not a cosmetic one.
+        var prefix = ExpiryPrefix(source.Expiry);
+        Plots[0].Name = prefix + T("CallWall", "Call Wall");
+        Plots[1].Name = prefix + T("PutWall", "Put Wall");
+        Plots[2].Name = prefix + T("GammaFlip", "Gamma Flip");
+
         for (int i = 0; i < _extras.Length; i++)
             Plots[5 + i].Name = i < values.Extras.Count ? values.Extras[i].Label : $"Level {i + 1}";
     }
+
+    /// <summary>
+    /// How a snapshot's expiration reads in front of a level name ("0DTE ", "29Aug "), or
+    /// empty for a reading that spans the whole chain and therefore names nothing.
+    /// </summary>
+    private static string ExpiryPrefix(ExpirySelection expiry) => expiry.Kind switch
+    {
+        ExpirySelectionKind.WithinDays when expiry.Days == 0 => "0DTE ",
+        ExpirySelectionKind.WithinDays => $"{expiry.Days}DTE ",
+        ExpirySelectionKind.Nearest => "Front ",
+        ExpirySelectionKind.MonthlyOpex => "OPEX ",
+        ExpirySelectionKind.OnDate => expiry.Date.ToString("ddMMM",
+            System.Globalization.CultureInfo.CurrentCulture) + " ",
+        _ => string.Empty,
+    };
 
     private DateTimeOffset _lastPrintedAsOf;
 
@@ -434,7 +673,7 @@ public sealed class GammaLevels : IndicatorBase,
         if (source is null || source.AsOfUtc == _lastPrintedAsOf) return;
         // Only announce the feed's CURRENT snapshot — historical sessions replaying through
         // Consume would otherwise print one line per past day on every reload.
-        if (!ReferenceEquals(source, _engine.Feed?.GetSnapshot(_engine.VendorSymbol ?? string.Empty))) return;
+        if (!ReferenceEquals(source, _engine.CurrentSnapshot)) return;
 
         _lastPrintedAsOf = source.AsOfUtc;
         var ctx = Context;
@@ -528,7 +767,7 @@ public sealed class GammaLevels : IndicatorBase,
             && Plots[3].Visible && Plots[4].Visible)
         {
             BandFill.FillBetween(ctx.Renderer, ctx.Viewport, _emHigh, _emLow,
-                Bars.Count, BandFill.WithAlpha(NTColors.SteelBlue, 22));
+                Bars.Count, BandFill.WithAlpha(PlotColors.SteelBlue, 22));
         }
 
         if (ShowGlow && values.Source != null)
@@ -554,7 +793,7 @@ public sealed class GammaLevels : IndicatorBase,
 
         if (double.IsNaN(values.Hvl))
         {
-            var tint = values.Regime == GammaRegime.Positive ? NTColors.LimeGreen : NTColors.Crimson;
+            var tint = values.Regime == GammaRegime.Positive ? PlotColors.LimeGreen : PlotColors.Crimson;
             r.FillRect(area.X, area.Y, area.Width, area.Height,
                 BandFill.WithAlpha(tint, (byte)Math.Max(2, peak / 3)));
             return;
@@ -572,9 +811,9 @@ public sealed class GammaLevels : IndicatorBase,
             if (a == 0) continue;
             // +0.5px overlap between strips hides hairline seams on fractional pixel grids
             r.FillRect(area.X, flipY - (i + 1) * stripH, area.Width, stripH + 0.5,
-                BandFill.WithAlpha(NTColors.LimeGreen, a));
+                BandFill.WithAlpha(PlotColors.LimeGreen, a));
             r.FillRect(area.X, flipY + i * stripH, area.Width, stripH + 0.5,
-                BandFill.WithAlpha(NTColors.Crimson, a));
+                BandFill.WithAlpha(PlotColors.Crimson, a));
         }
         r.PopClip();
     }
@@ -617,8 +856,8 @@ public sealed class GammaLevels : IndicatorBase,
         if (_profileBars.Count == 0) return;
 
         byte alpha = (byte)Math.Clamp(ProfileOpacity, 10, 255);
-        var positive = BandFill.WithAlpha(NTColors.LimeGreen, alpha);
-        var negative = BandFill.WithAlpha(NTColors.Crimson, alpha);
+        var positive = BandFill.WithAlpha(PlotColors.LimeGreen, alpha);
+        var negative = BandFill.WithAlpha(PlotColors.Crimson, alpha);
         // Call/put sides take the wall plots' colors, so recoloring a wall recolors its side.
         var callSide = BandFill.WithAlpha(Plots[0].Color, alpha);
         var putSide = BandFill.WithAlpha(Plots[1].Color, alpha);
@@ -750,7 +989,7 @@ public sealed class GammaLevels : IndicatorBase,
         bool positive = regime == GammaRegime.Positive;
         string text = positive ? "γ+  POSITIVE · dampening" : "γ−  NEGATIVE · amplifying";
         if (stale) text += " (prev)";
-        var color = positive ? NTColors.LimeGreen : NTColors.Crimson;
+        var color = positive ? PlotColors.LimeGreen : PlotColors.Crimson;
 
         var r = ctx.Renderer;
         var area = ctx.PlotArea;

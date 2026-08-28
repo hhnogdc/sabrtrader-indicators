@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Percentage Price Oscillator — 1-on-1 port of NT @PPO.
+/// Percentage Price Oscillator.
 /// Default = 100·(EMA(Fast)−EMA(Slow))/EMA(Slow). Smoothed = EMA(Default, Smooth).
 /// Defaults Fast=12, Slow=26, Smooth=9. Default DimGray, Smoothed Crimson,
 /// zero line, sub-panel.
@@ -24,9 +24,9 @@ public sealed class Ppo : IndicatorBase, IIndicatorPanelHint
 
     public Ppo(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Default",  _default,  PlotStyle.Line, NTColors.DimGray, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Smoothed", _smoothed, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Default",  _default,  PlotStyle.Line, PlotColors.DimGray, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Smoothed", _smoothed, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast",   Description = "Fast EMA period.",   MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

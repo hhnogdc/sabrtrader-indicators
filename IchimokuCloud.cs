@@ -8,13 +8,13 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Ichimoku Cloud — port of NT @IchimokuCloud.
+/// Ichimoku Cloud.
 ///   Conversion (Tenkan) = (MAX(H, ConversionPeriod) + MIN(L, ConversionPeriod)) / 2
 ///   Base (Kijun)        = (MAX(H, BasePeriod) + MIN(L, BasePeriod)) / 2
 ///   Leading Span A      = (Conversion + Base) / 2
 ///   Leading Span B      = (MAX(H, LeadingSpanBPeriod) + MIN(L, LeadingSpanBPeriod)) / 2
 ///   Lagging (Chikou)    = Close
-/// NT visually displaces Conversion/Base back and Spans forward via
+/// the original visually displaces Conversion/Base back and Spans forward via
 /// Values[i][±N] writes; our framework emits at the current bar — the
 /// renderer is the right place for visual displacement. Math identical.
 /// Defaults ConversionPeriod=9, BasePeriod=26, LeadingSpanBPeriod=52,
@@ -38,8 +38,8 @@ public sealed class IchimokuCloud : IndicatorBase, IChartCustomRender
 
     public IchimokuCloud(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Conversion (Tenkan)", _conv,  PlotStyle.Line, NTColors.Blue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Base (Kijun)",        _base_, PlotStyle.Line, NTColors.Red,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Conversion (Tenkan)", _conv,  PlotStyle.Line, PlotColors.Blue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Base (Kijun)",        _base_, PlotStyle.Line, PlotColors.Red,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         // Span A/B/Lagging plots are visually DISPLACED, so they're painted by OnCustomRender,
         // not the standard PlotRenderPass. IsCustomRendered = true makes the standard pass skip
         // them (so they don't paint twice at the native, un-displaced bar position); Visible =
@@ -49,12 +49,12 @@ public sealed class IchimokuCloud : IndicatorBase, IChartCustomRender
         // opacity back for the cloud fill.
         //
         // Default alpha 0x55 (~33%) on the Senkou plots so the cloud band is translucent
-        // out of the box (NT-style). Users tune via the settings dialog's Opacity column.
-        var spanADefault = new ChartColor(NTColors.LimeGreen.R, NTColors.LimeGreen.G, NTColors.LimeGreen.B, 0x55);
-        var spanBDefault = new ChartColor(NTColors.Red.R,       NTColors.Red.G,       NTColors.Red.B,       0x55);
+        // out of the box (original-style). Users tune via the settings dialog's Opacity column.
+        var spanADefault = new ChartColor(PlotColors.LimeGreen.R, PlotColors.LimeGreen.G, PlotColors.LimeGreen.B, 0x55);
+        var spanBDefault = new ChartColor(PlotColors.Red.R,       PlotColors.Red.G,       PlotColors.Red.B,       0x55);
         _spanAPlot = new Plot("Leading (Senkou) Span A", _spanA, PlotStyle.Line, spanADefault,    1.0) { Visible = true, IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
         _spanBPlot = new Plot("Leading (Senkou) Span B", _spanB, PlotStyle.Line, spanBDefault,    1.0) { Visible = true, IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
-        _lagPlot   = new Plot("Lagging (Chikou)",        _lag,   PlotStyle.Line, NTColors.Green,  1.0) { Visible = true, IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
+        _lagPlot   = new Plot("Lagging (Chikou)",        _lag,   PlotStyle.Line, PlotColors.Green,  1.0) { Visible = true, IsCustomRendered = true, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) };
         AddPlot(_spanAPlot); AddPlot(_spanBPlot); AddPlot(_lagPlot);
     }
 

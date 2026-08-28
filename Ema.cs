@@ -5,10 +5,9 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Exponential Moving Average — 1-on-1 port of NinjaTrader's
-/// <c>@EMA</c> built-in.
+/// Exponential Moving Average.
 ///
-/// NT formula (no SMA seed): bar 0 → <c>Value[0] = Input[0]</c>.
+/// Recursive form (no SMA seed): bar 0 → <c>Value[0] = Input[0]</c>.
 /// Subsequent bars: <c>Value[0] = α·Input[0] + (1-α)·Value[1]</c>
 /// where <c>α = 2 / (Period + 1)</c>. Result: every bar has a
 /// defined value from bar 0 (no NaN warmup).
@@ -16,7 +15,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// Default plot: Goldenrod, line width 1, name "EMA".
 /// Range: Period in [1, int.MaxValue].
 /// </summary>
-[IndicatorDescription("Exponential Moving Average: α·Input + (1−α)·prev, α = 2/(Period+1). NT-style seeding with the first input — every bar has a value from bar 0 (no NaN warmup).")]
+[IndicatorDescription("Exponential Moving Average: α·Input + (1−α)·prev, α = 2/(Period+1). original-style seeding with the first input — every bar has a value from bar 0 (no NaN warmup).")]
 [IndicatorCategory(IndicatorCategory.Trend)]
 [IndicatorInput(IndicatorInputKind.Scalar)]
 public sealed class Ema : IndicatorBase
@@ -35,7 +34,7 @@ public sealed class Ema : IndicatorBase
             name: "EMA",
             values: _output,
             style: PlotStyle.Line,
-            color: NTColors.Goldenrod,
+            color: PlotColors.Goldenrod,
             lineWidthPx: 1.0)
         { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
@@ -50,7 +49,7 @@ public sealed class Ema : IndicatorBase
     public ISeries<double> Output =>
         _outputAsBarSourced ??= new IndicatorOutputSeries(_output, Bars);
 
-    /// <summary>NT's EMA emits a value on every bar (seeded with the first input). Always true after the first bar.</summary>
+    /// <summary>The original's EMA emits a value on every bar (seeded with the first input). Always true after the first bar.</summary>
     public bool IsSeeded => _hasValue;
 
     /// <summary>Latest EMA value. Equivalent to <c>Output[0]</c>.</summary>
@@ -90,7 +89,7 @@ public sealed class Ema : IndicatorBase
     {
         if (!_hasValue)
         {
-            // NT: first bar = first input (no SMA seeding).
+            // The original: first bar = first input (no SMA seeding).
             _value = input;
             _hasValue = true;
             _output.Append(_value);

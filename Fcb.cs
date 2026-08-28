@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Fractal Chaos Bands (FCB) — 1-on-1 port of Skender Fcb.
+/// Fractal Chaos Bands (FCB) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Tracks the most recent Williams Fractal pivot for the upper (bearish pivot = price ceiling)
 /// and lower (bullish pivot = price floor) bands, held forward until a new pivot fires.
 /// Defaults WindowSpan=2.
@@ -28,8 +28,8 @@ public sealed class Fcb : IndicatorBase
 
     public Fcb(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("FCB Upper", _upper, PlotStyle.Line, NTColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("FCB Lower", _lower, PlotStyle.Line, NTColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("FCB Upper", _upper, PlotStyle.Line, PlotColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("FCB Lower", _lower, PlotStyle.Line, PlotColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "WindowSpan", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

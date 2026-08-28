@@ -6,11 +6,11 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// ADXR — port of NT @ADXR.
+/// ADXR.
 /// Value = (ADX[0] + ADX[Interval bars ago]) / 2, where the ADX child uses
 /// <see cref="Period"/> and the lookback uses a SEPARATE <see cref="Interval"/>
-/// (NT defaults Period=14, Interval=10). During warm-up (bar &lt; Interval) the
-/// lookback clamps to the oldest available ADX, matching NT's
+/// (the original defaults Period=14, Interval=10). During warm-up (bar &lt; Interval) the
+/// lookback clamps to the oldest available ADX, matching the original's
 /// <c>adx[CurrentBar]</c>. Single plot DarkCyan + 25/75 threshold lines, sub-panel.
 /// </summary>
 [IndicatorDescription("ADX Rating. Smoothed momentum gauge equal to (ADX[now] + ADX[Interval bars ago]) / 2 that filters out short-term ADX whipsaws and confirms longer-term trend strength.")]
@@ -27,19 +27,19 @@ public sealed class Adxr : IndicatorBase, IIndicatorPanelHint
 
     public Adxr(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("ADXR", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "25 strong / 75 very strong trend") });
-        // NT @ADXR.cs:34-35 — same threshold lines as ADX; unbounded, so they
+        AddPlot(new Plot("ADXR", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "25 strong / 75 very strong trend") });
+        // The original @ADXR.cs:34-35 — same threshold lines as ADX; unbounded, so they
         // must not drive the panel scale.
         AddLine("Strong Trend",      25, new ChartColor(0x6A, 0x5A, 0xCD), participatesInAutoScale: false);  // SlateBlue
-        AddLine("Very Strong Trend", 75, NTColors.Goldenrod,               participatesInAutoScale: false);
+        AddLine("Very Strong Trend", 75, PlotColors.Goldenrod,               participatesInAutoScale: false);
     }
 
     [IndicatorParameter(DisplayName = "Interval", MinValue = 1, MaxValue = int.MaxValue, Step = 1,
-        Description = "Lookback distance (bars) for the second ADX term. NT default 10.")]
+        Description = "Lookback distance (bars) for the second ADX term. The original default 10.")]
     public int Interval { get; set; } = 10;
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1,
-        Description = "ADX smoothing period. NT default 14.")]
+        Description = "ADX smoothing period. The original default 14.")]
     public int Period { get; set; } = 14;
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);
@@ -59,7 +59,7 @@ public sealed class Adxr : IndicatorBase, IIndicatorPanelHint
         for (int i = 0; i < n; i++)
         {
             int b = n - 1 - i;
-            // NT: bar < Interval → adx[CurrentBar] (oldest); else adx[Interval].
+            // The original: bar < Interval → adx[CurrentBar] (oldest); else adx[Interval].
             int lookback = _barIdx < Interval ? _barIdx : Interval;
             _output.Append((_adx.Output[b] + _adx.Output[b + lookback]) / 2.0);
             _barIdx++;

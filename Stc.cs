@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Schaff Trend Cycle (STC) — 1-on-1 port of Skender Stc.
+/// Schaff Trend Cycle (STC) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Pipeline:
 ///   1. MACD = EMA(Close, Fast) − EMA(Close, Slow)  (signal not used)
 ///   2. raw %K  = 100·(MACD − minMACD) / (maxMACD − minMACD) over CyclePeriods
@@ -37,9 +37,9 @@ public sealed class Stc : IndicatorBase, IIndicatorPanelHint
 
     public Stc(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("STC", _output, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
-        AddLine("Overbought", 75, NTColors.DarkGray);
-        AddLine("Oversold",   25, NTColors.DarkGray);
+        AddPlot(new Plot("STC", _output, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddLine("Overbought", 75, PlotColors.DarkGray);
+        AddLine("Oversold",   25, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "CyclePeriods", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

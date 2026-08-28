@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Relative Volatility Index — 1-on-1 port of NT @RVI (Dorsey).
+/// Relative Volatility Index.
 /// Up/Down accumulators (Wilder smoothing) of StdDev(High,10) and
 /// StdDev(Low,10) split by direction; RVI = (rviH + rviL)/2.
 /// Bar 0 → 50. Defaults Period=14. Goldenrod, 50 ref line, sub-panel.
@@ -27,8 +27,8 @@ public sealed class Rvi : IndicatorBase, IIndicatorPanelHint
 
     public Rvi(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("RVI", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
-        AddLine("Signal", 50, NTColors.DarkGray);
+        AddPlot(new Plot("RVI", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
+        AddLine("Signal", 50, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

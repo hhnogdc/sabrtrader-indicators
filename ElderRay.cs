@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Elder Ray Index — 1-on-1 port of Skender ElderRay.
+/// Elder Ray Index — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   ema       = EMA(Close, LookbackPeriods)
 ///   BullPower = High − ema
 ///   BearPower = Low  − ema
@@ -39,10 +39,10 @@ public sealed class ElderRay : IndicatorBase, IIndicatorPanelHint
         // top and collapsing the histograms into an invisible sliver. The EMA is
         // a calculation input only — it stays exposed via the Ema property for
         // programmatic consumers, but is not a subpanel plot. (Matches the
-        // canonical Elder Ray / NinjaTrader ElderRay, which plot Bull/Bear only.)
-        AddPlot(new Plot("BullPower", _bull, PlotStyle.Histogram, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("BearPower", _bear, PlotStyle.Histogram, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        // canonical Elder Ray / the original ElderRay, which plot Bull/Bear only.)
+        AddPlot(new Plot("BullPower", _bull, PlotStyle.Histogram, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("BearPower", _bear, PlotStyle.Histogram, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "LookbackPeriods", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

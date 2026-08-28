@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// N consecutive up-bars — 1-on-1 port of NT @NBarsUp.
+/// N consecutive up-bars.
 /// Value = 1 when the last BarCount bars all satisfy:
 ///   close[i] &gt; close[i+1]  AND (BarUp ? close[i]&gt;open[i] : true)
 ///   AND (HigherHigh ? H[i]&gt;H[i+1] : true)
@@ -27,7 +27,7 @@ public sealed class NBarsUp : IndicatorBase, IIndicatorPanelHint
 
     public NBarsUp(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("NBarsUp", _output, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("NBarsUp", _output, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     [IndicatorParameter(DisplayName = "BarCount",   Description = "Number of consecutive up-bars to require.",

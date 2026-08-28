@@ -33,7 +33,7 @@ public sealed class Dispersion : IndicatorBase, IIndicatorPanelHint
 
     public Dispersion(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Dispersion", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, null, PlotValueUnit.Percent, PlotBullishDirection.None, "0 = no relative spread") });
+        AddPlot(new Plot("Dispersion", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, null, PlotValueUnit.Percent, PlotBullishDirection.None, "0 = no relative spread") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window for the mean and standard deviation.",

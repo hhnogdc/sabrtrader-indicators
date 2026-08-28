@@ -9,10 +9,10 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum DeviationType { Percent = 0, Points = 1 }
 
 /// <summary>
-/// ZigZag — 1-on-1 port of NT @ZigZag math layer.
+/// ZigZag.
 /// Pivot-based filtered swing detector. Detects a swing pivot when:
 ///   • the 1-bar-ago bar is a local extreme over the 3-bar window
-///     (close to NT's `highSeries[1] &gt;= highSeries[0] && highSeries[1] &gt;= highSeries[2]`); AND
+///     (close to the original's `highSeries[1] &gt;= highSeries[0] && highSeries[1] &gt;= highSeries[2]`); AND
 ///   • the move from the last confirmed pivot exceeds the deviation threshold
 ///     (Percent / Points). Trend can flip on a new swing in the opposite
 ///     direction, or extend the previous swing (update).
@@ -43,7 +43,7 @@ public sealed class ZigZag : IndicatorBase, IChartCustomRender
 
     public ZigZag(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("ZigZag", _value, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("ZigZag", _value, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "DeviationType",
@@ -175,7 +175,7 @@ public sealed class ZigZag : IndicatorBase, IChartCustomRender
 
     /// <summary>
     /// Custom rendering: draw connecting lines between consecutive pivots,
-    /// matching NT's PathGeometry render. Walks the pivot series in visible
+    /// matching the original's PathGeometry render. Walks the pivot series in visible
     /// range and produces line segments between successive non-NaN points.
     /// </summary>
     public void OnCustomRender(IIndicatorRenderContext ctx)

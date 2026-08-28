@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// AMA — Adaptive Moving Average. 1-on-1 port of ATAS's <c>AMA</c>
+/// AMA — Adaptive Moving Average.
 /// (Technical/AMA.cs). Kaufman-style efficiency-ratio adaptation, but
 /// distinct from <see cref="Kama"/> in its defaults (Period=15,
 /// Fast=3, Slow=20 vs KAMA's 10/2/30), its warm-up (no value until bar
@@ -20,10 +20,10 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///   AMA = prevAMA ≠ 0 ? prevAMA + c·(value − prevAMA)
 ///                     : value[bar−1] + c·(value − value[bar−1])
 /// </code>
-/// Bars <c>0 … Period−1</c> emit no value (NaN — ATAS draws nothing
+/// Bars <c>0 … Period−1</c> emit no value (NaN — the original draws nothing
 /// during warm-up). DodgerBlue overlay.
 /// </summary>
-[IndicatorDescription("Adaptive Moving Average (ATAS): an efficiency-ratio adaptive average. Its smoothing constant scales between a fast and slow EMA by |direction|/volatility, tracking trends closely and flattening in chop. Distinct defaults/warm-up from KAMA.")]
+[IndicatorDescription("Adaptive Moving Average (the original): an efficiency-ratio adaptive average. Its smoothing constant scales between a fast and slow EMA by |direction|/volatility, tracking trends closely and flattening in chop. Distinct defaults/warm-up from KAMA.")]
 [IndicatorCategory(IndicatorCategory.Trend)]
 [IndicatorInput(IndicatorInputKind.Scalar)]
 public sealed class Ama : IndicatorBase
@@ -37,7 +37,7 @@ public sealed class Ama : IndicatorBase
 
     public Ama(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("AMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("AMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Efficiency-ratio look-back.",
@@ -83,7 +83,7 @@ public sealed class Ama : IndicatorBase
     {
         double v = src[barsAgo];
 
-        // ATAS bar 0: no diff, no rendered value.
+        // The original bar 0: no diff, no rendered value.
         if (_barIdx == 0)
         {
             _output.Append(double.NaN);
@@ -97,7 +97,7 @@ public sealed class Ama : IndicatorBase
 
         if (_barIdx < Period)
         {
-            _output.Append(double.NaN);     // ATAS SetPointOfEndLine — nothing drawn
+            _output.Append(double.NaN);     // the original SetPointOfEndLine — nothing drawn
             _barIdx++;
             return;
         }

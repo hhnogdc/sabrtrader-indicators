@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Choppiness Index — 1-on-1 port of NT @ChoppinessIndex.
+/// Choppiness Index.
 /// Value = 100·log10(ΣATR(1)/(MAX(H,P)−MIN(L,P))) / log10(Period).
 /// Singularity (zero numerator/denominator) → 0.
 /// Defaults Period=14, DodgerBlue plot, 38.2/62.8 reference lines DarkCyan, sub-panel.
@@ -28,9 +28,9 @@ public sealed class ChoppinessIndex : IndicatorBase, IIndicatorPanelHint
 
     public ChoppinessIndex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Choppiness", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.None, "38.2 trending / 61.8 choppy") });
-        AddLine("Strong", 38.2, NTColors.DarkCyan);
-        AddLine("Choppy", 62.8, NTColors.DarkCyan);
+        AddPlot(new Plot("Choppiness", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.None, "38.2 trending / 61.8 choppy") });
+        AddLine("Strong", 38.2, PlotColors.DarkCyan);
+        AddLine("Choppy", 62.8, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback window.",

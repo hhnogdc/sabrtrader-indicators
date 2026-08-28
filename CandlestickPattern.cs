@@ -38,14 +38,14 @@ public enum ChartPattern
 }
 
 /// <summary>
-/// Candlestick Pattern — 1-on-1 port of NT @CandlestickPattern.
+/// Candlestick Pattern.
 /// Detects 25 classic candlestick patterns. One plot (PatternFound, Transparent) emits 1.0
 /// on detection, 0.0 otherwise. Trend is established via a child <see cref="Swing"/>
 /// (TrendStrength=4 default); trend-dependent patterns (Hammer, BearishEngulfing, etc.)
 /// require the appropriate trend direction.
-/// Match-once-per-2-bars deduplication mirrors NT's prior[CurrentBar%2] gate.
+/// Match-once-per-2-bars deduplication mirrors the original's prior[CurrentBar%2] gate.
 /// IChartCustomRender draws the pattern label above/below the candle and an in-corner
-/// "{n} {Pattern} patterns found" counter (NT's TextFixed BottomRight).
+/// "{n} {Pattern} patterns found" counter (the original's TextFixed BottomRight).
 /// Defaults Pattern=MorningStar, TrendStrength=4, ShowAlerts=true, ShowPatternCount=true.
 /// </summary>
 [IndicatorDescription("Candlestick Pattern recognizer. Scans bars for one of 25 classic patterns (engulfings, hammers, stars, harami, three-soldiers, etc.) with trend-context filtering via a Swing pivot, labelling each hit on the chart.")]
@@ -66,7 +66,7 @@ public sealed class CandlestickPattern : IndicatorBase, IChartCustomRender
 
     public CandlestickPattern(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Pattern Found", _patternFound, PlotStyle.Line, NTColors.Transparent, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Pattern Found", _patternFound, PlotStyle.Line, PlotColors.Transparent, 1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Pattern")]
@@ -81,10 +81,10 @@ public sealed class CandlestickPattern : IndicatorBase, IChartCustomRender
     [IndicatorParameter(DisplayName = "ShowPatternCount")]
     public bool ShowPatternCount { get; set; } = true;
 
-    /// <summary>Tick size — host-supplied (NT uses Instrument.MasterInstrument.TickSize).</summary>
+    /// <summary>Tick size — host-supplied (the original uses Instrument.MasterInstrument.TickSize).</summary>
     public double TickSize { get; set; } = 0.25;
 
-    public ChartColor TextColor { get; set; } = NTColors.DimGray;
+    public ChartColor TextColor { get; set; } = PlotColors.DimGray;
 
     public ISeries<double> PatternFound => _wrap ??= new IndicatorOutputSeries(_patternFound, Bars);
 
@@ -153,13 +153,13 @@ public sealed class CandlestickPattern : IndicatorBase, IChartCustomRender
 
         if (_swing == null)
         {
-            // For patterns that don't need a trend (Doji, MorningStar, ...) the NT logic sets both true
+            // For patterns that don't need a trend (Doji, MorningStar, ...) the original logic sets both true
             // unconditionally when trendStrength == 0; for the other family we leave both false.
             if (TrendStrength == 0) { isInUpTrend = true; isInDownTrend = true; }
         }
         else
         {
-            // Walk swing pivots to determine current trend (same algorithm as NT).
+            // Walk swing pivots to determine current trend (same algorithm as the original).
             int upStart = 0, upEnd = 0; int upOcc = 1;
             while (LowAt(bars, barsAgoOfCurrent, upEnd) <= LowAt(bars, barsAgoOfCurrent, upStart))
             {

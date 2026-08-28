@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// MESA Adaptive MA (MAMA) — 1-on-1 port of NT @MAMA.
+/// MESA Adaptive MA (MAMA).
 /// John Ehlers' Hilbert-Transform Discriminator: adapts smoothing constant per bar based
 /// on the dominant cycle period of price action. Output: MAMA (Default, Goldenrod) + FAMA
 /// (Following Adaptive MA, DodgerBlue). Overlay.
@@ -35,8 +35,8 @@ public sealed class Mama : IndicatorBase
 
     public Mama(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("MAMA", _mama, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("FAMA", _fama, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MAMA", _mama, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("FAMA", _fama, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "FastLimit", MinValue = 0.05, MaxValue = double.MaxValue, Step = 0.05)]

@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Ultimate Oscillator (Williams) — 1-on-1 port of NT @UltimateOscillator.
+/// Ultimate Oscillator (Williams).
 /// Defaults Fast=7, Intermediate=14, Slow=28.
 /// BuyingPressure = Close − min(Low, prevClose).
 /// TrueRange = max(H−L, H−prevClose, prevClose−L).
@@ -33,10 +33,10 @@ public sealed class UltimateOscillator : IndicatorBase, IIndicatorPanelHint
 
     public UltimateOscillator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("UO", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30/50/70") });
-        AddLine("Oversold",   30, NTColors.DarkGray);
-        AddLine("Neutral",    50, NTColors.DarkGray);
-        AddLine("Overbought", 70, NTColors.DarkGray);
+        AddPlot(new Plot("UO", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30/50/70") });
+        AddLine("Oversold",   30, PlotColors.DarkGray);
+        AddLine("Neutral",    50, PlotColors.DarkGray);
+        AddLine("Overbought", 70, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast",         Description = "Fast period.",         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

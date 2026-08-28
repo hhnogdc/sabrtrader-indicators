@@ -7,12 +7,12 @@ using SabrTrader.Pipeline.Ticks;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Port of NinjaTrader's built-in <c>PriceLine</c>. Draws horizontal
+/// Draws horizontal
 /// reference lines at the current Bid / Ask / Last prices —
 /// independently togglable, each with its own length (% of plot
 /// width anchored to the right edge).
 ///
-/// Surface matches NT:
+/// Surface matches the original:
 /// <list type="bullet">
 ///   <item>Three plots (Ask, Bid, Last) exposed via the standard
 ///     <see cref="Plots"/> list so the indicator picker / settings
@@ -28,7 +28,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///     right axis at the live price.</item>
 ///   <item><see cref="IChartCustomRender.OnCustomRender"/> extends
 ///     the line past the last visible bar to the right edge of the
-///     plot area (the NT-style "ahead of price" look), respecting
+///     plot area (original-style "ahead of price" look), respecting
 ///     each side's length parameter.</item>
 ///   <item>Tick-driven state — <see cref="ProcessesMarketData"/>=true.
 ///     Each tick routes by <see cref="TickFlags"/> to the matching
@@ -55,7 +55,7 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
         // this flag the runtime skips OnMarketData entirely.
         ProcessesMarketData = true;
 
-        ShowAskLine    = false;          // NT defaults: Ask off, Bid off, Last on
+        ShowAskLine    = false;          // the original defaults: Ask off, Bid off, Last on
         ShowBidLine    = false;
         ShowLastLine   = true;
         AskLineLength  = 100;
@@ -66,7 +66,7 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
             name: "Ask",
             values: _askSeries,
             style: PlotStyle.Line,
-            color: new ChartColor(0x00, 0x64, 0x00),   // NT DarkGreen
+            color: new ChartColor(0x00, 0x64, 0x00),   // the original DarkGreen
             lineWidthPx: 1.0)
         {
             Visible = ShowAskLine,
@@ -93,8 +93,8 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
             Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null),
         };
 
-        // Add in Ask / Bid / Last order — matches NT's plot order
-        // so a workspace from NT round-trips with the right indexes.
+        // Add in Ask / Bid / Last order — matches the original's plot order
+        // so a workspace from the original round-trips with the right indexes.
         AddPlot(_askPlot);
         AddPlot(_bidPlot);
         AddPlot(_lastPlot);
@@ -102,7 +102,7 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
 
     public event Action? RepaintRequested;
 
-    // ─── Parameters (NT parity) ──────────────────────────────────
+    // ─── Parameters (the original parity) ──────────────────────────────────
 
     [IndicatorParameter(DisplayName = "Show Ask Line",
         Description = "Render a horizontal line at the current Ask price.")]
@@ -131,7 +131,7 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
         MinValue = 1, MaxValue = 100, Step = 1)]
     public int LastLineLength { get; set; }
 
-    // ─── Read-only diagnostic accessors (mirror NT's surface) ──
+    // ─── Read-only diagnostic accessors (mirror the original's surface) ──
 
     public double AskLine  => _askSeries.Value;
     public double BidLine  => _bidSeries.Value;
@@ -169,7 +169,7 @@ public sealed class PriceLineIndicator : IndicatorBase, IChartCustomRender, IRep
         // from the leftmost visible bar to the latest bar (the
         // LiveScalarSeries returns the same scalar at every barsAgo,
         // so consecutive segments fall on a single horizontal line).
-        // OnCustomRender ADDS the NT-style extension from the latest
+        // OnCustomRender ADDS original-style extension from the latest
         // bar to the right edge of the plot area (the "ahead of price"
         // look), respecting the per-side length parameter.
         //

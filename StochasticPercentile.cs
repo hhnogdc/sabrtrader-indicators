@@ -43,10 +43,10 @@ public sealed class StochasticPercentile : IndicatorBase, IIndicatorPanelHint
     public StochasticPercentile(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var osc = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "20/80");
-        AddPlot(new Plot("Percentile", _pct,    PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = osc });
-        AddPlot(new Plot("Signal",     _signal, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = osc });
-        AddLine("Oversold",   20, NTColors.DarkCyan);
-        AddLine("Overbought", 80, NTColors.DarkCyan);
+        AddPlot(new Plot("Percentile", _pct,    PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = osc });
+        AddPlot(new Plot("Signal",     _signal, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = osc });
+        AddLine("Oversold",   20, PlotColors.DarkCyan);
+        AddLine("Overbought", 80, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Percentile-rank lookback window.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -8,7 +8,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum BetaType { Standard, Up, Down, All }
 
 /// <summary>
-/// Beta coefficient — port of Skender Beta.
+/// Beta coefficient — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Compares the evaluated asset's per-bar returns against the market benchmark's returns
 /// over a rolling window:
 ///   beta = Covariance(market, eval) / Variance(market)
@@ -57,9 +57,9 @@ public sealed class Beta : IndicatorBase, IIndicatorPanelHint
 
     public Beta(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Beta",     _beta,     PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("BetaUp",   _betaUp,   PlotStyle.Line, NTColors.LimeGreen,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("BetaDown", _betaDown, PlotStyle.Line, NTColors.Red,        1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Beta",     _beta,     PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("BetaUp",   _betaUp,   PlotStyle.Line, PlotColors.LimeGreen,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("BetaDown", _betaDown, PlotStyle.Line, PlotColors.Red,        1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "LookbackPeriods", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

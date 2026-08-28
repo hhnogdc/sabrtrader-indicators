@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// T3 Moving Average — 1-on-1 port of NT @T3 (Tim Tillson).
+/// T3 Moving Average.
 /// GD = EMA·(1+VFactor) − EMA(EMA)·VFactor, applied <see cref="TCount"/>
 /// times in sequence. Defaults: Period=14, TCount=3, VFactor=0.7,
 /// DarkCyan. Range: Period [1,∞), TCount [1,∞), VFactor [0,∞).
@@ -23,18 +23,18 @@ public sealed class T3 : IndicatorBase
 
     public T3(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("T3", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("T3", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",  Description = "EMA period of each layer.",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Period { get; set; } = 14;
 
-    [IndicatorParameter(DisplayName = "TCount",  Description = "Number of generalised-DD layers (NT default 3).",
+    [IndicatorParameter(DisplayName = "TCount",  Description = "Number of generalised-DD layers (the original default 3).",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int TCount { get; set; } = 3;
 
-    [IndicatorParameter(DisplayName = "VFactor", Description = "Volume factor for the GD term (NT default 0.7).",
+    [IndicatorParameter(DisplayName = "VFactor", Description = "Volume factor for the GD term (the original default 0.7).",
         MinValue = 0, MaxValue = int.MaxValue, Step = 0.1)]
     public double VFactor { get; set; } = 0.7;
 

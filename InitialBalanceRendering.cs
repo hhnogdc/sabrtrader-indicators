@@ -12,20 +12,20 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Rendering half of <see cref="InitialBalance"/> — a 1-on-1 translation of NT
+/// Rendering half of <see cref="InitialBalance"/> — a translation of the original
 /// <c>TDUInitialBalance.OnRender</c> and its helpers (<c>DrawTextLabel</c>,
 /// <c>DrawPriceTextLabel(Above)</c>, <c>DrawExtensions</c>, <c>RenderStatistics</c>).
-/// NT's time axis (<c>GetXByTime</c>) maps through <see cref="SessionBarTimeIndex"/>;
+/// the original's time axis (<c>GetXByTime</c>) maps through <see cref="SessionBarTimeIndex"/>;
 /// its price axis (<c>GetYByValue</c>) through <see cref="ChartViewport.PriceToPixelY"/>.
-/// NT's per-bar <c>BackBrush</c> session / pre-market shading paints behind the candles
+/// the original's per-bar <c>BackBrush</c> session / pre-market shading paints behind the candles
 /// via <see cref="IChartBackgroundRender.OnRenderBackground"/>.
 /// </summary>
 public sealed partial class InitialBalance
 {
-    /// <summary>NT sets <c>ZOrder = -1</c>: every line / area / label paints BENEATH the candles.</summary>
+    /// <summary>The original sets <c>ZOrder = -1</c>: every line / area / label paints BENEATH the candles.</summary>
     public CustomRenderLayer Layer => CustomRenderLayer.BelowBars;
 
-    /// <summary>One NT <c>Stroke</c> as used for line drawing (colour + width + dash style).</summary>
+    /// <summary>One the original <c>Stroke</c> as used for line drawing (colour + width + dash style).</summary>
     private readonly record struct StrokeDef(ChartColor Color, double Width, LineStyle Style);
 
     /// <summary>One level label to place: its line's pixel Y, the finished text, colour, and
@@ -48,7 +48,7 @@ public sealed partial class InitialBalance
     private double X(DateTime t) => _time.PixelXForTime(t);
     private double Y(double price) => _vp.PriceToPixelY(price);
 
-    /// <summary>NT <c>RenderTarget.DrawLine</c> with the stroke's dash style.</summary>
+    /// <summary>The original <c>RenderTarget.DrawLine</c> with the stroke's dash style.</summary>
     private void Line(double x0, double y0, double x1, double y1, in StrokeDef s)
     {
         if (s.Color.A == 0) return;
@@ -82,7 +82,7 @@ public sealed partial class InitialBalance
         }
     }
 
-    /// <summary>NT <c>FillRectangle</c> — normalised so an inverted rect still fills.</summary>
+    /// <summary>The original <c>FillRectangle</c> — normalised so an inverted rect still fills.</summary>
     private void FillRect(double x, double y, double w, double h, ChartColor color)
     {
         if (color.A == 0) return;
@@ -92,7 +92,7 @@ public sealed partial class InitialBalance
         _r.FillRect(x, y, w, h, color);
     }
 
-    // ───── Text helpers (NT GetTextWidth / GetTextHeight / DrawTextLabel) ──
+    // ───── Text helpers (the original GetTextWidth / GetTextHeight / DrawTextLabel) ──
 
     private string? FontFamily => string.IsNullOrWhiteSpace(TextFontFamily) ? null : TextFontFamily;
 
@@ -102,7 +102,7 @@ public sealed partial class InitialBalance
 
     private double FontHeight => TextHeight("Ag");
 
-    /// <summary>NT <c>DrawTextLabel</c>: vertically centres the text on <paramref name="y"/>, 5 px right of <paramref name="x"/>.</summary>
+    /// <summary>The original <c>DrawTextLabel</c>: vertically centres the text on <paramref name="y"/>, 5 px right of <paramref name="x"/>.</summary>
     private void DrawTextLabel(string text, double x, double y, ChartColor color)
     {
         if (color.A == 0) return;
@@ -111,7 +111,7 @@ public sealed partial class InitialBalance
         _r.DrawText(x, y - 2 + _r.FontAscentPx(TextFontSize, FontFamily), text, color, TextFontSize, FontFamily);
     }
 
-    /// <summary>NT <c>DrawPriceTextLabel</c>: appends "(price)" and "/ x.xx pts" per the Show toggles.</summary>
+    /// <summary>The original <c>DrawPriceTextLabel</c>: appends "(price)" and "/ x.xx pts" per the Show toggles.</summary>
     private string PriceLabel(string text, double price, double range)
     {
         if (ShowPrice) text = text + " (" + MeasureFormatting.FormatPrice(price, _tickSize) + ")";
@@ -119,7 +119,7 @@ public sealed partial class InitialBalance
         return text;
     }
 
-    /// <summary>NT <c>DrawPriceTextLabelAbove</c>: the label sits just above the line.</summary>
+    /// <summary>The original <c>DrawPriceTextLabelAbove</c>: the label sits just above the line.</summary>
     private void DrawPriceTextLabelAbove(string text, double price, double range, double x, double y, ChartColor color)
     {
         text = PriceLabel(text, price, range);
@@ -130,7 +130,7 @@ public sealed partial class InitialBalance
     /// <summary>
     /// Places the level labels so none is bisected by its own line and none overlaps another:
     /// <c>Below</c> labels (lows) fan downward beneath their line, the rest fan upward above it,
-    /// each separated by a text row. Replaces NT's pairwise nudges, which could leave the middle
+    /// each separated by a text row. Replaces the original's pairwise nudges, which could leave the middle
     /// label of a coincident cluster (e.g. Session-low == OR-low) centred ON the line.
     /// </summary>
     private void DrawStackedLevelLabels(List<LevelLabel> labels, double x)
@@ -152,7 +152,7 @@ public sealed partial class InitialBalance
             DrawTextLabel(labels[i].Text, x, centerY[i], labels[i].Color);
     }
 
-    // ───── Background pass (NT BackBrush session / pre-market shading) ─────
+    // ───── Background pass (the original BackBrush session / pre-market shading) ─────
 
     public void OnRenderBackground(IIndicatorRenderContext ctx)
     {
@@ -179,7 +179,7 @@ public sealed partial class InitialBalance
         {
             for (int abs = first; abs <= last; abs++)
             {
-                // NT checks the bar's (end-stamped) time against the same windows
+                // The original checks the bar's (end-stamped) time against the same windows
                 // it uses for the calculation.
                 DateTime t = bars[count - 1 - abs].End;
                 double x = vp.BarIndexToPixelX(abs);
@@ -197,7 +197,7 @@ public sealed partial class InitialBalance
         }
     }
 
-    // ───── Main pass (NT OnRender) ──────────────────────────────────────────
+    // ───── Main pass (the original OnRender) ──────────────────────────────────────────
 
     public void OnCustomRender(IIndicatorRenderContext ctx)
     {
@@ -205,7 +205,7 @@ public sealed partial class InitialBalance
         IBarSeries? bars = ctx.Bars;
         if (bars is null || bars.Count == 0) return;
 
-        // NT skips Day / Week / Month / Year charts.
+        // The original skips Day / Week / Month / Year charts.
         if (bars.Spec is TimeBarSpec tb && tb.Period >= TimeSpan.FromDays(1)) return;
 
         _r = ctx.Renderer;
@@ -221,7 +221,7 @@ public sealed partial class InitialBalance
         _firstVisible = bars[count - 1 - firstAbs].Start;
         _lastVisible = bars[count - 1 - lastAbs].End;
 
-        // NT Strokes, resolved once per frame from the flattened parameters.
+        // The original Strokes, resolved once per frame from the flattened parameters.
         var preMarketStroke = new StrokeDef(PreMarketColor, PreMarketWidth, PreMarketStyle);
         var ibDeveloping = new StrokeDef(IbDevelopingColor, IbDevelopingWidth, IbDevelopingStyle);
         var ibVirgin = new StrokeDef(IbVirginColor, IbVirginWidth, IbVirginStyle);
@@ -244,7 +244,7 @@ public sealed partial class InitialBalance
         double ypreMid = (ypreLow + ypreHigh) / 2.0;
         double preMarketMid = (_preMarketHigh + _preMarketLow) / 2.0;
 
-        // Right-edge band geometry (NT).
+        // Right-edge band geometry (the original).
         bool rightEdge = LinesPlacement == InitialBalanceLinePlacement.RightEdge;
         double bandLeft = Math.Max(0, chartWidth - 100);
         double bandRight = Math.Max(0, chartWidth);
@@ -310,11 +310,11 @@ public sealed partial class InitialBalance
                 if (rightEdge && ib.EndTime.Date != now.Date)
                     continue;
 
-                // NT end-stamps its bars and resolves X by that end-stamp, so it anchors
+                // The original end-stamps its bars and resolves X by that end-stamp, so it anchors
                 // lines at SessionStartTime (= open + 1 min). SabrTrader maps a time to a bar by
                 // its START (SessionBarTimeIndex), so that same +1 min lands one bar to the
                 // RIGHT of the opening candle. Undo the end-stamp shift here so the lines
-                // start on the opening bar (NT-visual parity); the levels are unaffected.
+                // start on the opening bar (visual parity with the original); the levels are unaffected.
                 DateTime renderStart = ib.StartTime.AddMinutes(-1);
                 double x1 = X(renderStart);
                 double xd = X(renderStart + (IbEndTime - IbOpenTime));
@@ -324,7 +324,7 @@ public sealed partial class InitialBalance
                 double yor = Y(ib.OpenPrice);
                 double yh = Y(ib.InitialBalanceHigh);
                 double yl = Y(ib.InitialBalanceLow);
-                double yoh = Y(ib.OpeningRangeLow);    // NT naming: yoh = Y of the OR LOW
+                double yoh = Y(ib.OpeningRangeLow);    // the original naming: yoh = Y of the OR LOW
                 double yol = Y(ib.OpeningRangeHigh);   //            yol = Y of the OR HIGH
                 double ymid = Y(ib.OpeningRangeLow + (ib.OpeningRangeHigh - ib.OpeningRangeLow) / 2);
                 double ySessionHi = Y(ib.SessionHigh);
@@ -381,7 +381,7 @@ public sealed partial class InitialBalance
                 xEnd = Math.Min(xEnd, chartWidth);
 
                 // The level lines run to their natural right end; only the LABEL anchor (xEnd)
-                // is pulled left to keep the widest label on-panel. NT charts carry right-margin
+                // is pulled left to keep the widest label on-panel. The original charts carry right-margin
                 // padding so the last bar is never at the panel edge; SabrTrader draws it AT the edge,
                 // so for a freshly-opened session — whose open sits within a label-width of the
                 // right edge — pulling xEnd left would drag it LEFT of x1, drawing the x1→xEnd-20
@@ -391,7 +391,7 @@ public sealed partial class InitialBalance
 
                 if (i == sessions.Length - 1)
                 {
-                    // Keep the widest label of the latest session inside the panel (NT).
+                    // Keep the widest label of the latest session inside the panel (the original).
                     string text = "OR-open";
                     if (ShowPrice) text = text + " (" + MeasureFormatting.FormatPrice(ib.OpenPrice, _tickSize) + ")";
                     if (ShowRange) text = string.Format("{0} / {1:0.00} pts", text, ib.SessionHigh - ib.SessionLow);
@@ -483,7 +483,7 @@ public sealed partial class InitialBalance
 
                 // Level labels, de-overlapped so none is bisected by its own line and none
                 // overlaps another: lows fan downward beneath their line, the rest upward above
-                // it, each separated by a text row. NT's pairwise nudges left the middle label of
+                // it, each separated by a text row. The original's pairwise nudges left the middle label of
                 // a coincident cluster (e.g. Session-low == OR-low) centred ON the line; this
                 // resolves any number of coincidences cleanly.
                 var labels = new List<LevelLabel>(9);
@@ -530,7 +530,7 @@ public sealed partial class InitialBalance
         }
     }
 
-    // ───── IB extensions (NT DrawExtensions) ────────────────────────────────
+    // ───── IB extensions (the original DrawExtensions) ────────────────────────────────
 
     private void DrawExtensions(IbSession[] sessions, IbSession ib)
     {
@@ -539,7 +539,7 @@ public sealed partial class InitialBalance
         var ext300 = new StrokeDef(Ib300ExtensionColor, Ib300ExtensionWidth, Ib300ExtensionStyle);
         var ext400 = new StrokeDef(Ib400ExtensionColor, Ib400ExtensionWidth, Ib400ExtensionStyle);
 
-        DateTime renderStart = ib.StartTime.AddMinutes(-1);   // see OnCustomRender: undo NT end-stamp +1 for X anchoring
+        DateTime renderStart = ib.StartTime.AddMinutes(-1);   // see OnCustomRender: undo the original end-stamp +1 for X anchoring
         double chartWidth = _plotArea.X + _plotArea.Width;
         double x1 = X(renderStart);
         double x2 = X(ib.EndTime);
@@ -559,7 +559,7 @@ public sealed partial class InitialBalance
         {
             if (ib.SessionLow > ib.InitialBalanceLow - (n - 0.5) * diffPrice) continue;
             double y = Y(ib.InitialBalanceLow - n * diffPrice);
-            // NT parity: levels 5 and 6 reuse the 400% stroke (so does 100-400 their own).
+            // The original parity: levels 5 and 6 reuse the 400% stroke (so does 100-400 their own).
             StrokeDef s = n switch { 1 => ext100, 2 => ext200, 3 => ext300, _ => ext400 };
             Line(x1, y, x2 - 20, y, s);
             DrawTextLabel($"IB {n}00%", x2, y, IbVirginColor);
@@ -576,7 +576,7 @@ public sealed partial class InitialBalance
         }
     }
 
-    // ───── Statistics card (NT RenderStatistics) ────────────────────────────
+    // ───── Statistics card (the original RenderStatistics) ────────────────────────────
 
     private void RenderStatistics(IbSession[] sessions)
     {

@@ -5,8 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Adaptive RSI Moving Average — 1-on-1 port of ATAS's
-/// <c>AdaptiveRsiAverage</c> (Technical/AdaptiveRsiAverage.cs). An EMA-like
+/// Adaptive RSI Moving Average. An EMA-like
 /// smoother whose step size is driven by how far RSI is from its 50
 /// mid-line: near 50 (no momentum) the line barely moves; near 0 or 100
 /// (strong momentum) it tracks price aggressively.
@@ -43,7 +42,7 @@ public sealed class AdaptiveRsiAverage : IndicatorBase
 
     public AdaptiveRsiAverage(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("ARSI", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("ARSI", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "RsiPeriod", Description = "RSI look-back driving the adaptation.",

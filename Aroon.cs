@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Aroon Up/Down — 1-on-1 port of NT @Aroon.
+/// Aroon Up/Down.
 /// Up   = 100·(Period − barsSinceHigh) / Period.
 /// Down = 100·(Period − barsSinceLow)  / Period.
 /// Defaults Period=14. Up DarkCyan, Down SlateBlue. Lines 30 / 70 DarkGray.
@@ -26,10 +26,10 @@ public sealed class Aroon : IndicatorBase, IIndicatorPanelHint
 
     public Aroon(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Up",   _up,   PlotStyle.Line, NTColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30/70") });
+        AddPlot(new Plot("Up",   _up,   PlotStyle.Line, PlotColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30/70") });
         AddPlot(new Plot("Down", _down, PlotStyle.Line, new ChartColor(0x6A, 0x5A, 0xCD), 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Down, "30/70") });   // SlateBlue
-        AddLine("Lower", 30, NTColors.DarkGray);
-        AddLine("Upper", 70, NTColors.DarkGray);
+        AddLine("Lower", 30, PlotColors.DarkGray);
+        AddLine("Upper", 70, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback window.",

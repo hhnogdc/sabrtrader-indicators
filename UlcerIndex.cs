@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Ulcer Index — 1-on-1 port of Skender UlcerIndex.
+/// Ulcer Index — derived from Skender.Stock.Indicators (Apache-2.0).
 /// UI = sqrt( Σ pctDrawdown[k]² / Period )
 /// where pctDrawdown[k] = 100·(value[k] − maxValueInWindowUpToK) / maxValueInWindowUpToK.
 /// NaN before bar Period−1. Default Period=14, Crimson, sub-panel.
@@ -23,7 +23,7 @@ public sealed class UlcerIndex : IndicatorBase, IIndicatorPanelHint
 
     public UlcerIndex(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Ulcer Index", _output, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Ulcer Index", _output, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

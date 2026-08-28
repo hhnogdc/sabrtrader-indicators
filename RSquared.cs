@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// R-Squared — 1-on-1 port of NT @RSquared (incremental branch).
+/// R-Squared.
 /// myPeriod = min(barIdx+1, Period). sumX = N(N+1)/2, sumX2 = sumX(2N+1)/3.
 /// Rolling sums of input (y), input² (y²), and i·input (xy).
 /// r² = (N·sumXy − sumX·sumY)² / ((N·sumX2 − sumX²)·(N·sumY2 − sumY²)).
@@ -25,9 +25,9 @@ public sealed class RSquared : IndicatorBase, IIndicatorPanelHint
 
     public RSquared(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("R-Squared", _output, PlotStyle.Line, NTColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, "goodness of fit") });
-        AddLine("Weak fit",   0.2,  NTColors.SlateBlue);
-        AddLine("Strong fit", 0.75, NTColors.Goldenrod);
+        AddPlot(new Plot("R-Squared", _output, PlotStyle.Line, PlotColors.Crimson, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, "goodness of fit") });
+        AddLine("Weak fit",   0.2,  PlotColors.SlateBlue);
+        AddLine("Strong fit", 0.75, PlotColors.Goldenrod);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

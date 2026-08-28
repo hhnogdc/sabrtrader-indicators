@@ -6,8 +6,8 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Moving Average — 1-on-1 port of NT @VOLMA.
-/// EMA of bar volume over <see cref="Period"/> bars (NT uses its own
+/// Volume Moving Average.
+/// EMA of bar volume over <see cref="Period"/> bars (the original uses its own
 /// recursive EMA over the Volume series). Default Period=14,
 /// Goldenrod, sub-panel.
 /// </summary>
@@ -26,7 +26,7 @@ public sealed class Volma : IndicatorBase, IIndicatorPanelHint
 
     public Volma(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("VOLMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("VOLMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period over volume.",

@@ -34,7 +34,7 @@ public sealed class MeanDeviation : IndicatorBase, IIndicatorPanelHint
 
     public MeanDeviation(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("MeanDev", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MeanDev", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window for the mean and the deviations.",

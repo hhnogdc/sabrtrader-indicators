@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Accumulation/Distribution Line — 1-on-1 port of NT @ADL.
+/// Accumulation/Distribution Line.
 /// AD[t] = AD[t-1] + ((C-L) - (H-C))/(H-L) · Volume. Bar 0 → 0.
 /// Flat bars (H==L) contribute 0 (no volume credit).
 /// No parameters. DarkCyan plot, sub-panel.
@@ -25,7 +25,7 @@ public sealed class Adl : IndicatorBase, IIndicatorPanelHint
 
     public Adl(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("AD", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("AD", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

@@ -6,8 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// BlockMA — Block (stepped) Moving Average. 1-on-1 port of ATAS's
-/// <c>BlockMA</c> (Technical/BlockMA.cs). Two ATR-sized "boxes" trail
+/// BlockMA — Block (stepped) Moving Average. Two ATR-sized "boxes" trail
 /// price as stepped mid-lines: while price stays inside the current box
 /// the line holds flat; a break above the box top re-anchors the box
 /// under the new high, a break below the box bottom re-anchors it above
@@ -41,8 +40,8 @@ public sealed class BlockMa : IndicatorBase
 
     public BlockMa(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Mid1", _mid1, PlotStyle.Line, NTColors.Red,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Mid2", _mid2, PlotStyle.Line, NTColors.Green, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Mid1", _mid1, PlotStyle.Line, PlotColors.Red,   1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Mid2", _mid2, PlotStyle.Line, PlotColors.Green, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "ATR Period", Description = "Period of the ATR driving the box size.",
@@ -95,7 +94,7 @@ public sealed class BlockMa : IndicatorBase
 
     private void Compute(Bar bar, double atr)
     {
-        // ATAS gates output until the ATR window is established.
+        // The original gates output until the ATR window is established.
         if (_barIdx < Period)
         {
             _mid1.Append(double.NaN);

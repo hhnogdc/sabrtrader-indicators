@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Key Reversal Up — 1-on-1 port of NT @KeyReversalUp.
+/// Key Reversal Up.
 /// Value = 1 when the bar's Low is lower than the previous N lows AND
 /// the Close is above the previous bar's Close; else 0.
 /// Default Period=1, DarkCyan 2px Histogram, sub-panel.
@@ -24,7 +24,7 @@ public sealed class KeyReversalUp : IndicatorBase, IIndicatorPanelHint
 
     public KeyReversalUp(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Key Reversal Up", _output, PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Key Reversal Up", _output, PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Number of prior bars compared.",

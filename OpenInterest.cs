@@ -37,7 +37,7 @@ public sealed class OpenInterest : IndicatorBase, IIndicatorPanelHint
     public OpenInterest(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("OpenInterest", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0)
+        AddPlot(new Plot("OpenInterest", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0)
         {
             Semantics = new PlotSemantics(PlotKind.Oscillator, null, null,
                 PlotValueUnit.Raw, PlotBullishDirection.None, null)

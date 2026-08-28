@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Hurst Exponent — 1-on-1 port of Skender Hurst.
+/// Hurst Exponent — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Computes the per-bar rescaled-range slope (Hurst exponent) over a fixed lookback window.
 /// Pipeline per evaluation bar:
 ///   1. Take last LookbackPeriods+1 prices (today + N priors) → N return values.
@@ -29,8 +29,8 @@ public sealed class Hurst : IndicatorBase, IIndicatorPanelHint
 
     public Hurst(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Hurst", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
-        AddLine("Random walk", 0.5, NTColors.DarkGray);
+        AddPlot(new Plot("Hurst", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
+        AddLine("Random walk", 0.5, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "LookbackPeriods", MinValue = 2, MaxValue = int.MaxValue, Step = 1)]

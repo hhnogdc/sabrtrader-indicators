@@ -5,8 +5,8 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Buy/Sell Pressure — port of NT @BuySellPressure.
-/// NT runs at tick granularity. Bar-level approximation here:
+/// Buy/Sell Pressure.
+/// the original runs at tick granularity. Bar-level approximation here:
 ///   buy = volume on green bars, sell = volume on red bars.
 ///   BuyPressure = buys/(buys+sells)·100, SellPressure = sells/(buys+sells)·100,
 ///   over a configurable rolling window for stability.
@@ -28,10 +28,10 @@ public sealed class BuySellPressure : IndicatorBase, IIndicatorPanelHint
 
     public BuySellPressure(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Buy Pressure",  _buy,  PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "25/75") });
-        AddPlot(new Plot("Sell Pressure", _sell, PlotStyle.Line, NTColors.Crimson,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Down, "25/75") });
-        AddLine("Upper", 75, NTColors.DimGray);
-        AddLine("Lower", 25, NTColors.DimGray);
+        AddPlot(new Plot("Buy Pressure",  _buy,  PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "25/75") });
+        AddPlot(new Plot("Sell Pressure", _sell, PlotStyle.Line, PlotColors.Crimson,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Down, "25/75") });
+        AddLine("Upper", 75, PlotColors.DimGray);
+        AddLine("Lower", 25, PlotColors.DimGray);
     }
 
     public ISeries<double> BuyPressure  => _bW ??= new IndicatorOutputSeries(_buy,  Bars);

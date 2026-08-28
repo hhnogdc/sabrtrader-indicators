@@ -39,9 +39,9 @@ public sealed class MacdLeader : IndicatorBase, IIndicatorPanelHint
     public MacdLeader(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var sem = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline");
-        AddPlot(new Plot("MACD",   _macd,   PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = sem });
-        AddPlot(new Plot("Leader", _leader, PlotStyle.Line, NTColors.Crimson,  1.0) { Semantics = sem });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("MACD",   _macd,   PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = sem });
+        AddPlot(new Plot("Leader", _leader, PlotStyle.Line, PlotColors.Crimson,  1.0) { Semantics = sem });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast", Description = "Fast EMA period.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

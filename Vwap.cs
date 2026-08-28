@@ -32,11 +32,11 @@ public enum VwapAnchor
 /// <summary>
 /// Volume-Weighted Average Price + optional volume-weighted standard-deviation bands.
 ///
-/// NT TDUVWAP parity. Price = the 4-point OHLC midpoint
+/// the original TDUVWAP parity. Price = the 4-point OHLC midpoint
 /// <c>(open + high + low + close) / 4</c> (NOT the classic (H+L+C)/3 typical);
 /// <c>VWAP = Σ(price_i × volume_i) / Σ(volume_i)</c> per anchor window.
 ///
-/// Bands: <c>VWAP ± k · σ_vw</c> where σ_vw is NT's 6-point weighted standard deviation
+/// Bands: <c>VWAP ± k · σ_vw</c> where σ_vw is the original's 6-point weighted standard deviation
 /// <c>sqrt(Σ vol·(O²+H²+L²+C²+2·mean2²+2·mean1²)/8 / Σ vol − vwap²)</c>
 /// (mean1=(H+L)/2, mean2=(O+C)/2). FOUR configurable multipliers (default 1σ/2σ/3σ/4σ);
 /// set a multiplier to 0 to hide that band. The VWAP renders as a slope-coloured Dot
@@ -69,7 +69,7 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
     private readonly ChunkedSeries<double> _lower3 = new();
     private readonly ChunkedSeries<double> _upper4 = new();
     private readonly ChunkedSeries<double> _lower4 = new();
-    // Per-bar colour for the centre VWAP dots (NT PlotBrushes): green when VWAP rose
+    // Per-bar colour for the centre VWAP dots (the original PlotBrushes): green when VWAP rose
     // versus the prior bar, red when it fell. Appended in lockstep with _output —
     // including the NaN out-of-session bars — so the colour series never drifts.
     private readonly ChunkedSeries<ChartColor> _colors = new();
@@ -89,20 +89,20 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
     public Vwap(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        // NT TDUVWAP plot styling: VWAP is a LimeGreen Dot; the four band pairs are
-        // dashed Violet / DeepSkyBlue / Yellow / Peru (matching the NT SetDefaults strokes).
-        AddPlot(new Plot("VWAP",   _output, PlotStyle.Dots,   NTColors.LimeGreen,  2.0) { PerBarColors = _colors, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        // The original TDUVWAP plot styling: VWAP is a LimeGreen Dot; the four band pairs are
+        // dashed Violet / DeepSkyBlue / Yellow / Peru (matching the original SetDefaults strokes).
+        AddPlot(new Plot("VWAP",   _output, PlotStyle.Dots,   PlotColors.LimeGreen,  2.0) { PerBarColors = _colors, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Band #1 Up",   _upper1, PlotStyle.Dashed, NtViolet,      1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Band #1 Down", _lower1, PlotStyle.Dashed, NtViolet,      1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Band #2 Up",   _upper2, PlotStyle.Dashed, NTColors.DeepSkyBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Band #2 Down", _lower2, PlotStyle.Dashed, NTColors.DeepSkyBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Band #3 Up",   _upper3, PlotStyle.Dashed, NTColors.Yellow, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Band #3 Down", _lower3, PlotStyle.Dashed, NTColors.Yellow, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Band #2 Up",   _upper2, PlotStyle.Dashed, PlotColors.DeepSkyBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Band #2 Down", _lower2, PlotStyle.Dashed, PlotColors.DeepSkyBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Band #3 Up",   _upper3, PlotStyle.Dashed, PlotColors.Yellow, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Band #3 Down", _lower3, PlotStyle.Dashed, PlotColors.Yellow, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Band #4 Up",   _upper4, PlotStyle.Dashed, NtPeru,        1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Band #4 Down", _lower4, PlotStyle.Dashed, NtPeru,        1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
-    // NT brush colours not present in NTColors.
+    // The original brush colours not present in PlotColors.
     private static readonly ChartColor NtViolet = new(0xEE, 0x82, 0xEE);
     private static readonly ChartColor NtPeru   = new(0xCD, 0x85, 0x3F);
 
@@ -122,12 +122,12 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
     public double Band2StdDev { get; set; } = 2.0;
 
     [IndicatorParameter(DisplayName = "Band3 σ",
-        Description = "Third band's standard-deviation multiplier. 0 = hide. NT default: 3.",
+        Description = "Third band's standard-deviation multiplier. 0 = hide. The original default: 3.",
         MinValue = 0, MaxValue = double.MaxValue, Step = 0.5)]
     public double Band3StdDev { get; set; } = 3.0;
 
     [IndicatorParameter(DisplayName = "Band4 σ",
-        Description = "Fourth band's standard-deviation multiplier. 0 = hide. NT default: 4.",
+        Description = "Fourth band's standard-deviation multiplier. 0 = hide. The original default: 4.",
         MinValue = 0, MaxValue = double.MaxValue, Step = 0.5)]
     public double Band4StdDev { get; set; } = 4.0;
 
@@ -142,11 +142,11 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
 
     [IndicatorParameter(DisplayName = "Rising", Group = "Colors", Order = 1,
         Description = "Colour of the VWAP dots on bars where VWAP rose versus the prior bar.")]
-    public ChartColor RisingColor { get; set; } = NTColors.ForestGreen;
+    public ChartColor RisingColor { get; set; } = PlotColors.ForestGreen;
 
     [IndicatorParameter(DisplayName = "Falling", Group = "Colors", Order = 2,
         Description = "Colour of the VWAP dots on bars where VWAP fell versus the prior bar.")]
-    public ChartColor FallingColor { get; set; } = NTColors.Crimson;
+    public ChartColor FallingColor { get; set; } = PlotColors.Crimson;
 
     [IndicatorParameter(DisplayName = "Anchor",
         Description = "What VWAP is anchored to. InstrumentSession (default): resets at the data series' Trading Hours template session open — holiday/DST-correct, the standard daily-VWAP pattern. CustomSession: resets at the manual Session Start/End window below. Rolling: rolling window of Rolling Period bars. Cumulative: from the first loaded bar, never resets.",
@@ -245,11 +245,11 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
 
     private void Consume(Bar bar)
     {
-        // NT TDUVWAP price = 4-point OHLC midpoint (NOT the classic (H+L+C)/3 typical):
+        // The original TDUVWAP price = 4-point OHLC midpoint (NOT the classic (H+L+C)/3 typical):
         //   mean1 = (H+L)/2, mean2 = (O+C)/2, price = (mean1+mean2)/2 = (O+H+L+C)/4.
-        // The σ accumulator is the 6-point weighted mean-of-squares NT uses
+        // The σ accumulator is the 6-point weighted mean-of-squares the original uses
         //   (O²+H²+L²+C²+2·mean2²+2·mean1²)/8 · volume.
-        // NT subtracts the session's first-bar open before squaring for numeric stability;
+        // The original subtracts the session's first-bar open before squaring for numeric stability;
         // that offset is provably shift-invariant for both the mean and this variance, so we
         // accumulate raw OHLC and get bit-equivalent VWAP / σ without the offset bookkeeping.
         double o = bar.Open, h = bar.High, l = bar.Low, c = bar.Close;
@@ -341,7 +341,7 @@ public sealed class Vwap : IndicatorBase, IChartCustomRender
 
     // Paint the band fills BEHIND the candles so the σ rings read as a faint background
     // tint (the band edge lines are still drawn opaquely by the standard PlotRenderPass on
-    // top). BelowBars = candles + lines paint over the fill, NT/typical-VWAP appearance.
+    // top). BelowBars = candles + lines paint over the fill, the original/typical-VWAP appearance.
     public CustomRenderLayer Layer => CustomRenderLayer.BelowBars;
 
     public void OnCustomRender(IIndicatorRenderContext ctx)

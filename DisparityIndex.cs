@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Disparity Index — 1-on-1 port of NT @DisparityIndex.
+/// Disparity Index.
 /// Value = 100·(Close − EMA(Close, Period)) / Close. Close ≤ 0 skips emit (NaN).
 /// Default Period=25, DodgerBlue, zero reference line, sub-panel.
 /// </summary>
@@ -23,8 +23,8 @@ public sealed class DisparityIndex : IndicatorBase, IIndicatorPanelHint
 
     public DisparityIndex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Disparity Line", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Disparity Line", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period.",

@@ -17,7 +17,7 @@ public sealed class CotReport
 }
 
 /// <summary>
-/// Commitment of Traders (COT) — 1-on-1 port of NT @COT.
+/// Commitment of Traders (COT).
 /// Plots up to 5 series of CFTC-published COT data per instrument. The pipeline does NOT
 /// download CFTC data — the host MUST supply a value-resolver callback that returns the
 /// per-bar value of a given (ReportType, Field) tuple for the current bar's date.
@@ -42,11 +42,11 @@ public sealed class Cot : IndicatorBase, IIndicatorPanelHint, IChartCustomRender
     public Cot(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         var cotLine = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null);
-        AddPlot(new Plot("COT1", _c1, PlotStyle.Line, NTColors.CornflowerBlue, 1.0) { Semantics = cotLine });
-        AddPlot(new Plot("COT2", _c2, PlotStyle.Line, NTColors.Red,            1.0) { Semantics = cotLine });
-        AddPlot(new Plot("COT3", _c3, PlotStyle.Line, NTColors.LimeGreen,      1.0) { Semantics = cotLine });
-        AddPlot(new Plot("COT4", _c4, PlotStyle.Line, NTColors.Goldenrod,      1.0) { Semantics = cotLine });
-        AddPlot(new Plot("COT5", _c5, PlotStyle.Line, NTColors.BlueViolet,     1.0) { Semantics = cotLine });
+        AddPlot(new Plot("COT1", _c1, PlotStyle.Line, PlotColors.CornflowerBlue, 1.0) { Semantics = cotLine });
+        AddPlot(new Plot("COT2", _c2, PlotStyle.Line, PlotColors.Red,            1.0) { Semantics = cotLine });
+        AddPlot(new Plot("COT3", _c3, PlotStyle.Line, PlotColors.LimeGreen,      1.0) { Semantics = cotLine });
+        AddPlot(new Plot("COT4", _c4, PlotStyle.Line, PlotColors.Goldenrod,      1.0) { Semantics = cotLine });
+        AddPlot(new Plot("COT5", _c5, PlotStyle.Line, PlotColors.BlueViolet,     1.0) { Semantics = cotLine });
         CotReport1 = new CotReport { ReportType = CotReportType.Futures, Field = CotReportField.NoncommercialNet };
         CotReport2 = new CotReport { ReportType = CotReportType.Futures, Field = CotReportField.CommercialNet };
         CotReport3 = new CotReport { ReportType = CotReportType.Futures, Field = CotReportField.NonreportablePositionsNet };
@@ -68,7 +68,7 @@ public sealed class Cot : IndicatorBase, IIndicatorPanelHint, IChartCustomRender
 
     /// <summary>
     /// Host-supplied resolver: given the report config + the bar's date, return the COT value
-    /// (or NaN when not available). Replaces NT's <c>CotData.GetCotReportNames</c> +
+    /// (or NaN when not available). Replaces the original's <c>CotData.GetCotReportNames</c> +
     /// <c>CotReport.Calculate</c> chain.
     /// </summary>
     public Func<CotReport, DateTime, double> ValueResolver { get; set; } = null!;

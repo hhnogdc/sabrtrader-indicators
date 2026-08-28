@@ -37,8 +37,8 @@ public sealed class MomentumTrend : IndicatorBase, IIndicatorPanelHint
 
     public MomentumTrend(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Trend", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -1, 1, PlotValueUnit.Raw, PlotBullishDirection.Up, "+1 up / -1 down") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Trend", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, -1, 1, PlotValueUnit.Raw, PlotBullishDirection.Up, "+1 up / -1 down") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Bars back for the momentum comparison.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

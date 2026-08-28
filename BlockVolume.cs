@@ -5,18 +5,18 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>Counting mode for <see cref="BlockVolume"/>. Matches NT's CountType enum.</summary>
+/// <summary>Counting mode for <see cref="BlockVolume"/>. Matches the original's CountType enum.</summary>
 public enum BlockVolumeCountType { Trades = 0, Volume = 1 }
 
 /// <summary>
-/// Block Volume — port of NT @BlockVolume.
+/// Block Volume.
 ///
-/// NT runs at tick granularity: for every tick whose volume ≥ BlockSize,
+/// the original runs at tick granularity: for every tick whose volume ≥ BlockSize,
 /// add its volume (Volume mode) or 1 (Trades mode) to the bar's
 /// accumulator. Our port runs at bar granularity — when a bar's
 /// total volume meets the threshold we count it as one block;
 /// proper tick-level accounting needs the host to feed the tick
-/// series (Phase-later feature). Matches NT for the case where all
+/// series (Phase-later feature). Matches the original for the case where all
 /// bars are themselves blocks (the common use of large BlockSize on
 /// minute charts).
 ///
@@ -35,7 +35,7 @@ public sealed class BlockVolume : IndicatorBase, IIndicatorPanelHint
 
     public BlockVolume(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Block Volume", _output, PlotStyle.Histogram, NTColors.DarkRed, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Block Volume", _output, PlotStyle.Histogram, PlotColors.DarkRed, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "BlockSize", Description = "Per-bar volume threshold.",

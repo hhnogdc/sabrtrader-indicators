@@ -48,9 +48,9 @@ public sealed class Rsx : IndicatorBase, IIndicatorPanelHint
             PlotKind.Oscillator, RangeMin: 0, RangeMax: 100,
             PlotValueUnit.Percent, PlotBullishDirection.Up,
             Reference: "30 oversold / 70 overbought");
-        AddPlot(new Plot("RSX", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = oscillator });
-        AddLine("Lower", 30, NTColors.DarkCyan);
-        AddLine("Upper", 70, NTColors.DarkCyan);
+        AddPlot(new Plot("RSX", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = oscillator });
+        AddLine("Lower", 30, PlotColors.DarkCyan);
+        AddLine("Upper", 70, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "Length",

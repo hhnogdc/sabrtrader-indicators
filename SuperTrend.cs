@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// SuperTrend — 1-on-1 port of Skender SuperTrend.
+/// SuperTrend — derived from Skender.Stock.Indicators (Apache-2.0).
 /// HL2-centered ATR bands with trend-aware trailing logic:
 ///   mid    = (High + Low) / 2
 ///   atr    = Wilder ATR(Period)
@@ -39,9 +39,9 @@ public sealed class SuperTrend : IndicatorBase
 
     public SuperTrend(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("SuperTrend", _superTrend, PlotStyle.Line, NTColors.Goldenrod, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("UpperBand",  _upperOnly,  PlotStyle.Dots, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("LowerBand",  _lowerOnly,  PlotStyle.Dots, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SuperTrend", _superTrend, PlotStyle.Line, PlotColors.Goldenrod, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("UpperBand",  _upperOnly,  PlotStyle.Dots, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("LowerBand",  _lowerOnly,  PlotStyle.Dots, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",     MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

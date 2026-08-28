@@ -8,7 +8,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Camarilla Pivots — port of NT @CamarillaPivots.
+/// Camarilla Pivots.
 /// R/S levels from yesterday's HLC range:
 ///   R4=C+(H-L)·1.1/2,  R3=C+(H-L)·1.1/4,  R2=C+(H-L)·1.1/6,  R1=C+(H-L)·1.1/12
 ///   S1=C-(H-L)·1.1/12, S2=C-(H-L)·1.1/6,  S3=C-(H-L)·1.1/4,  S4=C-(H-L)·1.1/2
@@ -45,17 +45,17 @@ public sealed class CamarillaPivots : IndicatorBase, IChartCustomRender
 
     public CamarillaPivots(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // NT colour mapping: resistance levels = DodgerBlue, support = Crimson
+        // The original colour mapping: resistance levels = DodgerBlue, support = Crimson
         // (@CamarillaPivots.cs:71-78). Not the "intuitive" red-resistance scheme.
         var pivotLevel = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null);
-        AddPlot(new Plot("R1", _r1, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("R2", _r2, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("R3", _r3, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("R4", _r4, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("S1", _s1, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("S2", _s2, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("S3", _s3, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = pivotLevel });
-        AddPlot(new Plot("S4", _s4, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("R1", _r1, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("R2", _r2, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("R3", _r3, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("R4", _r4, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("S1", _s1, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("S2", _s2, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("S3", _s3, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = pivotLevel });
+        AddPlot(new Plot("S4", _s4, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = pivotLevel });
     }
 
     public ISeries<double> R1 => _r1W ??= new IndicatorOutputSeries(_r1, Bars);

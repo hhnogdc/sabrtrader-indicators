@@ -4,7 +4,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// %B for Bollinger Bands — 1-on-1 port of NT @PercentB.
+/// %B for Bollinger Bands.
 /// %B = (close − Lower) / (Upper − Lower). Above 1 = above upper band,
 /// below 0 = below lower band.
 /// Defaults Period=14, NumStdDev=2, DodgerBlue, sub-panel,
@@ -23,9 +23,9 @@ public sealed class PercentB : IndicatorBase, IIndicatorPanelHint
 
     public PercentB(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("%B", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 oversold / 1 overbought") });
-        AddLine("Upper", 1, NTColors.DarkGray);
-        AddLine("Lower", 0, NTColors.DarkGray);
+        AddPlot(new Plot("%B", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 oversold / 1 overbought") });
+        AddLine("Upper", 1, PlotColors.DarkGray);
+        AddLine("Lower", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Bollinger window.",

@@ -58,7 +58,7 @@ public sealed class PriceTransform : IndicatorBase, IIndicatorPanelHint
 
     public PriceTransform(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Transform", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "Ratio/DividedByPrice: 1.0 = parity; PercentagePrice: percent of price") });
+        AddPlot(new Plot("Transform", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "Ratio/DividedByPrice: 1.0 = parity; PercentagePrice: percent of price") });
     }
 
     [IndicatorParameter(DisplayName = "Mode", Description = "Normalisation: Ratio (Input / Input[Period]), DividedByPrice (Input / close), or PercentagePrice (100 * Input / close).")]

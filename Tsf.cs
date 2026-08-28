@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Time Series Forecast — 1-on-1 port of NT @TSF.
+/// Time Series Forecast.
 /// Like LinReg but one bar projected forward: intercept + slope·Period.
 /// Period=14, Goldenrod, overlay, range [2,∞).
 /// </summary>
@@ -20,7 +20,7 @@ public sealed class Tsf : IndicatorBase
 
     public Tsf(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("TSF", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("TSF", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window.",

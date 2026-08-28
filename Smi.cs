@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Stochastic Momentum Index (SMI, Blau) — 1-on-1 port of Skender Smi.
+/// Stochastic Momentum Index (SMI, Blau) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   hH = max(High, P), lL = min(Low, P)
 ///   sm = Close − (hH + lL) / 2
 ///   hl = hH − lL
@@ -37,11 +37,11 @@ public sealed class Smi : IndicatorBase, IIndicatorPanelHint
 
     public Smi(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("SMI",    _smi,    PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Overbought",  40, NTColors.DarkGray);
-        AddLine("Oversold",   -40, NTColors.DarkGray);
-        AddLine("Zero line",    0, NTColors.DarkGray);
+        AddPlot(new Plot("SMI",    _smi,    PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Overbought",  40, PlotColors.DarkGray);
+        AddLine("Oversold",   -40, PlotColors.DarkGray);
+        AddLine("Zero line",    0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period",              MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

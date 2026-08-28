@@ -10,7 +10,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum RenkoEndType { Close, HighLow }
 
 /// <summary>
-/// Renko chart transform — 1-on-1 port of Skender Renko.
+/// Renko chart transform — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Generates new Renko bricks based on Close (or High/Low) movement of BrickSize. Multiple bricks
 /// can appear per source bar when price moves by more than one brick. Exposes the brick OHLC as
 /// 4 overlay plots tracking the LATEST brick on each bar (no plot value when no new brick).
@@ -39,10 +39,10 @@ public sealed class Renko : IndicatorBase, IChartCustomRender
 
     public Renko(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Renko Open",  _open,  PlotStyle.Line, NTColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Renko Close", _close, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Renko High",  _high,  PlotStyle.Line, NTColors.LimeGreen,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Renko Low",   _low,   PlotStyle.Line, NTColors.Red,        1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Renko Open",  _open,  PlotStyle.Line, PlotColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Renko Close", _close, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Renko High",  _high,  PlotStyle.Line, PlotColors.LimeGreen,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Renko Low",   _low,   PlotStyle.Line, PlotColors.Red,        1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "BrickSize",
@@ -150,7 +150,7 @@ public sealed class Renko : IndicatorBase, IChartCustomRender
             double cx = vp.BarIndexToPixelX(b.SourceBarIdx);
             double yTop = vp.PriceToPixelY(Math.Max(b.Open, b.Close));
             double yBot = vp.PriceToPixelY(Math.Min(b.Open, b.Close));
-            var color = b.IsUp ? NTColors.LimeGreen : NTColors.Red;
+            var color = b.IsUp ? PlotColors.LimeGreen : PlotColors.Red;
             renderer.FillRect(cx - w / 2, yTop, w, Math.Max(1, yBot - yTop), new ChartColor(color.R, color.G, color.B, 0x99));
         }
     }

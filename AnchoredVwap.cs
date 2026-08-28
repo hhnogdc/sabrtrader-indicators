@@ -52,7 +52,7 @@ public sealed class AnchoredVwap : IndicatorBase, IChartCustomRender
 
     public AnchoredVwap(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Anchored VWAP", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Anchored VWAP", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Upper1",        _upper1, PlotStyle.Line, new ChartColor(0x1e, 0x90, 0xff, 0xaa), 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Lower1",        _lower1, PlotStyle.Line, new ChartColor(0x1e, 0x90, 0xff, 0xaa), 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Upper2",        _upper2, PlotStyle.Line, new ChartColor(0x1e, 0x90, 0xff, 0x66), 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
@@ -71,7 +71,7 @@ public sealed class AnchoredVwap : IndicatorBase, IChartCustomRender
     public int BandFillOpacity { get; set; } = 12;
 
     public ChartColor AnchorLineColor { get; set; } = new(0x1e, 0x90, 0xff, 0x80);
-    public ChartColor AnchorLabelColor { get; set; } = NTColors.DodgerBlue;
+    public ChartColor AnchorLabelColor { get; set; } = PlotColors.DodgerBlue;
 
     public ISeries<double> Output => _oW  ??= new IndicatorOutputSeries(_output, Bars);
     public ISeries<double> Upper1 => _u1W ??= new IndicatorOutputSeries(_upper1, Bars);

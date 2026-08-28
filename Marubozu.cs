@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Marubozu single-bar candlestick pattern — 1-on-1 port of Skender Marubozu.
+/// Marubozu single-bar candlestick pattern — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Detects when the body (|close − open|) covers ≥ MinBodyPercent (default 95%) of the bar's
 /// total range (high − low). On bullish match (close ≥ open) the dot is drawn
 /// <see cref="OffsetTicks"/> ticks BELOW the bar's Low; on bearish match the same number of
@@ -26,8 +26,8 @@ public sealed class Marubozu : IndicatorBase
 
     public Marubozu(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Bullish Marubozu", _bull, PlotStyle.Dots, NTColors.Blue,    6.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("Bearish Marubozu", _bear, PlotStyle.Dots, NTColors.Magenta, 6.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
+        AddPlot(new Plot("Bullish Marubozu", _bull, PlotStyle.Dots, PlotColors.Blue,    6.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Bearish Marubozu", _bear, PlotStyle.Dots, PlotColors.Magenta, 6.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
     }
 
     [IndicatorParameter(DisplayName = "MinBodyPercent",

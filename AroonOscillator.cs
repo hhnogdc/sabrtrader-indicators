@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Aroon Oscillator — 1-on-1 port of NT @AroonOscillator.
+/// Aroon Oscillator.
 /// Value = AroonUp − AroonDown. Range −100..+100.
 /// Default Period=14, DodgerBlue plot, zero reference line, sub-panel.
 /// </summary>
@@ -23,8 +23,8 @@ public sealed class AroonOscillator : IndicatorBase, IIndicatorPanelHint
 
     public AroonOscillator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Aroon Oscillator", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 100, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Aroon Oscillator", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 100, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback window.",

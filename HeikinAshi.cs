@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Heikin-Ashi — 1-on-1 port of Skender HeikinAshi.
+/// Heikin-Ashi — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Bar-smoothing transform:
 ///   HA Close = (Open + High + Low + Close) / 4
 ///   HA Open  = (prev HA Open + prev HA Close) / 2     (seeded with bar 0's Open/Close)
@@ -30,10 +30,10 @@ public sealed class HeikinAshi : IndicatorBase
 
     public HeikinAshi(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("HA Open",  _open,  PlotStyle.Line, NTColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("HA High",  _high,  PlotStyle.Line, NTColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("HA Low",   _low,   PlotStyle.Line, NTColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("HA Close", _close, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HA Open",  _open,  PlotStyle.Line, PlotColors.DarkGray,   1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HA High",  _high,  PlotStyle.Line, PlotColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HA Low",   _low,   PlotStyle.Line, PlotColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("HA Close", _close, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Open  => _oW ??= new IndicatorOutputSeries(_open,  Bars);

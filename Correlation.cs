@@ -5,13 +5,13 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Correlation — 1-on-1 port of NT @Correlation.
+/// Correlation.
 /// Pearson correlation between Input and a second host-supplied series over Period bars.
 /// r = Σ((avg0-x[i])·(avg1-y[i])) / sqrt(Σ(avg0-x[i])² · Σ(avg1-y[i])²).
 /// avg0 = SMA(Input, Period); avg1 = SMA(SecondInput, Period).
 /// Defaults Period=10. CorrelationSeries is the symbol identifier (display only).
 /// The host MUST set SecondInput before OnInit fires.
-/// Goldenrod plot, sub-panel. NT also requires that the secondary series be in-session;
+/// Goldenrod plot, sub-panel. The original also requires that the secondary series be in-session;
 /// the pipeline does not yet model multi-series sessions so this implementation skips
 /// the session-iterator guard (correlation is computed on every bar where both sides
 /// have at least Period samples).
@@ -30,7 +30,7 @@ public sealed class Correlation : IndicatorBase, IIndicatorPanelHint
 
     public Correlation(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Correlation", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Correlation", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

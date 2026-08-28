@@ -7,15 +7,15 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>Direction the margin zones stack from the anchor (ATAS <c>ZoneDirection</c>).</summary>
+/// <summary>Direction the margin zones stack from the anchor (the original <c>ZoneDirection</c>).</summary>
 public enum MarginZoneDirection { Up = 0, Down = 1 }
 
 /// <summary>
-/// Margin Zones — 1-on-1 port of ATAS <c>MarginZones</c>. Anchors to the prior week's extreme
+/// Margin Zones. Anchors to the prior week's extreme
 /// (Low for <see cref="MarginZoneDirection.Up"/>, High for <see cref="MarginZoneDirection.Down"/>)
 /// and stacks margin-based zones at 25 / 50 / 75 / 100 / 150 / 200 % of one margin's worth of price
 /// movement. One full (100 %) zone spans <c>(Margin / TickCost) × TickSize</c> in price; the sign of
-/// <c>zoneSize</c> (positive Up, negative Down) sets the stacking direction. Verbatim ATAS arithmetic:
+/// <c>zoneSize</c> (positive Up, negative Down) sets the stacking direction. Verbatim the original arithmetic:
 /// <code>
 ///   zoneSize = Margin / TickCost × (Up ? +1 : -1)
 ///   level%   = anchor + zoneSize × pct × TickSize        (pct ∈ {0.25,0.5,0.75,1.0,1.5,2.0})
@@ -55,8 +55,8 @@ public sealed class MarginZones : IndicatorBase, IChartCustomRender
     {
         var colors = new[]
         {
-            NTColors.Goldenrod, NTColors.SteelBlue, NTColors.DodgerBlue, NTColors.RoyalBlue,
-            NTColors.Crimson, NTColors.DarkOrange, NTColors.Red,
+            PlotColors.Goldenrod, PlotColors.SteelBlue, PlotColors.DodgerBlue, PlotColors.RoyalBlue,
+            PlotColors.Crimson, PlotColors.DarkOrange, PlotColors.Red,
         };
         for (int i = 0; i < ZoneCount; i++)
         {
@@ -69,11 +69,11 @@ public sealed class MarginZones : IndicatorBase, IChartCustomRender
         }
     }
 
-    [IndicatorParameter(DisplayName = "Margin", Description = "Account margin in currency (ATAS default 3200).",
+    [IndicatorParameter(DisplayName = "Margin", Description = "Account margin in currency (the original default 3200).",
         Group = "01. Parameters", Order = 1, MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Margin { get; set; } = 3200;
 
-    [IndicatorParameter(DisplayName = "Tick Cost", Description = "Currency value of one tick. 0 = resolve from the instrument (PointValue x TickSize); otherwise this overrides it (ATAS default 6.25).",
+    [IndicatorParameter(DisplayName = "Tick Cost", Description = "Currency value of one tick. 0 = resolve from the instrument (PointValue x TickSize); otherwise this overrides it (the original default 6.25).",
         Group = "01. Parameters", Order = 2, MinValue = 0, MaxValue = double.MaxValue, Step = 0.01)]
     public double TickCost { get; set; } = 0;   // 0 ⇒ auto from instrument; non-zero overrides
 
@@ -108,7 +108,7 @@ public sealed class MarginZones : IndicatorBase, IChartCustomRender
         if (TickSizeOverride <= 0) throw new ArgumentOutOfRangeException(nameof(TickSizeOverride));
 
         _tickSize = ctx.TickSize is > 0 ? ctx.TickSize!.Value : TickSizeOverride;
-        // TickCost override wins; else instrument value (PointValue × TickSize); else ATAS default.
+        // TickCost override wins; else instrument value (PointValue × TickSize); else the original default.
         _resolvedTickCost = TickCost > 0 ? TickCost
             : ctx.PointValue is > 0 ? ctx.PointValue!.Value * _tickSize
             : 6.25;
@@ -194,7 +194,7 @@ public sealed class MarginZones : IndicatorBase, IChartCustomRender
             double level = _lastLevels[i];
             if (double.IsNaN(level)) continue;
 
-            // Shade the 10%-thick margin band, then label the line (NT-style edge label).
+            // Shade the 10%-thick margin band, then label the line (original-style edge label).
             var color = Plots[i].Color;
             double y0 = vp.PriceToPixelY(level);
             double y1 = vp.PriceToPixelY(level + _lastZoneWidth);

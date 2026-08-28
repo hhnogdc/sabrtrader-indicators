@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// N consecutive down-bars — 1-on-1 port of NT @NBarsDown.
+/// N consecutive down-bars.
 /// Mirror of <see cref="NBarsUp"/> with strictly lower close / open /
 /// high / low. Plot Crimson 2px Histogram, sub-panel.
 /// </summary>
@@ -23,7 +23,7 @@ public sealed class NBarsDown : IndicatorBase, IIndicatorPanelHint
 
     public NBarsDown(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("NBarsDown", _output, PlotStyle.Histogram, NTColors.Crimson, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
+        AddPlot(new Plot("NBarsDown", _output, PlotStyle.Histogram, PlotColors.Crimson, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
     }
 
     [IndicatorParameter(DisplayName = "BarCount",  MinValue = 2, MaxValue = int.MaxValue, Step = 1)]

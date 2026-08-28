@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Counter — 1-on-1 port of NT @VolumeCounter.
+/// Volume Counter.
 /// Per-bar volume histogram, sub-panel, DodgerBlue 2px. No params.
 /// </summary>
 [IndicatorDescription("Per-bar volume histogram (equivalent to the Volume indicator). Plots raw traded volume in a sub-panel with no smoothing.")]
@@ -20,7 +20,7 @@ public sealed class VolumeCounter : IndicatorBase, IIndicatorPanelHint
 
     public VolumeCounter(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Volume Counter", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, 0, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Volume Counter", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, 0, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

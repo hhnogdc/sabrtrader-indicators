@@ -34,8 +34,8 @@ public sealed class Inertia2 : IndicatorBase, IIndicatorPanelHint
 
     public Inertia2(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Inertia2", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "50 centerline") });
-        AddLine("Centerline", 50, NTColors.DarkGray);
+        AddPlot(new Plot("Inertia2", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "50 centerline") });
+        AddLine("Centerline", 50, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "RviPeriod", Description = "Relative Volatility Index period.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

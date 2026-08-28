@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volatility Stop (Welles Wilder) — 1-on-1 port of Skender VolatilityStop.
+/// Volatility Stop (Welles Wilder) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Stop and Reverse trailing stop driven by Close vs the SAR threshold:
 ///   arc = Multiplier · ATR(Period)
 ///   sar = isLong ? sic − arc : sic + arc      (sic = significant favourable close)
@@ -38,9 +38,9 @@ public sealed class VolatilityStop : IndicatorBase
 
     public VolatilityStop(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("SAR",       _sar,       PlotStyle.Dots, NTColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("UpperBand", _upperBand, PlotStyle.Dots, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("LowerBand", _lowerBand, PlotStyle.Dots, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SAR",       _sar,       PlotStyle.Dots, PlotColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("UpperBand", _upperBand, PlotStyle.Dots, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("LowerBand", _lowerBand, PlotStyle.Dots, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",     MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

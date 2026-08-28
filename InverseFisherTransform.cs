@@ -33,10 +33,10 @@ public sealed class InverseFisherTransform : IndicatorBase, IIndicatorPanelHint
 
     public InverseFisherTransform(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("IFT", _output, PlotStyle.Line, NTColors.Goldenrod, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0") });
-        AddLine("Bull threshold",  0.5, NTColors.SlateBlue);
-        AddLine("Zero line",       0,   NTColors.DarkGray);
-        AddLine("Bear threshold", -0.5, NTColors.SlateBlue);
+        AddPlot(new Plot("IFT", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0") });
+        AddLine("Bull threshold",  0.5, PlotColors.SlateBlue);
+        AddLine("Zero line",       0,   PlotColors.DarkGray);
+        AddLine("Bear threshold", -0.5, PlotColors.SlateBlue);
     }
 
     [IndicatorParameter(DisplayName = "RsiPeriod", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

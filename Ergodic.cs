@@ -41,9 +41,9 @@ public sealed class Ergodic : IndicatorBase, IIndicatorPanelHint
     public Ergodic(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
         var sem = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline");
-        AddPlot(new Plot("Ergodic", _erg, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = sem });
-        AddPlot(new Plot("Signal",  _sig, PlotStyle.Line, NTColors.Crimson,  1.0) { Semantics = sem });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Ergodic", _erg, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = sem });
+        AddPlot(new Plot("Signal",  _sig, PlotStyle.Line, PlotColors.Crimson,  1.0) { Semantics = sem });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Slow", Description = "First (slow) EMA period of the double smoothing.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

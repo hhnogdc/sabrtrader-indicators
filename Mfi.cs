@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Money Flow Index — 1-on-1 port of NT @MFI.
+/// Money Flow Index.
 /// Typical = (H+L+C)/3. Positive flow = Typical·Volume when typical
 /// rises; negative when it falls. Σ over Period.
 /// MFI = sumNeg == 0 ? 50 : 100 − 100/(1 + sumPos/sumNeg).
@@ -30,9 +30,9 @@ public sealed class Mfi : IndicatorBase, IIndicatorPanelHint
 
     public Mfi(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("MFI", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddPlot(new Plot("MFI", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
         AddLine("Oversold",   20, new ChartColor(0x6A, 0x5A, 0xCD));  // SlateBlue
-        AddLine("Overbought", 80, NTColors.Goldenrod);
+        AddLine("Overbought", 80, PlotColors.Goldenrod);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window over positive/negative money flow.",

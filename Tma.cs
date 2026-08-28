@@ -12,7 +12,7 @@ public enum TmaBandBasis
 {
     /// <summary>Band width = Multiplier · ATR(BandPeriod). The classic
     /// "TMA Bands" / "TMA Centered Bands" convention (and the basis used
-    /// by the NT TDUTMABands product).</summary>
+    /// by the original TDUTMABands product).</summary>
     Atr,
 
     /// <summary>Band width = Multiplier · population stddev of the input
@@ -21,8 +21,8 @@ public enum TmaBandBasis
 }
 
 /// <summary>
-/// Triangular Moving Average with bands. The middle line is a 1-on-1
-/// port of NT @TMA (SMA of SMA): even Period → SMA(SMA(P/2), P/2+1),
+/// Triangular Moving Average with bands. The middle line is an SMA of an
+/// SMA: even Period → SMA(SMA(P/2), P/2+1),
 /// odd Period → SMA(SMA((P+1)/2), (P+1)/2). Default Period=15, DodgerBlue.
 ///
 /// Upper/Lower bands surround the middle line at
@@ -50,9 +50,9 @@ public sealed class Tma : IndicatorBase
 
     public Tma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("TMA",   _output, PlotStyle.Line, NTColors.DodgerBlue,     1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Upper", _upper,  PlotStyle.Line, NTColors.CornflowerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower", _lower,  PlotStyle.Line, NTColors.CornflowerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("TMA",   _output, PlotStyle.Line, PlotColors.DodgerBlue,     1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper", _upper,  PlotStyle.Line, PlotColors.CornflowerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower", _lower,  PlotStyle.Line, PlotColors.CornflowerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Total smoothing window for the middle line.",

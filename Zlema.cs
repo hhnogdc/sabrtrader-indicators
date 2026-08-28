@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Zero-Lag EMA — 1-on-1 port of NT @ZLEMA.
+/// Zero-Lag EMA.
 /// Formula: bar &lt; lag → Value = Input. Otherwise
 /// <c>Value = k·(2·Input[0] − Input[lag]) + (1−k)·prev</c>,
 /// where k = 2/(Period+1), lag = ceil((Period−1)/2).
@@ -25,7 +25,7 @@ public sealed class Zlema : IndicatorBase
 
     public Zlema(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("ZLEMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("ZLEMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "EMA period.",
@@ -62,7 +62,7 @@ public sealed class Zlema : IndicatorBase
 
     private void Consume(ISeries<double> src, int barsAgoOfCurrent)
     {
-        // barsAgoOfCurrent is the index of the bar being processed in NT-style barsAgo.
+        // barsAgoOfCurrent is the index of the bar being processed in original-style barsAgo.
         // For OnDataLoaded we pass varying values, for live always 0.
         double current = src[barsAgoOfCurrent];
         if (_barIdx < _lag)

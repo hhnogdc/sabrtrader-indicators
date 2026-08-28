@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Swing — 1-on-1 port of NT @Swing.
+/// Swing.
 /// Detects swing highs/lows where the candidate is the unique extreme over a window
 /// of <c>2·Strength+1</c> bars (left bars strictly less, right bars strictly less-or-equal).
 /// Maintains:
@@ -44,8 +44,8 @@ public sealed class Swing : IndicatorBase
 
     public Swing(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Swing High", _swingHighPlot, PlotStyle.Dots, NTColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Swing Low",  _swingLowPlot,  PlotStyle.Dots, NTColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Swing High", _swingHighPlot, PlotStyle.Dots, PlotColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Swing Low",  _swingLowPlot,  PlotStyle.Dots, PlotColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Strength", Description = "Bars on each side of the pivot.",
@@ -61,7 +61,7 @@ public sealed class Swing : IndicatorBase
 
     /// <summary>
     /// Returns the number of bars ago a swing high occurred (1-based instance), or -1 if not found
-    /// within <paramref name="lookBackPeriod"/>. Mirrors NT Swing.SwingHighBar.
+    /// within <paramref name="lookBackPeriod"/>. Mirrors the original Swing.SwingHighBar.
     /// </summary>
     public int SwingHighBar(int barsAgo, int instance, int lookBackPeriod)
     {
@@ -79,7 +79,7 @@ public sealed class Swing : IndicatorBase
         return -1;
     }
 
-    /// <summary>Mirrors NT Swing.SwingLowBar.</summary>
+    /// <summary>Mirrors the original Swing.SwingLowBar.</summary>
     public int SwingLowBar(int barsAgo, int instance, int lookBackPeriod)
     {
         if (instance < 1) throw new ArgumentException("instance must be ≥ 1", nameof(instance));

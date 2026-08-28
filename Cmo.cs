@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Chande Momentum Oscillator — 1-on-1 port of NT @CMO.
+/// Chande Momentum Oscillator.
 /// per bar: up = max(in[0]-in[1],0), down = max(in[1]-in[0],0).
 /// Σup, Σdown over Period bars.
 /// Value = 100·(sumUp − sumDown) / (sumUp + sumDown). sumUp==sumDown → 0.
@@ -27,7 +27,7 @@ public sealed class Cmo : IndicatorBase, IIndicatorPanelHint
 
     public Cmo(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("CMO", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 100, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("CMO", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 100, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window for up/down sums.",

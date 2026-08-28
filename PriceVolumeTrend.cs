@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Price Volume Trend — 1-on-1 port of NT @PriceVolumeTrend.
+/// Price Volume Trend.
 /// Cumulative: PVT[0] = PVT[1] + Volume·(C − prevC)/prevC. Bar 0 → 0.
 /// Plot DodgerBlue. Sub-panel. No parameters.
 /// </summary>
@@ -23,7 +23,7 @@ public sealed class PriceVolumeTrend : IndicatorBase, IIndicatorPanelHint
 
     public PriceVolumeTrend(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("PVT", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("PVT", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

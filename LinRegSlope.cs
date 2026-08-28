@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Linear Regression Slope — 1-on-1 port of NT @LinRegSlope.
+/// Linear Regression Slope.
 /// Period=14 (range [2,∞)), DodgerBlue, sub-panel, zero line.
 /// </summary>
 [IndicatorDescription("Linear Regression Slope: the slope of the least-squares best-fit line over the last N inputs. Positive = up-trend, negative = down-trend; magnitude measures trend strength per bar.")]
@@ -21,8 +21,8 @@ public sealed class LinRegSlope : IndicatorBase, IIndicatorPanelHint
 
     public LinRegSlope(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Slope", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Slope", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window.",

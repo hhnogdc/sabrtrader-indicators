@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Parabolic SAR (Wilder) — 1-on-1 port of NT @ParabolicSAR.
+/// Parabolic SAR (Wilder).
 /// Defaults Acceleration=0.02, AccelerationStep=0.02, AccelerationMax=0.2.
 /// Plot Goldenrod 2px Dots, overlay. CurrentBar &lt; 3 skips.
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class ParabolicSAR : IndicatorBase
 
     public ParabolicSAR(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Parabolic SAR", _output, PlotStyle.Dots, NTColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Parabolic SAR", _output, PlotStyle.Dots, PlotColors.Goldenrod, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Acceleration",     MinValue = 0,     MaxValue = double.MaxValue, Step = 0.01)]
@@ -71,7 +71,7 @@ public sealed class ParabolicSAR : IndicatorBase
             _output.Append(0);
             if (_barIdx == 2)
             {
-                // Initialise on bar 3 (using H[0] vs H[1] convention from NT).
+                // Initialise on bar 3 (using H[0] vs H[1] convention from the original).
                 _longPosition = (_prevHigh1 ?? 0) > (_prevHigh2 ?? 0);
                 _xp = _longPosition ? Math.Max(_prevHigh1 ?? 0, _prevHigh2 ?? 0)
                                     : Math.Min(_prevLow1 ?? 0,  _prevLow2 ?? 0);
@@ -122,7 +122,7 @@ public sealed class ParabolicSAR : IndicatorBase
             _af = Acceleration;
             _xp = _longPosition ? h0 : l0;
             // Override last emit with reversed SAR.
-            // (NT keeps Value[0] = previous xp, which is _prevSar from before the reverse.)
+            // (the original keeps Value[0] = previous xp, which is _prevSar from before the reverse.)
         }
 
         _prevHigh2 = _prevHigh1; _prevLow2 = _prevLow1;

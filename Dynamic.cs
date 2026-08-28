@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// McGinley Dynamic — 1-on-1 port of Skender Dynamic.
+/// McGinley Dynamic — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   dyn = prevDyn + (newVal − prevDyn) / (KFactor · LookbackPeriods · (newVal / prevDyn)^4)
 /// Seeded at bar 0 with the first value; bar 0 itself emits NaN per Skender.
 /// Defaults LookbackPeriods=14 (user-required; Skender has no default), KFactor=0.6.
@@ -24,7 +24,7 @@ public sealed class Dynamic : IndicatorBase
 
     public Dynamic(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("McGinley Dynamic", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("McGinley Dynamic", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "LookbackPeriods", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -10,7 +10,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum FvgExtendUntil { Filled = 1, PartiallyFilled = 2, BarsSpecified = 3 }
 
 /// <summary>
-/// Fair Value Gap — 1-on-1 port of NT @FVG math layer.
+/// Fair Value Gap.
 /// A 3-bar gap exists when bar[0].Low &gt; bar[2].High (up-gap) or bar[0].High &lt; bar[2].Low (down-gap)
 /// and the gap size in ticks ≥ MinimumTicks. Gaps are anchored at bar[1] (the gap-creating bar).
 /// EnforceSameDirection requires all three bars to be in the same direction (close vs open).
@@ -97,11 +97,11 @@ public sealed class Fvg : IndicatorBase, IChartCustomRender
 
     public Fvg(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // Default alpha 0x66 (~40%) — matches NT FVG's default Opacity=40 so
+        // Default alpha 0x66 (~40%) — matches the original FVG's default Opacity=40 so
         // the gap rectangles ship translucent out of the box. Users tune via the
         // settings dialog's Opacity column on each plot.
-        var upDefault = new ChartColor(NTColors.LimeGreen.R, NTColors.LimeGreen.G, NTColors.LimeGreen.B, 0x66);
-        var dnDefault = new ChartColor(NTColors.Red.R,       NTColors.Red.G,       NTColors.Red.B,       0x66);
+        var upDefault = new ChartColor(PlotColors.LimeGreen.R, PlotColors.LimeGreen.G, PlotColors.LimeGreen.B, 0x66);
+        var dnDefault = new ChartColor(PlotColors.Red.R,       PlotColors.Red.G,       PlotColors.Red.B,       0x66);
         AddPlot(new Plot("Up Gap",   _upMid,   PlotStyle.Dots, upDefault, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
         AddPlot(new Plot("Down Gap", _downMid, PlotStyle.Dots, dnDefault, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
     }

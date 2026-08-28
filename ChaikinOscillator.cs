@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Chaikin Oscillator — 1-on-1 port of NT @ChaikinOscillator.
+/// Chaikin Oscillator.
 /// MFV = Volume·(2·Close−H−L)/(H−L). Cumulative = ΣMFV (ADL).
 /// Value = EMA(Cumulative, Fast) − EMA(Cumulative, Slow).
 /// Defaults Fast=3, Slow=10, Goldenrod, sub-panel.
@@ -26,7 +26,7 @@ public sealed class ChaikinOscillator : IndicatorBase, IIndicatorPanelHint
 
     public ChaikinOscillator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Chaikin Oscillator", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Chaikin Oscillator", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Fast", Description = "Fast EMA period.",

@@ -33,10 +33,10 @@ public sealed class ZScore : IndicatorBase, IIndicatorPanelHint
 
     public ZScore(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("ZScore", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline; +2 / -2 stretched") });
-        AddLine("Upper",  2,  NTColors.DarkGray);
-        AddLine("Zero",   0,  NTColors.DarkGray);
-        AddLine("Lower", -2,  NTColors.DarkGray);
+        AddPlot(new Plot("ZScore", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline; +2 / -2 stretched") });
+        AddLine("Upper",  2,  PlotColors.DarkGray);
+        AddLine("Zero",   0,  PlotColors.DarkGray);
+        AddLine("Lower", -2,  PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window for the mean and standard deviation.",

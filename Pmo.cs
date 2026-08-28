@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Price Momentum Oscillator (PMO, DecisionPoint) — 1-on-1 port of Skender Pmo.
+/// Price Momentum Oscillator (PMO, DecisionPoint) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   ROC[i] = 100·(C[i]/C[i−1] − 1)
 ///   rocEma = custom-α EMA of ROC, α = 2/TimePeriods, seeded with SMA at bar TimePeriods
 ///   re = rocEma · 10
@@ -35,9 +35,9 @@ public sealed class Pmo : IndicatorBase, IIndicatorPanelHint
 
     public Pmo(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("PMO",    _pmo,    PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("PMO",    _pmo,    PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Signal", _signal, PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "TimePeriods",   MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

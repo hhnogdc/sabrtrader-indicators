@@ -13,7 +13,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Dynamic Levels — 1-on-1 port of ATAS <c>DynamicLevels</c>. Maintains a rolling order-flow
+/// Dynamic Levels. Maintains a rolling order-flow
 /// profile over the last <see cref="Days"/> sessions and plots its Point of Control plus the
 /// Value-Area-High / Value-Area-Low channel, on a selectable <see cref="ProfileMetric"/>
 /// (Volume / Delta / Bid / Ask / Ticks). As price trades, the POC and value area drift — adaptive
@@ -61,16 +61,16 @@ public sealed class DynamicLevels : IndicatorBase, IChartCustomRender
 
     public DynamicLevels(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // ATAS parity: the rolling POC / value-area band drifts tick-by-tick
+        // The original parity: the rolling POC / value-area band drifts tick-by-tick
         // with the developing bar. The OnBarClose default freezes the levels
         // one bar behind (the forming bar invisible to the profile).
         Calculate = CalculationMode.OnEachTick;
         OrderFlowResolution = OrderFlowResolution.Second;
-        AddPlot(new Plot("POC", _poc, PlotStyle.Dots, NTColors.Orange, 2.0)
+        AddPlot(new Plot("POC", _poc, PlotStyle.Dots, PlotColors.Orange, 2.0)
         { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "rolling point of control (highest-metric price)") });
-        AddPlot(new Plot("Value Area High", _vah, PlotStyle.Line, NTColors.Maroon, 1.0)
+        AddPlot(new Plot("Value Area High", _vah, PlotStyle.Line, PlotColors.Maroon, 1.0)
         { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "upper edge of the rolling value area") });
-        AddPlot(new Plot("Value Area Low", _val, PlotStyle.Line, NTColors.Maroon, 1.0)
+        AddPlot(new Plot("Value Area Low", _val, PlotStyle.Line, PlotColors.Maroon, 1.0)
         { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "lower edge of the rolling value area") });
     }
 

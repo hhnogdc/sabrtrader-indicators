@@ -31,8 +31,8 @@ public sealed class Kurtosis : IndicatorBase, IIndicatorPanelHint
 
     public Kurtosis(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Kurtosis", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, "0 = normal-tailed (Gaussian)") });
-        AddLine("Zero", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Kurtosis", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, "0 = normal-tailed (Gaussian)") });
+        AddLine("Zero", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window over which the moments are computed.",

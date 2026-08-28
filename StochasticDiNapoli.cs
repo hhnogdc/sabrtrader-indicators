@@ -46,10 +46,10 @@ public sealed class StochasticDiNapoli : IndicatorBase, IIndicatorPanelHint
     public StochasticDiNapoli(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         var osc = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "30/70");
-        AddPlot(new Plot("SlowK", _slowK, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = osc });
-        AddPlot(new Plot("SlowD", _slowD, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = osc });
-        AddLine("Oversold",   30, NTColors.DarkCyan);
-        AddLine("Overbought", 70, NTColors.DarkCyan);
+        AddPlot(new Plot("SlowK", _slowK, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = osc });
+        AddPlot(new Plot("SlowD", _slowD, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = osc });
+        AddLine("Oversold",   30, PlotColors.DarkCyan);
+        AddLine("Overbought", 70, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "PeriodK", Description = "Fast %K high/low lookback.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

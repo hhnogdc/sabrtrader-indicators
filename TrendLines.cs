@@ -8,7 +8,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// TrendLines — 1-on-1 port of NT @TrendLines.
+/// TrendLines.
 /// Uses a child <see cref="Swing"/> to detect swing highs/lows. When a NEW swing high
 /// is detected that is LOWER than the previous swing high, a down-trend line is drawn
 /// from the previous swing-high pivot to the new pivot (and vice-versa for up-trends).
@@ -32,7 +32,7 @@ public sealed class TrendLines : IndicatorBase, IChartCustomRender
         public double EndPrice;
         public bool IsHigh;
         // Absolute bar index where price first closed through the line (broke it), or -1
-        // while still intact. A broken line stops extending here (NT @TrendLines freezes a
+        // while still intact. A broken line stops extending here (the original @TrendLines freezes a
         // trend line at its break instead of projecting it on into the void).
         public int BreakBar = -1;
     }
@@ -54,7 +54,7 @@ public sealed class TrendLines : IndicatorBase, IChartCustomRender
 
     public TrendLines(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        // NT @TrendLines: the "Current Trend Line" plot is TRANSPARENT — it exists only
+        // The original @TrendLines: the "Current Trend Line" plot is TRANSPARENT — it exists only
         // for the data box + auto-scale (it carries the active trend's projected price,
         // which jumps as the active trend flips high↔low so it would render as an ugly
         // zigzag). The visible trend lines are the rays drawn in OnCustomRender.
@@ -78,8 +78,8 @@ public sealed class TrendLines : IndicatorBase, IChartCustomRender
     [IndicatorParameter(DisplayName = "AlertOnBreak")]
     public bool AlertOnBreak { get; set; } = false;
 
-    public ChartColor HighStroke { get; set; } = NTColors.DarkCyan;
-    public ChartColor LowStroke  { get; set; } = NTColors.Goldenrod;
+    public ChartColor HighStroke { get; set; } = PlotColors.DarkCyan;
+    public ChartColor LowStroke  { get; set; } = PlotColors.Goldenrod;
 
     public ISeries<double> Projected => _projW ??= new IndicatorOutputSeries(_projected, Bars);
 

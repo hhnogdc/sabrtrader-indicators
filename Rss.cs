@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Relative Spread Strength — 1-on-1 port of NT @RSS (TASC 2006).
+/// Relative Spread Strength.
 /// spread = EMA(in, EMA1) − EMA(in, EMA2).
 /// rs     = RSI(spread, Length, Smooth=1).
 /// Output = SMA(rs, 5).
@@ -34,9 +34,9 @@ public sealed class Rss : IndicatorBase, IIndicatorPanelHint
 
     public Rss(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("RSS", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
-        AddLine("Lower", 20, NTColors.DarkGray);
-        AddLine("Upper", 80, NTColors.DarkGray);
+        AddPlot(new Plot("RSS", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "overbought/oversold") });
+        AddLine("Lower", 20, PlotColors.DarkGray);
+        AddLine("Upper", 80, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "EMA1", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
@@ -88,9 +88,9 @@ public sealed class Rss : IndicatorBase, IIndicatorPanelHint
         _spread.Append(e1 - e2);
         _rsi.OnBarUpdate(ctx);
         double rsiVal = _rsi.Default[0];
-        // NT's Series<double>[0] returns 0 for NaN-initialised slots in
-        // chart usage; here Rsi emits NaN for bar 0 — NT's RSI does too,
-        // but NT's SMA implicitly treats NaN as 0 in the rolling sum.
+        // The original's Series<double>[0] returns 0 for NaN-initialised slots in
+        // chart usage; here Rsi emits NaN for bar 0 — the original's RSI does too,
+        // but the original's SMA implicitly treats NaN as 0 in the rolling sum.
         // Coerce to 0 for parity.
         if (double.IsNaN(rsiVal)) rsiVal = 0;
         _rsSeries.Append(rsiVal);

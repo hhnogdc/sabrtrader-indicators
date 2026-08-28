@@ -6,11 +6,11 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Average Directional Index (ADX) — 1-on-1 port of NT's @ADX.
+/// Average Directional Index (ADX).
 /// Single plot (DarkCyan). Two reference lines: 25 SlateBlue ("Strong
 /// Trend"), 75 Goldenrod ("Very Strong Trend").
 ///
-/// NT formula: bar 0 → ADX=50 (no math possible without a prior bar).
+/// the original formula: bar 0 → ADX=50 (no math possible without a prior bar).
 /// While CurrentBar &lt; Period: simple cumulative sums of TR, +DM, -DM.
 /// Once at/past Period: Wilder smoothing of those sums
 /// <c>sum_t = sum_{t-1} − sum_{t-1}/Period + new</c>. Then
@@ -32,7 +32,7 @@ public sealed class Adx : IndicatorBase, IIndicatorPanelHint
     private IndicatorOutputSeries? _outputAsBarSourced;
 
     // Per-bar TR/DM+/DM- and their running sums — Series<double>
-    // equivalents from NT's reference impl. We use plain doubles
+    // equivalents from the original's reference impl. We use plain doubles
     // because we only need the previous bar's values.
     private double _sumTr, _sumDmPlus, _sumDmMinus;
     private double _adxValue;
@@ -42,12 +42,12 @@ public sealed class Adx : IndicatorBase, IIndicatorPanelHint
     public Adx(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("ADX", _adx, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "25 strong / 75 very strong trend") });
+        AddPlot(new Plot("ADX", _adx, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, "25 strong / 75 very strong trend") });
         // ADX is unbounded and usually reads 10-30; the 25/75 reference lines
         // must NOT stretch the panel scale (else a 75 line compresses the data
-        // into a sliver). NT draws them without driving the scale.
+        // into a sliver). The original draws them without driving the scale.
         AddLine("Strong Trend",      25, new ChartColor(0x6A, 0x5A, 0xCD), participatesInAutoScale: false);  // SlateBlue
-        AddLine("Very Strong Trend", 75, NTColors.Goldenrod,               participatesInAutoScale: false);
+        AddLine("Very Strong Trend", 75, PlotColors.Goldenrod,               participatesInAutoScale: false);
     }
 
     [IndicatorParameter(DisplayName = "Period",
@@ -93,7 +93,7 @@ public sealed class Adx : IndicatorBase, IIndicatorPanelHint
         double low0  = bar.Low;
         if (_prevHigh is null)
         {
-            // Bar 0: NT seeds sumTR = TR (= high - low), sumDM = 0, ADX = 50.
+            // Bar 0: The original seeds sumTR = TR (= high - low), sumDM = 0, ADX = 50.
             _sumTr = high0 - low0;
             _sumDmPlus = 0;
             _sumDmMinus = 0;

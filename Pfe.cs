@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Polarized Fractal Efficiency — 1-on-1 port of NT @PFE.
+/// Polarized Fractal Efficiency.
 /// singlePFE_i = sqrt((C[i-1] − C[i])² + 1).
 /// div = Σ singlePFE over Period bars.
 /// pfe = sign(C[0] − C[Period]) · sqrt((C[0] − C[Period])² + Period²) / div.
@@ -28,8 +28,8 @@ public sealed class Pfe : IndicatorBase, IIndicatorPanelHint
 
     public Pfe(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("PFE", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("PFE", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

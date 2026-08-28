@@ -6,10 +6,10 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Average True Range — 1-on-1 port of NinjaTrader's @ATR
+/// Average True Range
 /// (Wilder 1978).
 ///
-/// NT formula: bar 0 → Value = High − Low (no prev close to gap).
+/// the original formula: bar 0 → Value = High − Low (no prev close to gap).
 /// Subsequent bars compute the true range
 /// <c>TR = max(|low − prevClose|, max(high − low, |high − prevClose|))</c>
 /// then a running mean while CurrentBar+1 &lt; Period, transitioning
@@ -31,12 +31,12 @@ public sealed class Atr : IndicatorBase, IIndicatorPanelHint
     private IndicatorOutputSeries? _outputAsBarSourced;
     private double _value;
     private double? _prevClose;
-    private int _barIdx;     // 0-based bar counter; NT's CurrentBar equivalent
+    private int _barIdx;     // 0-based bar counter; the original's CurrentBar equivalent
 
     public Atr(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("ATR", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("ATR", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(
@@ -95,7 +95,7 @@ public sealed class Atr : IndicatorBase, IIndicatorPanelHint
         double lPC  = Math.Abs(bar.Low  - prev);
         double tr   = Math.Max(hl, Math.Max(hPC, lPC));
 
-        // NT formula combines the warmup running-average and post-warmup
+        // The original formula combines the warmup running-average and post-warmup
         // Wilder smoothing into a single expression. Once _barIdx >=
         // Period it reduces to ((Period-1) * prev + tr) / Period.
         int n = Math.Min(_barIdx + 1, Period);

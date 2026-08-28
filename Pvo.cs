@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Percentage Volume Oscillator (PVO) — 1-on-1 port of Skender Pvo.
+/// Percentage Volume Oscillator (PVO) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   PVO = 100·(EMA(V, Fast) − EMA(V, Slow)) / EMA(V, Slow)
 ///   Signal = EMA(PVO, SignalPeriods)
 ///   Histogram = PVO − Signal
@@ -33,10 +33,10 @@ public sealed class Pvo : IndicatorBase, IIndicatorPanelHint
 
     public Pvo(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("PVO",       _pvo,       PlotStyle.Line,      NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Signal",    _signal,    PlotStyle.Line,      NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Histogram", _histogram, PlotStyle.Histogram, NTColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("PVO",       _pvo,       PlotStyle.Line,      PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Signal",    _signal,    PlotStyle.Line,      PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Histogram", _histogram, PlotStyle.Histogram, PlotColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast",          MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

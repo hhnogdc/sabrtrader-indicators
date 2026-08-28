@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Standard Error of Linear Regression — 1-on-1 port of NT @StdError.
+/// Standard Error of Linear Regression.
 /// Fits an OLS line over the trailing <see cref="Period"/> inputs and
 /// emits three plots:
 ///   <list type="bullet">
@@ -29,9 +29,9 @@ public sealed class StdError : IndicatorBase
 
     public StdError(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("LinReg", _middle, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Upper",  _upper,  PlotStyle.Line, NTColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower",  _lower,  PlotStyle.Line, NTColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("LinReg", _middle, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper",  _upper,  PlotStyle.Line, PlotColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower",  _lower,  PlotStyle.Line, PlotColors.DarkCyan,  1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window size.",
@@ -52,8 +52,8 @@ public sealed class StdError : IndicatorBase
     {
         var src = Input;
         int n = src.Count;
-        // NT's stateful incremental sums are equivalent — we just re-compute
-        // per bar here. O(P) per bar, no allocations. The math matches NT's
+        // The original's stateful incremental sums are equivalent — we just re-compute
+        // per bar here. O(P) per bar, no allocations. The math matches the original's
         // IsRemoveLastBarSupported branch.
         for (int absIdx = 0; absIdx < n; absIdx++)
         {
@@ -73,14 +73,14 @@ public sealed class StdError : IndicatorBase
     {
         if (barIdx == 0)
         {
-            // NT bar 0 in non-IsRemoveLastBarSupported branch: all three = input.
+            // The original bar 0 in non-IsRemoveLastBarSupported branch: all three = input.
             double v0 = src[barsAgoOfCurrent];
             _middle.Append(v0); _upper.Append(v0); _lower.Append(v0);
             return;
         }
         int p = Math.Min(barIdx + 1, Period);
         // x = 0..p-1 (0 = oldest in the window). Sum_x = p*(p-1)/2.
-        // We want: slope = (P*Σxy − Σx·Σy) / (P*Σx² − (Σx)²) but in NT's
+        // We want: slope = (P*Σxy − Σx·Σy) / (P*Σx² − (Σx)²) but in the original's
         // alternative parameterisation used in IsRemoveLastBarSupported,
         // d = P²·(P-1)(2P-1)/6 − (P(P-1)/2)² ; here we use that.
         // To be safe + simple we just compute OLS slope/intercept directly.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using SabrTrader.Pipeline.Alerts;
 using SabrTrader.Pipeline.Bars;
 using SabrTrader.Pipeline.Charts.Rendering;
@@ -15,8 +16,8 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// <summary>
 /// Cumulative Delta as OHLC candles — the running sum of per-tick
 /// (AskVolume − BidVolume), captured per-bar as Open / High / Low /
-/// Close of the cumulative trace. A 1-on-1 functional port of the
-/// NinjaTrader <c>TDUCumulativeDeltaVolume</c> study: cum-delta
+/// Close of the cumulative trace. Equivalent to the
+/// the original <c>TDUCumulativeDeltaVolume</c> study: cum-delta
 /// candle, optional Bollinger Bands over the close, and price /
 /// oscillator divergence lines.
 ///
@@ -33,34 +34,34 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// <para><b>Plots</b>: index 0 is the legacy <c>CumDelta</c> <see cref="OhlcPlot"/>
 /// (custom-rendered candle; kept at slot 0 so saved workspaces that stored
 /// <c>PlotStyle.Candle</c> on the old candle plot still decode cleanly).
-/// Indices 1–10 mirror NinjaTrader <c>TDUCumulativeDeltaVolume</c>
+/// Indices 1–10 mirror the original <c>TDUCumulativeDeltaVolume</c>
 /// Values[0..9]: BB Low / Mid / High, Trend, High / Low / Open / Close,
 /// Histogram, Divergence — all in the data window
 /// (<c>IncludeInDataWindow</c>).</para>
 ///
 /// <para><b>Bollinger Bands</b> (BB Low/Mid/High): SMA(<see cref="Period"/>)
 /// of the cum-delta CLOSE flanked by ± <see cref="NumStdDev"/>·σ (population
-/// σ, NT @StdDev). The window spans session resets exactly as NT's
-/// <c>Bollinger(CandleClose,…)</c> does, and — matching NT's
+/// σ, the original @StdDev). The window spans session resets exactly as the original's
+/// <c>Bollinger(CandleClose,…)</c> does, and — matching the original's
 /// <c>CurrentBar &lt; 5</c> guard — bands are NaN for the first five
-/// bars. The forming bar's close feeds the window live (NT recomputes
+/// bars. The forming bar's close feeds the window live (the original recomputes
 /// the band every tick), so the bands breathe intra-bar.</para>
 ///
 /// <para><b>Divergence</b> (<see cref="ShowDivergence"/>, default ON):
 /// price swing highs/lows are detected with a hardcoded strength of 2
-/// (NT uses <c>Swing(2)</c>, NOT <see cref="SwingStrength"/> — that
+/// (the original uses <c>Swing(2)</c>, NOT <see cref="SwingStrength"/> — that
 /// only gates the warm-up). A regular bullish divergence draws a line
 /// between the price lows AND between the corresponding cum-delta lows
 /// when price makes a lower-or-equal low while the cum-delta makes a
 /// higher low; bearish is the mirror on highs. Lines render on both the
 /// indicator's own subpanel (cum-delta lows/highs) and the price panel
-/// (price lows/highs), exactly as NT's <c>DrawOnPricePanel</c> toggle
+/// (price lows/highs), exactly as the original's <c>DrawOnPricePanel</c> toggle
 /// does. <see cref="SwingStrength"/> / <see cref="LookbackPeriod"/> are
 /// retained for settings parity (LookbackPeriod is effectively inert in
-/// NT too, since 30 ≫ the strength-2 confirmation distance).</para>
+/// the original too, since 30 ≫ the strength-2 confirmation distance).</para>
 ///
 /// <para><b>Session reset</b>: the cumulator ALWAYS resets to zero at
-/// each session open — same as NinjaTrader's Order Flow Cumulative
+/// each session open — same as the original's Order Flow Cumulative
 /// Delta with Period = Session. <see cref="SessionTimes"/> selects
 /// where the session times come from: the data series' Trading Hours
 /// template (default, holiday/DST-correct) or the manual
@@ -69,9 +70,9 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///
 /// <para>Requires orderflow data
 /// (<see cref="RequiresOrderFlowAttribute"/>). This is the one allowed
-/// departure from NT: the delta is sourced from per-bar orderflow
+/// departure from the original: the delta is sourced from per-bar orderflow
 /// (AskVolume − BidVolume) rather than recomputed tick-by-tick — the
-/// two are value-equivalent for the BidAsk method. NT's alternate
+/// two are value-equivalent for the BidAsk method. The original's alternate
 /// <c>UpDownTick</c> / <c>TickCount</c> methods and its
 /// (unused) SmoothPeriod are intentionally not ported.</para>
 /// </summary>
@@ -95,14 +96,14 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     private IndicatorOutputSeries? _bbHighView, _bbMidView, _bbLowView;
     private RollingStdDev _bbWindow = null!;
 
-    // NT Values[3] Trend, Values[8] Histogram, Values[9] Signal ("Divergence").
+    // The original Values[3] Trend, Values[8] Histogram, Values[9] Signal ("Divergence").
     private readonly ChunkedSeries<double> _trend = new();
     private readonly ChunkedSeries<double> _histogram = new();
     private readonly ChunkedSeries<double> _signal = new();
     private IndicatorOutputSeries? _trendView, _histogramView, _signalView;
 
-    private static readonly ChartColor BarUpColor = NTColors.DarkSeaGreen;
-    private static readonly ChartColor BarDownColor = NTColors.IndianRed;
+    private static readonly ChartColor BarUpColor = PlotColors.DarkSeaGreen;
+    private static readonly ChartColor BarDownColor = PlotColors.IndianRed;
     private const double CandleBodyFillRatio = 0.7;
     private const double CandleWickWidthPx = 1.0;
 
@@ -128,7 +129,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     public CumulativeDelta(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        // NT parity: NinjaTrader's cumulative-delta study updates the
+        // The original parity: The original's cumulative-delta study updates the
         // developing candle tick-by-tick. With the OnBarClose default the
         // dispatch cadence gate drops every intra-bar update and the forming
         // cum-delta candle only appears once the bar closes.
@@ -152,12 +153,12 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
             ShowPriceMarker = false,
             Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, "cum-delta candle (custom render)"),
         });
-        // NT Values[0..9] at indices 1..10 — all surface in the data window.
-        AddPlot(new Plot("BB Low",  _bbLow,  PlotStyle.Line, NTColors.Yellow, 1.0)
+        // The original Values[0..9] at indices 1..10 — all surface in the data window.
+        AddPlot(new Plot("BB Low",  _bbLow,  PlotStyle.Line, PlotColors.Yellow, 1.0)
         { Visible = false, IncludeInDataWindow = true, Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("BB Mid",  _bbMid,  PlotStyle.Dots, NTColors.Yellow, 1.0)
+        AddPlot(new Plot("BB Mid",  _bbMid,  PlotStyle.Dots, PlotColors.Yellow, 1.0)
         { Visible = false, IncludeInDataWindow = true, Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("BB High", _bbHigh, PlotStyle.Line, NTColors.Yellow, 1.0)
+        AddPlot(new Plot("BB High", _bbHigh, PlotStyle.Line, PlotColors.Yellow, 1.0)
         { Visible = false, IncludeInDataWindow = true, Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
         AddPlot(new Plot("Trend", _trend, PlotStyle.Line, ChartColor.Transparent, 1.0)
         { Visible = false, ShowPriceMarker = false, IncludeInDataWindow = true, Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, "+1 uptrend / -1 downtrend") });
@@ -216,10 +217,10 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     public string? AlertSound { get; set; } = BuiltinAlertSounds.Default;
 
     [IndicatorParameter(DisplayName = "Bullish divergence")]
-    public ChartColor BullishDivergence { get; set; } = NTColors.Lime;
+    public ChartColor BullishDivergence { get; set; } = PlotColors.Lime;
 
     [IndicatorParameter(DisplayName = "Bearish divergence")]
-    public ChartColor BearishDivergence { get; set; } = NTColors.Magenta;
+    public ChartColor BearishDivergence { get; set; } = PlotColors.Magenta;
 
     /// <summary>Per-bar Open of the cum-delta candle (running cum at bar start).</summary>
     public ISeries<double> Open  => _openView  ??= new IndicatorOutputSeries(_open,  Bars);
@@ -242,34 +243,34 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     /// <summary>Bollinger lower band over the cum-delta close.</summary>
     public ISeries<double> BollingerLow  => _bbLowView  ??= new IndicatorOutputSeries(_bbLow,  Bars);
 
-    /// <summary>NT <c>BBLow</c> alias.</summary>
+    /// <summary>The original <c>BBLow</c> alias.</summary>
     public ISeries<double> BBLow => BollingerLow;
 
-    /// <summary>NT <c>BBMid</c> alias.</summary>
+    /// <summary>The original <c>BBMid</c> alias.</summary>
     public ISeries<double> BBMid => BollingerMid;
 
-    /// <summary>NT <c>BBHigh</c> alias.</summary>
+    /// <summary>The original <c>BBHigh</c> alias.</summary>
     public ISeries<double> BBHigh => BollingerHigh;
 
-    /// <summary>NT <c>CandleOpen</c> alias.</summary>
+    /// <summary>The original <c>CandleOpen</c> alias.</summary>
     public ISeries<double> CandleOpen => Open;
 
-    /// <summary>NT <c>CandleHigh</c> alias.</summary>
+    /// <summary>The original <c>CandleHigh</c> alias.</summary>
     public ISeries<double> CandleHigh => High;
 
-    /// <summary>NT <c>CandleLow</c> alias.</summary>
+    /// <summary>The original <c>CandleLow</c> alias.</summary>
     public ISeries<double> CandleLow => Low;
 
-    /// <summary>NT <c>CandleClose</c> alias.</summary>
+    /// <summary>The original <c>CandleClose</c> alias.</summary>
     public ISeries<double> CandleClose => Close;
 
-    /// <summary>+1 when close &gt;= prior close, -1 otherwise (NT Values[3]; NaN for the first five bars).</summary>
+    /// <summary>+1 when close &gt;= prior close, -1 otherwise (the original Values[3]; NaN for the first five bars).</summary>
     public ISeries<double> Trend => _trendView ??= new IndicatorOutputSeries(_trend, Bars);
 
-    /// <summary>Reserved NT plot column (Values[8]); not populated by the NT study either.</summary>
+    /// <summary>Reserved the original plot column (Values[8]); not populated by the original study either.</summary>
     public ISeries<double> Histogram => _histogramView ??= new IndicatorOutputSeries(_histogram, Bars);
 
-    /// <summary>Divergence signal: +1 bullish, -1 bearish, 0 otherwise (NT Values[9] / plot "Divergence").</summary>
+    /// <summary>Divergence signal: +1 bullish, -1 bearish, 0 otherwise (the original Values[9] / plot "Divergence").</summary>
     public ISeries<double> Signal => _signalView ??= new IndicatorOutputSeries(_signal, Bars);
 
     /// <summary>
@@ -328,7 +329,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     }
 
     /// <summary>
-    /// Workspace plot JSON is index-matched. After the NT plot expansion, a
+    /// Workspace plot JSON is index-matched. After the original plot expansion, a
     /// saved <c>PlotStyle.Candle</c> from the old plots[1..3] BB slots (or
     /// any non-OHLC plot) must not reach the standard render pass.
     /// </summary>
@@ -426,7 +427,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         Upsert(_low,   low,   rowCount);
         Upsert(_close, close, rowCount);
 
-        // Bollinger over the cum-delta close. NT recomputes the band every
+        // Bollinger over the cum-delta close. The original recomputes the band every
         // tick against a CandleClose series whose forming-bar value updates in
         // place — so one Push per bar (first event) + UpdateLast as it grows.
         if (firstEvent) _bbWindow.Push(close);
@@ -434,7 +435,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         int barIdx = rowCount - 1;
         if (barIdx < 5)
         {
-            // NT guards BB behind CurrentBar >= 5.
+            // The original guards BB behind CurrentBar >= 5.
             Upsert(_bbHigh, double.NaN, rowCount);
             Upsert(_bbMid,  double.NaN, rowCount);
             Upsert(_bbLow,  double.NaN, rowCount);
@@ -448,16 +449,16 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
             Upsert(_bbLow,  mean - NumStdDev * sd, rowCount);
         }
 
-        // NT SetValues: Trend only once CurrentBar >= 5.
+        // The original SetValues: Trend only once CurrentBar >= 5.
         if (barIdx >= 5 && _close.TryGet(1, out double prevClose))
             Upsert(_trend, close >= prevClose ? 1.0 : -1.0, rowCount);
         else
             Upsert(_trend, 0, rowCount);
 
-        // NT declares a Histogram plot but never assigns it in the active path.
+        // The original declares a Histogram plot but never assigns it in the active path.
         Upsert(_histogram, 0, rowCount);
 
-        // Divergence / signal — once per bar, on its close (NT runs it on the first tick
+        // Divergence / signal — once per bar, on its close (the original runs it on the first tick
         // of the NEXT bar; same data, fires one bar earlier in wall-clock). Keep the
         // Divergence plot row-aligned on every bar event so the data window can read
         // the hovered bar by absolute index (same contract as OHLC / Trend).
@@ -476,6 +477,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
                 CommitClosedBar(barIdx, bar.High, bar.Low, oscHigh: high, oscLow: low, oscClose: close);
                 DetectPriceSwings(barIdx);
                 DetectDivergence(barIdx, ctx, isLive);
+                PublishDivergencesIfDirty();
             }
         }
         else if (firstEvent)
@@ -510,7 +512,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     //
     // Committed per-closed-bar series (absolute index = closed-bar index),
     // populated on each bar close. Price High/Low drive the swing detector
-    // and the price-panel lines; the cum-delta candle High/Low (NT's
+    // and the price-panel lines; the cum-delta candle High/Low (the original's
     // CandleHigh/CandleLow) drive the oscillator condition + the subpanel
     // lines.
 
@@ -531,26 +533,35 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         { IdxA = idxA; PriceA = priceA; OscA = oscA; IdxB = idxB; PriceB = priceB; OscB = oscB; Color = color; }
     }
 
-    private const int SwingDetectStrength = 2;   // NT hardcodes Swing(2)
+    private const int SwingDetectStrength = 2;   // the original hardcodes Swing(2)
 
     private readonly List<double> _pHigh = new();
     private readonly List<double> _pLow  = new();
-    private readonly List<double> _oHigh = new();   // cum-delta candle High — drives the oscillator swing CONDITION (NT CandleHigh)
-    private readonly List<double> _oLow  = new();   // cum-delta candle Low  — drives the oscillator swing CONDITION (NT CandleLow)
+    private readonly List<double> _oHigh = new();   // cum-delta candle High — drives the oscillator swing CONDITION (the original CandleHigh)
+    private readonly List<double> _oLow  = new();   // cum-delta candle Low  — drives the oscillator swing CONDITION (the original CandleLow)
     private readonly List<double> _oClose = new();  // cum-delta candle Close — the trace the DRAWN osc line rides (so it doesn't float at the wick tips)
     private readonly List<double> _shCache = new();   // rolling price-high window for swing detect
     private readonly List<double> _slCache = new();   // rolling price-low window
     private readonly List<SwingPt> _swingHis = new();
     private readonly List<SwingPt> _swingLos = new();
 
-    // NT-style draw-index bookkeeping (consecutive-bar bullish divergences
-    // overwrite the previous line; the NT bearish path has a no-op decrement
+    // original-style draw-index bookkeeping (consecutive-bar bullish divergences
+    // overwrite the previous line; the original bearish path has a no-op decrement
     // bug so its lines never overwrite — replicated below for parity).
     private readonly Dictionary<int, DivLine> _bull = new();
     private readonly Dictionary<int, DivLine> _bear = new();
     private int _lastBullIndex, _lastBullBar = int.MinValue;
     private int _lastBearIndex;
     private int _lastDetectBarIdx = -1;
+
+    // Render snapshot. The render passes run on the chart's own thread while the
+    // compute pass adds divergences, so they must NEVER enumerate _bull / _bear
+    // directly — a detect landing mid-frame kills the whole pass with
+    // "Collection was modified" (changhuiliu 2026-08-23 OnRenderPricePanel crash).
+    // Bull entries first then bear, so the published order matches the old
+    // two-foreach draw order exactly. Rebuilt only when the set actually changes.
+    private bool _divDirty;
+    private DivLine[] _divSnapshot = Array.Empty<DivLine>();
 
     private void ClearDivergenceState()
     {
@@ -561,6 +572,35 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
         _lastBullIndex = 0; _lastBullBar = int.MinValue;
         _lastBearIndex = 0;
         _lastDetectBarIdx = -1;
+        // A reset must clear what is DRAWN immediately — publish now rather than
+        // waiting for the next bar event, which may never come (OnInit / OnReset).
+        _divDirty = false;
+        Volatile.Write(ref _divSnapshot, Array.Empty<DivLine>());
+    }
+
+    /// <summary>
+    /// Publishes the immutable array the render passes read. Called at the end of
+    /// each closed-bar detect; a no-op unless a divergence was added or dropped,
+    /// so the steady-state per-bar cost is one bool test and there is no
+    /// per-frame or per-tick allocation.
+    /// </summary>
+    private void PublishDivergencesIfDirty()
+    {
+        if (!_divDirty) return;
+        _divDirty = false;
+
+        int count = _bull.Count + _bear.Count;
+        if (count == 0)
+        {
+            Volatile.Write(ref _divSnapshot, Array.Empty<DivLine>());
+            return;
+        }
+
+        var snapshot = new DivLine[count];
+        int i = 0;
+        foreach (var seg in _bull.Values) snapshot[i++] = seg;
+        foreach (var seg in _bear.Values) snapshot[i++] = seg;
+        Volatile.Write(ref _divSnapshot, snapshot);
     }
 
     private void CommitClosedBar(int barIdx, double priceHigh, double priceLow, double oscHigh, double oscLow, double oscClose)
@@ -588,7 +628,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     }
 
     /// <summary>Strength-2 swing detection over the committed price highs/lows
-    /// (NT @Swing semantics: left strictly beyond, right beyond-or-equal).</summary>
+    /// (the original @Swing semantics: left strictly beyond, right beyond-or-equal).</summary>
     private void DetectPriceSwings(int barIdx)
     {
         const int n = 2 * SwingDetectStrength + 1;   // 5
@@ -623,7 +663,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
 
     private void DetectDivergence(int barIdx, IIndicatorContext ctx, bool isLive)
     {
-        int cur = barIdx + 1;                 // NT CurrentBar (forming bar)
+        int cur = barIdx + 1;                 // the original CurrentBar (forming bar)
         if (cur < SwingStrength * 2) return;
         if (cur < 13) return;
         DetectBullishDivergence(barIdx, cur, ctx, isLive);
@@ -654,6 +694,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
                         // Low wick the CONDITION above uses — a wick anchor floats the
                         // line off the visible trace on this candle oscillator.
                         _bull[key] = new DivLine(sw.Bar, _pLow[sw.Bar], _oClose[sw.Bar], b, _pLow[b], _oClose[b], BullishDivergence);
+                        _divDirty = true;
                         _lastBullBar = cur;
                         _lastBullIndex = key + 1;
                         Upsert(_signal, 1, b + 1);
@@ -676,7 +717,7 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     {
         if (_swingHis.Count == 0) return;
         int index = _swingHis.Count - 1;
-        // NT increments no counter in the bearish walk (a copy-paste omission),
+        // The original increments no counter in the bearish walk (a copy-paste omission),
         // so it walks every swing high back to the first monotonic break.
         while (true)
         {
@@ -689,13 +730,14 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
                     double maxOsc = MaxRange(_oHigh, sw.Bar, b);
                     if (_oHigh[sw.Bar] >= maxOsc && _oHigh[b] < maxOsc)
                     {
-                        // NT decrements _lastBearishDrawBar here (not the index) and
+                        // The original decrements _lastBearishDrawBar here (not the index) and
                         // then overwrites it 1:1 below — a no-op, so bearish lines
                         // never overwrite. Replicated: always a fresh key.
                         // Osc endpoints ride the cum-delta CLOSE (the trace), not the
                         // High wick the CONDITION above uses (whose tips float above the
                         // bodies — the reported "start hangs in midair").
                         _bear[_lastBearIndex] = new DivLine(sw.Bar, _pHigh[sw.Bar], _oClose[sw.Bar], b, _pHigh[b], _oClose[b], BearishDivergence);
+                        _divDirty = true;
                         _lastBearIndex++;
                         Upsert(_signal, -1, b + 1);
                         if (EnableAlerts && isLive)
@@ -727,16 +769,17 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
 
     // ───────────────────────── Rendering ───────────────────────────
 
-    /// <summary>Subpanel pass: cum-delta candles (NT OnRender) then divergence lines.</summary>
+    /// <summary>Subpanel pass: cum-delta candles (the original OnRender) then divergence lines.</summary>
     public void OnCustomRender(IIndicatorRenderContext ctx)
     {
         if (Plots.Count > 0 && Plots[0].Visible)
             RenderCumDeltaCandles(ctx);
-        if (!ShowDivergence || (_bull.Count == 0 && _bear.Count == 0)) return;
+        if (!ShowDivergence) return;
+        DivLine[] snapshot = Volatile.Read(ref _divSnapshot);
+        if (snapshot.Length == 0) return;
         ChartViewport vp = ctx.Viewport;
         IChartRenderer r = ctx.Renderer;
-        foreach (var seg in _bull.Values) DrawOsc(r, vp, seg);
-        foreach (var seg in _bear.Values) DrawOsc(r, vp, seg);
+        for (int i = 0; i < snapshot.Length; i++) DrawOsc(r, vp, in snapshot[i]);
     }
 
     private void RenderCumDeltaCandles(IIndicatorRenderContext ctx)
@@ -784,11 +827,12 @@ public sealed class CumulativeDelta : IndicatorBase, IIndicatorPanelHint,
     /// <summary>Price-panel pass: divergence lines between the price lows/highs.</summary>
     public void OnRenderPricePanel(IIndicatorRenderContext ctx)
     {
-        if (!ShowDivergence || (_bull.Count == 0 && _bear.Count == 0)) return;
+        if (!ShowDivergence) return;
+        DivLine[] snapshot = Volatile.Read(ref _divSnapshot);
+        if (snapshot.Length == 0) return;
         ChartViewport vp = ctx.Viewport;
         IChartRenderer r = ctx.Renderer;
-        foreach (var seg in _bull.Values) DrawPrice(r, vp, seg);
-        foreach (var seg in _bear.Values) DrawPrice(r, vp, seg);
+        for (int i = 0; i < snapshot.Length; i++) DrawPrice(r, vp, in snapshot[i]);
     }
 
     private static void DrawOsc(IChartRenderer r, ChartViewport vp, in DivLine seg)

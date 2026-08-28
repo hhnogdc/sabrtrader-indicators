@@ -40,14 +40,14 @@ public sealed class WaveTrend : IndicatorBase, IIndicatorPanelHint
 
     public WaveTrend(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("WT1",  _wt1,  PlotStyle.Line,      NTColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("WT2",  _wt2,  PlotStyle.Line,      NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Diff", _diff, PlotStyle.Histogram, NTColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddLine("Overbought 2",   60, NTColors.DarkGray);
-        AddLine("Overbought 1",   53, NTColors.DarkGray);
-        AddLine("Zero line",       0, NTColors.DarkGray);
-        AddLine("Oversold 1",    -53, NTColors.DarkGray);
-        AddLine("Oversold 2",    -60, NTColors.DarkGray);
+        AddPlot(new Plot("WT1",  _wt1,  PlotStyle.Line,      PlotColors.DodgerBlue, 1.5) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("WT2",  _wt2,  PlotStyle.Line,      PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Diff", _diff, PlotStyle.Histogram, PlotColors.DarkCyan,   2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddLine("Overbought 2",   60, PlotColors.DarkGray);
+        AddLine("Overbought 1",   53, PlotColors.DarkGray);
+        AddLine("Zero line",       0, PlotColors.DarkGray);
+        AddLine("Oversold 1",    -53, PlotColors.DarkGray);
+        AddLine("Oversold 2",    -60, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "ChannelLength", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

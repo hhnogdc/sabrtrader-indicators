@@ -4,9 +4,9 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Constant Lines — 1-on-1 port of NT @ConstantLines.
+/// Constant Lines.
 /// Adds up to four user-set horizontal lines on the price panel via
-/// the <see cref="IIndicator.Lines"/> mechanism. NT defaults: lines
+/// the <see cref="IIndicator.Lines"/> mechanism. The original defaults: lines
 /// at 0 (Goldenrod). Each enabled toggle controls whether the line
 /// is rendered; the values are user-configurable.
 /// </summary>
@@ -17,10 +17,17 @@ public sealed class ConstantLines : IndicatorBase
 {
     public ConstantLines(IIndicator? parent = null) : base(parent)
     {
-        AddLine("Line 1", 0, NTColors.Goldenrod);
-        AddLine("Line 2", 0, NTColors.Goldenrod);
-        AddLine("Line 3", 0, NTColors.Goldenrod);
-        AddLine("Line 4", 0, NTColors.Goldenrod);
+        // Value + Visible are re-stamped from the LineNValue / LineNEnabled
+        // parameters on every OnInit, so the settings dialog must not offer a
+        // second level editor for them (isParameterDriven: true).
+        AddLine("Line 1", 0, PlotColors.Goldenrod, 1.0, PlotStyle.Line,
+                participatesInAutoScale: true, isParameterDriven: true);
+        AddLine("Line 2", 0, PlotColors.Goldenrod, 1.0, PlotStyle.Line,
+                participatesInAutoScale: true, isParameterDriven: true);
+        AddLine("Line 3", 0, PlotColors.Goldenrod, 1.0, PlotStyle.Line,
+                participatesInAutoScale: true, isParameterDriven: true);
+        AddLine("Line 4", 0, PlotColors.Goldenrod, 1.0, PlotStyle.Line,
+                participatesInAutoScale: true, isParameterDriven: true);
     }
 
     [IndicatorParameter(DisplayName = "Line1Enabled")] public bool Line1Enabled { get; set; } = true;

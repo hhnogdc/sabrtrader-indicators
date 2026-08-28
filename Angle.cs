@@ -13,7 +13,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// down-sloping; the magnitude (bounded to ±90°) expresses how steep the
 /// trend is.
 ///
-/// <para>As with NinjaTrader's / ATAS's Angle study, the conversion uses
+/// <para>As with the original's / the original's Angle study, the conversion uses
 /// the RAW price-per-bar slope: an angle in chart degrees would depend on
 /// the pixel scaling of the panel (which an indicator has no access to),
 /// so the value is the mathematical arctangent of the slope and is most
@@ -35,8 +35,8 @@ public sealed class Angle : IndicatorBase, IIndicatorPanelHint
 
     public Angle(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Angle", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -90, 90, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 = flat; degrees, bounded +/-90") });
-        AddLine("Zero", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Angle", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -90, 90, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 = flat; degrees, bounded +/-90") });
+        AddLine("Zero", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window.",

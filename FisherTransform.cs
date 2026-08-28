@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Fisher Transform (Ehlers) — 1-on-1 port of NT @FisherTransform.
+/// Fisher Transform (Ehlers).
 /// Normalises Input to [-1,+1] over a Period window, applies the
 /// arctanh transform, smoothed with prev value.
 /// Defaults Period=10. Plot DodgerBlue 2px Histogram. Sub-panel.
@@ -26,7 +26,7 @@ public sealed class FisherTransform : IndicatorBase, IIndicatorPanelHint
 
     public FisherTransform(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Fisher Transform", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Fisher Transform", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback for high/low normalisation.",

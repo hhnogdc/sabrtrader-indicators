@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Range Indicator — 1-on-1 port of NT @RIND.
+/// Range Indicator.
 /// val1 = trueRange/(C-prevC) if C&gt;prevC else trueRange (trueRange = max(H,prevC)-min(L,prevC)).
 /// stochRange = 100·(val1-min(val1,P))/(max(val1,P)-min(val1,P)) (else 100·(val1-min) if range=0).
 /// Bar 0 → stochRange=50.
@@ -31,7 +31,7 @@ public sealed class Rind : IndicatorBase, IIndicatorPanelHint
 
     public Rind(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("RIND", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("RIND", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "PeriodQ", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

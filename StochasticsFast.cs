@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Fast Stochastic — 1-on-1 port of NT @StochasticsFast.
+/// Fast Stochastic.
 /// K = raw %K (no Smooth step). D = SMA(K, PeriodD).
 /// Defaults PeriodD=3, PeriodK=14. D DodgerBlue, K Goldenrod.
 /// 20/80 reference lines DarkCyan. Sub-panel.
@@ -29,10 +29,10 @@ public sealed class StochasticsFast : IndicatorBase, IIndicatorPanelHint
 
     public StochasticsFast(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("D", _d, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
-        AddPlot(new Plot("K", _k, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
-        AddLine("Oversold",   20, NTColors.DarkCyan);
-        AddLine("Overbought", 80, NTColors.DarkCyan);
+        AddPlot(new Plot("D", _d, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddPlot(new Plot("K", _k, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, 0, 100, PlotValueUnit.Percent, PlotBullishDirection.Up, "80/20") });
+        AddLine("Oversold",   20, PlotColors.DarkCyan);
+        AddLine("Overbought", 80, PlotColors.DarkCyan);
     }
 
     [IndicatorParameter(DisplayName = "PeriodD", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

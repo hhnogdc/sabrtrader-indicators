@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Kaufman Adaptive Moving Average — 1-on-1 port of NT @KAMA.
+/// Kaufman Adaptive Moving Average.
 /// SC = (ER · (fastCf − slowCf) + slowCf)² where ER = signal / noise.
 /// signal = |C − C[Period]|. noise = Σ|C[i] − C[i+1]| over Period.
 /// Bar &lt; Period → Input. noise == 0 → carries prev.
@@ -27,7 +27,7 @@ public sealed class Kama : IndicatorBase
 
     public Kama(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("KAMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("KAMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Fast",   MinValue = 1, MaxValue = 125, Step = 1)]

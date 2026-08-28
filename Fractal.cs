@@ -8,7 +8,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum FractalEndType { HighLow, Close }
 
 /// <summary>
-/// Williams Fractal — 1-on-1 port of Skender Fractal.
+/// Williams Fractal — derived from Skender.Stock.Indicators (Apache-2.0).
 /// A bearish fractal is signalled at bar i when bar (i − RightSpan)'s High is strictly greater
 /// than the Highs of all surrounding 2·Span bars (LeftSpan on each side). Bullish = Low pivot.
 /// Bar (i − RightSpan) carries the signal; bar i does the detection (because we need RightSpan
@@ -30,8 +30,8 @@ public sealed class Fractal : IndicatorBase
 
     public Fractal(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("FractalBear", _bear, PlotStyle.Dots, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
-        AddPlot(new Plot("FractalBull", _bull, PlotStyle.Dots, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("FractalBear", _bear, PlotStyle.Dots, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
+        AddPlot(new Plot("FractalBull", _bull, PlotStyle.Dots, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
     }
 
     [IndicatorParameter(DisplayName = "LeftSpan",  MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

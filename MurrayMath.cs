@@ -11,19 +11,19 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Murray Math Lines — 1-on-1 port of ATAS <c>MurrayMath</c>. Builds the Murrey octave
+/// Murray Math Lines. Builds the Murrey octave
 /// grid from the highest/lowest price over a lookback window of
 /// <c>FrameSize × FrameMultiplier</c> bars (default 64 × 1.5 = 96), then emits the
 /// 15 octave levels (eighths −3/8 … +11/8) as horizontal overlay lines.
 ///
 /// <para>The octave math (log-10 / log-8 / log-2 scale derivation → grid step → centred
-/// position → equilibrium shift) is reproduced verbatim from ATAS so the level VALUES
+/// position → equilibrium shift) is reproduced verbatim from the original so the level VALUES
 /// match bar-for-bar; see <see cref="ComputeLevels"/>. <see cref="Days"/> controls how
 /// many recent sessions of history the lines are drawn over (older bars emit NaN, exactly
-/// like ATAS's <c>_targetBar</c> draw-start gating); the level values themselves are
+/// like the original's <c>_targetBar</c> draw-start gating); the level values themselves are
 /// independent of <see cref="Days"/> — they only depend on the rolling high/low window.</para>
 ///
-/// <para>Colours follow ATAS: the major lines (0/8, 4/8, 8/8) blue, the ±2/8 lines red,
+/// <para>Colours follow the original: the major lines (0/8, 4/8, 8/8) blue, the ±2/8 lines red,
 /// the rest green.</para>
 /// </summary>
 [IndicatorDescription("Murray Math Lines: the Murrey octave price grid (eighths -3/8 to +11/8) derived from the highest/lowest price over a lookback of FrameSize x FrameMultiplier bars. Major lines (0/8, 4/8, 8/8) act as primary support/resistance.")]
@@ -31,10 +31,10 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 [IndicatorInput(IndicatorInputKind.Bars)]
 public sealed class MurrayMath : IndicatorBase, IChartCustomRender
 {
-    /// <summary>Number of octave lines (ATAS loop <c>for (i=-3; i&lt;=8+3; i++)</c> → eighths −3/8 … +11/8).</summary>
+    /// <summary>Number of octave lines (the original loop <c>for (i=-3; i&lt;=8+3; i++)</c> → eighths −3/8 … +11/8).</summary>
     public const int LineCount = 15;
 
-    // Natural-log denominators used as change-of-base divisors (ATAS _log10 / _log8 / _log2).
+    // Natural-log denominators used as change-of-base divisors (the original _log10 / _log8 / _log2).
     private static readonly double Log10 = Math.Log(10);
     private static readonly double Log8  = Math.Log(8);
     private static readonly double Log2  = Math.Log(2);
@@ -69,11 +69,11 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
         Group = "01. Parameters", Order = 1, MinValue = 1, MaxValue = 1000, Step = 1)]
     public int Days { get; set; } = 20;
 
-    [IndicatorParameter(DisplayName = "Frame Size", Description = "Base lookback (ATAS FrameSize; default 64). Lookback window = Frame Size x Frame Multiplier bars.",
+    [IndicatorParameter(DisplayName = "Frame Size", Description = "Base lookback (the original FrameSize; default 64). Lookback window = Frame Size x Frame Multiplier bars.",
         Group = "01. Parameters", Order = 2, MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int FrameSize { get; set; } = 64;
 
-    [IndicatorParameter(DisplayName = "Frame Multiplier", Description = "Lookback multiplier applied to Frame Size (ATAS default 1.5).",
+    [IndicatorParameter(DisplayName = "Frame Multiplier", Description = "Lookback multiplier applied to Frame Size (the original default 1.5).",
         Group = "01. Parameters", Order = 3, MinValue = 0.1, MaxValue = 100, Step = 0.1)]
     public double FrameMultiplier { get; set; } = 1.5;
 
@@ -111,9 +111,9 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
         int n = bars.Count;
         if (n == 0) return;
 
-        // Pass 1 — count sessions to find the draw-start bar (ATAS _targetBar): the bar that
+        // Pass 1 — count sessions to find the draw-start bar (the original _targetBar): the bar that
         // opens the session `Days` sessions before the most recent one. Levels for earlier
-        // bars are emitted as NaN (drawn blank), matching ATAS's SetPointOfEndLine gate.
+        // bars are emitted as NaN (drawn blank), matching the original's SetPointOfEndLine gate.
         var sessionStarts = new List<int>(Math.Max(4, n / 64));
         for (int i = 0; i < n; i++)
         {
@@ -163,7 +163,7 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
     }
 
     /// <summary>
-    /// Verbatim ATAS Murrey octave computation. Fills <paramref name="outLevels"/> (length
+    /// Verbatim the original Murrey octave computation. Fills <paramref name="outLevels"/> (length
     /// <see cref="LineCount"/>) with the 15 eighth levels, index 0 = −3/8 … index 14 = +11/8.
     /// </summary>
     internal static void ComputeLevels(double highPeriod, double lowPeriod, double[] outLevels)
@@ -216,7 +216,7 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
         double increment = (finalTop - finalBot) / 8.0;
         double absTop = shift ? -(finalBot - 3.0 * increment) : finalTop + 3.0 * increment;
 
-        // ATAS fills DataSeries[Count-1] = absTop downward by `increment`, so index 0 = the
+        // The original fills DataSeries[Count-1] = absTop downward by `increment`, so index 0 = the
         // lowest line (−3/8) and index LineCount-1 = the highest (+11/8).
         int lineCount = 0;
         for (int k = LineCount - 1; k >= 0; k--)
@@ -250,9 +250,9 @@ public sealed class MurrayMath : IndicatorBase, IChartCustomRender
     private static ChartColor ColorFor(int eighth)
     {
         int mod = eighth % 4;                 // C# keeps the sign of the dividend
-        if (mod == 0) return NTColors.DodgerBlue;
-        if (mod == 2 || mod == -2) return NTColors.Crimson;
-        return NTColors.MediumSeaGreen;
+        if (mod == 0) return PlotColors.DodgerBlue;
+        if (mod == 2 || mod == -2) return PlotColors.Crimson;
+        return PlotColors.MediumSeaGreen;
     }
 
     private static string LabelFor(int eighth)

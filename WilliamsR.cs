@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Williams %R — 1-on-1 port of NT @WilliamsR.
+/// Williams %R.
 /// <c>Value = −100·(maxHigh − close) / (maxHigh − minLow)</c> over
 /// the trailing Period bars. Flat-window guard → denom = 1.
 /// Defaults Period=14, Goldenrod plot, ±25 / ±75 reference lines
@@ -27,9 +27,9 @@ public sealed class WilliamsR : IndicatorBase, IIndicatorPanelHint
 
     public WilliamsR(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddLine("Overbought", -25, NTColors.DarkGray);
-        AddLine("Oversold",   -75, NTColors.DarkGray);
-        AddPlot(new Plot("Williams %R", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 0, PlotValueUnit.Percent, PlotBullishDirection.Up, "-25/-75") });
+        AddLine("Overbought", -25, PlotColors.DarkGray);
+        AddLine("Oversold",   -75, PlotColors.DarkGray);
+        AddPlot(new Plot("Williams %R", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -100, 0, PlotValueUnit.Percent, PlotBullishDirection.Up, "-25/-75") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Lookback window.",

@@ -11,13 +11,13 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// to a generic system sound, so every default declared here MUST name a
 /// file the platform actually ships.</para>
 ///
-/// <para>The NinjaTrader originals these indicators were ported from
-/// defaulted to <c>Alert2.wav</c> — a NinjaTrader stock sound that does
+/// <para>The originals these indicators were ported from
+/// defaulted to <c>Alert2.wav</c> — a stock sound that does
 /// NOT exist in the SabrTrader library. Pointing every built-in default at
 /// this one constant keeps the choice in a single place and guarantees it
 /// stays a shipped file.</para>
 /// </summary>
-public static class BuiltinAlertSounds
+internal static class BuiltinAlertSounds
 {
     /// <summary>
     /// Default alert sound for built-in indicators: a neutral, non-directional

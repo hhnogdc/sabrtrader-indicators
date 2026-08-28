@@ -17,7 +17,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 ///   label (Pivots, Market Profile) so centring on the line never bisects text.</item>
 /// </list>
 /// </summary>
-public static class LevelLabelStacker
+internal static class LevelLabelStacker
 {
     /// <summary>
     /// Resolves label-centre Ys keeping each label on a fixed side of its line: where

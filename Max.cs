@@ -7,7 +7,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
 /// Rolling maximum over the trailing <see cref="Period"/> inputs —
-/// 1-on-1 port of NT @MAX. Default Period=14, DarkCyan, overlay.
+/// Default Period=14, DarkCyan, overlay.
 /// </summary>
 [IndicatorDescription("Rolling maximum of the input over the trailing N bars. Useful for Donchian-style highs, breakout levels and trailing reference points.")]
 [IndicatorCategory(IndicatorCategory.Custom)]
@@ -20,7 +20,7 @@ public sealed class Max : IndicatorBase
 
     public Max(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("MAX", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MAX", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window size.",

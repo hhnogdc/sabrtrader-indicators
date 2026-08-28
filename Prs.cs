@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Price Relative Strength (PRS) — port of Skender Prs.
+/// Price Relative Strength (PRS) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   Prs        = eval / base                 (ratio, always emitted)
 ///   PrsPercent = pctEval(LookbackPeriods) − pctBase(LookbackPeriods)
 ///                (only emitted when LookbackPeriods &gt; 0)
@@ -54,8 +54,8 @@ public sealed class Prs : IndicatorBase, IIndicatorPanelHint
 
     public Prs(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("PRS",        _prs,        PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("PRSPercent", _prsPercent, PlotStyle.Line, NTColors.Goldenrod,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Percent, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("PRS",        _prs,        PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("PRSPercent", _prsPercent, PlotStyle.Line, PlotColors.Goldenrod,  1.0) { Visible = false, Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Percent, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "LookbackPeriods",

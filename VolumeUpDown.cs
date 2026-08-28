@@ -5,10 +5,10 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Volume Up/Down — 1-on-1 port of NT @VolumeUpDown.
+/// Volume Up/Down.
 /// Two histogram plots: UpVolume (DarkCyan, when Close ≥ Open) and
 /// DownVolume (Crimson, when Close &lt; Open). Whichever is active
-/// shows the bar's volume; the other emits 0 (NT's <c>Reset()</c>
+/// shows the bar's volume; the other emits 0 (the original's <c>Reset()</c>
 /// becomes NaN there; we use 0 to match the histogram baseline).
 /// Sub-panel, no parameters.
 /// </summary>
@@ -25,9 +25,9 @@ public sealed class VolumeUpDown : IndicatorBase, IIndicatorPanelHint
 
     public VolumeUpDown(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Up Volume",   _up,   PlotStyle.Histogram, NTColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("Down Volume", _down, PlotStyle.Histogram, NTColors.Crimson,  2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Up Volume",   _up,   PlotStyle.Histogram, PlotColors.DarkCyan, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("Down Volume", _down, PlotStyle.Histogram, PlotColors.Crimson,  2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Down, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     public ISeries<double> UpVolume   => _upWrap   ??= new IndicatorOutputSeries(_up,   Bars);

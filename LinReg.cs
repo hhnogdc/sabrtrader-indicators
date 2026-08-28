@@ -5,8 +5,8 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Linear Regression line value at the current bar — 1-on-1 port
-/// of NT @LinReg. Defaults Period=14 (range [2,∞)), Goldenrod, overlay.
+/// Linear Regression line value at the current bar
+/// of the original @LinReg. Defaults Period=14 (range [2,∞)), Goldenrod, overlay.
 /// Value = intercept + slope·(Period−1).
 /// </summary>
 [IndicatorDescription("Linear Regression: value of the least-squares best-fit line at the current bar over the last N inputs (intercept + slope*(N-1)). A statistical trend line.")]
@@ -20,7 +20,7 @@ public sealed class LinReg : IndicatorBase
 
     public LinReg(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("LinReg", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("LinReg", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Regression window.",

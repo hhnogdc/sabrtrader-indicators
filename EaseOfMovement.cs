@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Ease of Movement — 1-on-1 port of NT @EaseOfMovement.
+/// Ease of Movement.
 /// midPoint = Median[0] − Median[1]; Median = (H+L)/2.
 /// boxRatio = Volume / VolumeDivisor / (H−L).
 /// emv = boxRatio == 0 ? 0 : midPoint / boxRatio.
@@ -28,15 +28,15 @@ public sealed class EaseOfMovement : IndicatorBase, IIndicatorPanelHint
 
     public EaseOfMovement(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("EMV", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("EMV", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Smoothing", Description = "EMA period over raw EMV.",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Smoothing { get; set; } = 14;
 
-    [IndicatorParameter(DisplayName = "VolumeDivisor", Description = "Box-ratio denominator (NT default 10000).",
+    [IndicatorParameter(DisplayName = "VolumeDivisor", Description = "Box-ratio denominator (the original default 10000).",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int VolumeDivisor { get; set; } = 10000;
 

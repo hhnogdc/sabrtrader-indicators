@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Chaikin Money Flow — 1-on-1 port of NT @ChaikinMoneyFlow.
+/// Chaikin Money Flow.
 /// MFV_i = Volume·(2·Close − High − Low)/(High−Low). H==L → 0.
 /// Value = 100·ΣMFV / ΣVolume over Period bars. NaN → 0.
 /// Defaults Period=21, Goldenrod, sub-panel.
@@ -26,7 +26,7 @@ public sealed class ChaikinMoneyFlow : IndicatorBase, IIndicatorPanelHint
 
     public ChaikinMoneyFlow(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("CMF", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("CMF", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, -1, 1, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Rolling window for MFV / Volume sums.",

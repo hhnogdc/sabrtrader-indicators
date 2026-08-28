@@ -59,10 +59,10 @@ public sealed class McClellanOscillator : IndicatorBase, IIndicatorPanelHint
 
     public McClellanOscillator(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("McClellan", _output, PlotStyle.Line, NTColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Overbought", 70,  NTColors.DarkCyan);
-        AddLine("Oversold",  -70,  NTColors.DarkCyan);
-        AddLine("Zero line",   0,  NTColors.DarkGray);
+        AddPlot(new Plot("McClellan", _output, PlotStyle.Line, PlotColors.LimeGreen, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Overbought", 70,  PlotColors.DarkCyan);
+        AddLine("Oversold",  -70,  PlotColors.DarkCyan);
+        AddLine("Zero line",   0,  PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "FastPeriod", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
@@ -79,7 +79,7 @@ public sealed class McClellanOscillator : IndicatorBase, IIndicatorPanelHint
         Description = "Symbol of the declining-issues breadth series (e.g. Rithmic NASDAQ: $dec). Blank = oscillator stays empty.")]
     public string DeclineSymbol { get; set; } = "$dec";
 
-    public ChartColor NegativeColor { get; set; } = NTColors.Red;
+    public ChartColor NegativeColor { get; set; } = PlotColors.Red;
 
     /// <summary>Optional host-injected advancing-issues series (index-aligned with the
     /// primary, newest = [0]). When set, takes precedence over <see cref="AdvanceSymbol"/>.</summary>

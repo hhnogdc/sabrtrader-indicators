@@ -6,10 +6,10 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Commodity Channel Index — 1-on-1 port of NT @CCI.
+/// Commodity Channel Index.
 /// Per-bar typical = (H+L+C)/3. SMA of typical = mean.
 /// mean absolute deviation = Σ|typical[i] − sma| / N over the window.
-/// Value = (typical − sma) / (0.015 · meanAbsDev). NT bar 0 = 0.
+/// Value = (typical − sma) / (0.015 · meanAbsDev). The original bar 0 = 0.
 /// Singularity (mad ≈ 0) → denom = 1.
 /// Defaults Period=14, Goldenrod plot, 5 reference lines (±100, ±200, 0).
 /// Sub-panel.
@@ -31,12 +31,12 @@ public sealed class Cci : IndicatorBase, IIndicatorPanelHint
 
     public Cci(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("CCI", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Level 2", 200, NTColors.DarkGray);
-        AddLine("Level 1", 100, NTColors.DarkGray);
-        AddLine("Zero line", 0, NTColors.DarkGray);
-        AddLine("Level -1", -100, NTColors.DarkGray);
-        AddLine("Level -2", -200, NTColors.DarkGray);
+        AddPlot(new Plot("CCI", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Level 2", 200, PlotColors.DarkGray);
+        AddLine("Level 1", 100, PlotColors.DarkGray);
+        AddLine("Zero line", 0, PlotColors.DarkGray);
+        AddLine("Level -1", -100, PlotColors.DarkGray);
+        AddLine("Level -2", -200, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "SMA window over typical price.",

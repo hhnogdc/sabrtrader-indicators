@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Vortex Indicator — 1-on-1 port of NT @Vortex.
+/// Vortex Indicator.
 /// vm+ = |H − prevL|; vm− = |L − prevH|; TR = max(|H−prevC|, |L−prevC|, H−L).
 /// VIPlus = ΣVM+ / ΣTR; VIMinus = ΣVM− / ΣTR over Period bars.
 /// Defaults Period=14. VIPlus RoyalBlue, VIMinus Red, sub-panel.
@@ -27,8 +27,8 @@ public sealed class Vortex : IndicatorBase, IIndicatorPanelHint
 
     public Vortex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("VI+", _plus,  PlotStyle.Line, NTColors.RoyalBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("VI-", _minus, PlotStyle.Line, NTColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, "0 centerline") });
+        AddPlot(new Plot("VI+", _plus,  PlotStyle.Line, PlotColors.RoyalBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("VI-", _minus, PlotStyle.Line, PlotColors.Red,       1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Window for the running sums.",

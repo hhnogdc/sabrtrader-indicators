@@ -8,7 +8,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Port of NinjaTrader's built-in <c>BarTimer</c>. Renders a small
+/// Renders a small
 /// "HH:MM:SS" chip in a configurable corner of the chart, counting
 /// down until the in-progress bar closes. Meaningful on sub-daily
 /// time bars (HH:MM:SS), tick bars ("N tk") and volume bars ("N vol").
@@ -55,7 +55,7 @@ public sealed class BarTimerIndicator : IndicatorBase, IChartCustomRender, IRepa
 
     public BarTimerIndicator()
     {
-        Corner = BadgeCorner.BottomRight;          // matches NT default
+        Corner = BadgeCorner.BottomRight;          // matches the original default
         TextColor       = new ChartColor(0xE0, 0xE0, 0xE0);
         BackgroundColor = new ChartColor(0x18, 0x1C, 0x25, 0xCC);   // semi-transparent dark
         BorderColor     = new ChartColor(0x3F, 0x3F, 0x3F);
@@ -197,7 +197,7 @@ public sealed class BarTimerIndicator : IndicatorBase, IChartCustomRender, IRepa
     /// from the live bar's right edge across the chart's right margin to
     /// the price axis — exactly where the user looks for "what price opens
     /// the next bar". Custom renderers may paint into the right-side
-    /// margin (NT parity), so the lines sit in the otherwise-empty strip
+    /// margin (the original parity), so the lines sit in the otherwise-empty strip
     /// to the right of the live bar.
     /// </summary>
     private void DrawStartLevels(IIndicatorRenderContext ctx, IBarSeries bars,

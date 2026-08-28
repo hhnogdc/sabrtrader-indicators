@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Gator Oscillator (Bill Williams) — 1-on-1 port of Skender Gator.
+/// Gator Oscillator (Bill Williams) — derived from Skender.Stock.Indicators (Apache-2.0).
 ///   Upper = |Jaw − Teeth|
 ///   Lower = −|Teeth − Lips|
 /// Driven by an internal <see cref="Alligator"/> with default parameters
@@ -27,9 +27,9 @@ public sealed class Gator : IndicatorBase, IIndicatorPanelHint
 
     public Gator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Upper", _upper, PlotStyle.Histogram, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower", _lower, PlotStyle.Histogram, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Upper", _upper, PlotStyle.Histogram, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower", _lower, PlotStyle.Histogram, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     public ISeries<double> Upper => _uW ??= new IndicatorOutputSeries(_upper, Bars);

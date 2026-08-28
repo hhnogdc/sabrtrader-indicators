@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Momentum — 1-on-1 port of NT @Momentum.
+/// Momentum.
 /// <c>Value = Input[0] − Input[min(CurrentBar, Period)]</c>. Bar 0 → 0.
 /// Default Period=14, DarkCyan plot, zero reference line SlateBlue, sub-panel.
 /// </summary>
@@ -22,8 +22,8 @@ public sealed class Momentum : IndicatorBase, IIndicatorPanelHint
 
     public Momentum(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Momentum", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        // NT uses SlateBlue (0x6A,0x5A,0xCD) for the Momentum zero line.
+        AddPlot(new Plot("Momentum", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        // The original uses SlateBlue (0x6A,0x5A,0xCD) for the Momentum zero line.
         AddLine("Zero line", 0, new ChartColor(0x6A, 0x5A, 0xCD));
     }
 

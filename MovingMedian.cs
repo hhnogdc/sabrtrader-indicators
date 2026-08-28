@@ -5,22 +5,21 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Moving Median (ATAS "MMed") — 1-on-1 port of ATAS's
-/// <c>MMed</c> (Technical/MMed.cs). The rolling median of the input over
+/// Moving Median. The rolling median of the input over
 /// the window <c>[max(0, bar − Period) … bar]</c>.
 ///
-/// <para>Faithful to ATAS's exact index/parity rules — which differ
+/// <para>Faithful to the original's exact index/parity rules — which differ
 /// between warm-up and steady state:</para>
 /// <list type="bullet">
 ///   <item><b>Warm-up</b> (<c>bar &lt; Period</c>): the true median of the
 ///     <c>bar + 1</c> samples available — parity decided by the window
 ///     size, so even windows average the two central order statistics.</item>
 ///   <item><b>Steady state</b> (<c>bar ≥ Period</c>): the window holds
-///     <c>Period + 1</c> samples but ATAS selects the order statistic by
+///     <c>Period + 1</c> samples but the original selects the order statistic by
 ///     the parity of <c>Period</c> (not <c>Period + 1</c>): odd Period
 ///     returns <c>sorted[Period/2]</c>; even Period averages
 ///     <c>sorted[Period/2]</c> and <c>sorted[Period/2 − 1]</c>. This
-///     asymmetry is intentional ATAS behaviour and is reproduced here so
+///     asymmetry is intentional the original behaviour and is reproduced here so
 ///     values match tick-for-tick.</item>
 /// </list>
 /// A median centre-line is robust to outliers/spikes that distort a
@@ -45,10 +44,10 @@ public sealed class MovingMedian : IndicatorBase
 
     public MovingMedian(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("MMed", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("MMed", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
-    [IndicatorParameter(DisplayName = "Period", Description = "Median window (spans Period+1 samples, ATAS-faithful).",
+    [IndicatorParameter(DisplayName = "Period", Description = "Median window (spans Period+1 samples, original-faithful).",
         MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
     public int Period { get; set; } = 10;
 
@@ -89,19 +88,19 @@ public sealed class MovingMedian : IndicatorBase
         Array.Copy(_window, _sortBuf, n);
         Array.Sort(_sortBuf, 0, n);
 
-        // ATAS selects the order statistic by Period parity in steady
+        // The original selects the order statistic by Period parity in steady
         // state and by window-size parity during warm-up.
         double median;
         if (_barIdx < Period)
         {
-            int idx = (_barIdx + 1) / 2;          // = bar - targetBar in ATAS
+            int idx = (_barIdx + 1) / 2;          // = bar - targetBar in the original
             median = ((_barIdx + 1) % 2 == 1)
                 ? _sortBuf[idx]
                 : (_sortBuf[idx] + _sortBuf[idx - 1]) / 2.0;
         }
         else
         {
-            int idx = Period / 2;                   // = bar - targetBar in ATAS
+            int idx = Period / 2;                   // = bar - targetBar in the original
             median = (Period % 2 == 1)
                 ? _sortBuf[idx]
                 : (_sortBuf[idx] + _sortBuf[idx - 1]) / 2.0;

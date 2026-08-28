@@ -43,8 +43,8 @@ public sealed class GreatestSwingValue : IndicatorBase, IIndicatorPanelHint
     public GreatestSwingValue(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         var sem = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null);
-        AddPlot(new Plot("GSV Buy",  _buy,  PlotStyle.Line, NTColors.ForestGreen, 1.0) { Semantics = sem });
-        AddPlot(new Plot("GSV Sell", _sell, PlotStyle.Line, NTColors.Crimson,     1.0) { Semantics = sem });
+        AddPlot(new Plot("GSV Buy",  _buy,  PlotStyle.Line, PlotColors.ForestGreen, 1.0) { Semantics = sem });
+        AddPlot(new Plot("GSV Sell", _sell, PlotStyle.Line, PlotColors.Crimson,     1.0) { Semantics = sem });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Number of qualifying bars to average.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

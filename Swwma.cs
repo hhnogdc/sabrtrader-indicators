@@ -5,8 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// SWWMA — Sine-Wave Weighted Moving Average. 1-on-1 port of ATAS's
-/// <c>SWWMA</c> (Technical/SWWMA.cs).
+/// SWWMA — Sine-Wave Weighted Moving Average.
 ///
 /// A fixed 5-tap filter over the FIVE PRIOR bars (the current bar is not
 /// included): the i-th prior bar (i = 1..5) is weighted by
@@ -15,7 +14,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 /// 3-bars-ago sample and taper to 0.5 at both ends, giving a smooth,
 /// centred response. For the first five bars (<c>bar &lt; 5</c>) the raw
 /// input is emitted unchanged. Overlay; no parameters (the window and
-/// weights are fixed, exactly as ATAS ships it).
+/// weights are fixed, exactly as the original ships it).
 /// </summary>
 [IndicatorDescription("Sine-Wave Weighted Moving Average: a fixed 5-tap filter over the five prior bars weighted by sin(i*pi/6) and normalised by their sum. Centred, smooth response peaking on the 3-bars-ago sample.")]
 [IndicatorCategory(IndicatorCategory.Trend)]
@@ -39,7 +38,7 @@ public sealed class Swwma : IndicatorBase
 
     public Swwma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("SWWMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("SWWMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);

@@ -5,17 +5,16 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// WWMA — Welles Wilder's Moving Average. 1-on-1 port of ATAS's
-/// <c>WWMA</c> (Technical/WWMA.cs). Wilder's recursive smoothing
+/// WWMA — Welles Wilder's Moving Average. Wilder's recursive smoothing
 /// (α = 1/Period) exposed as a standalone overlay:
 /// <c>WWMA[i] = WWMA[i−1] + (value − WWMA[i−1]) / Period</c>, seeded with
-/// the first input. ATAS re-seeds from a skip-zeros SMA
+/// the first input. The original re-seeds from a skip-zeros SMA
 /// (<see cref="Szma"/>) whenever the previous output is exactly 0 — so a
 /// flat-at-zero series recovers cleanly. We reuse <see cref="Szma"/> as a
 /// child for that seed rather than duplicating the math.
 ///
 /// Mathematically the same family as <see cref="Smma"/> (Wilder α=1/P)
-/// but with ATAS's first-input seed + zero-recovery, kept as a separate,
+/// but with the original's first-input seed + zero-recovery, kept as a separate,
 /// faithfully-named indicator. Default Period=10, overlay.
 /// </summary>
 [IndicatorDescription("Welles Wilder's Moving Average: Wilder smoothing WWMA = prev + (value - prev)/Period, seeded with the first input and re-seeded from a skip-zeros SMA when the prior value is zero. A standalone Wilder-smoothing plot.")]
@@ -31,7 +30,7 @@ public sealed class Wwma : IndicatorBase
 
     public Wwma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("WWMA", _output, PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("WWMA", _output, PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Wilder smoothing period — α = 1/Period.",

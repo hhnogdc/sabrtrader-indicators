@@ -5,23 +5,23 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// MACD (Moving Average Convergence Divergence) — 1-on-1 port of
-/// NinjaTrader's @MACD built-in. Three plots:
+/// MACD (Moving Average Convergence Divergence)
+/// the original's @MACD built-in. Three plots:
 ///   <list type="bullet">
 ///     <item><b>MACD</b> line (DarkCyan).</item>
 ///     <item><b>Avg</b> (signal) line (Crimson) — EMA of MACD.</item>
-///     <item><b>Diff</b> histogram (DarkGray — NT @MACD default;
+///     <item><b>Diff</b> histogram (DarkGray — the original @MACD default;
 ///       visible on both light and dark chart backgrounds, unlike
 ///       a literal Black which disappears against a dark theme).</item>
 ///   </list>
 /// One reference line at zero (DarkGray).
 ///
-/// NT formula (no SMA seed): bar 0 → fastEma = slowEma = Input[0],
+/// the original formula (no SMA seed): bar 0 → fastEma = slowEma = Input[0],
 /// Value = Avg = Diff = 0. Subsequent bars apply the recursive EMA
 /// formula to fast, slow, then signal directly.
 ///
 /// Defaults: Fast=12, Slow=26, Smooth=9. Range each: [1, int.MaxValue].
-/// Note: NT does NOT enforce Fast &lt; Slow; we follow.
+/// Note: The original does NOT enforce Fast &lt; Slow; we follow.
 /// </summary>
 [IndicatorDescription("MACD: difference between a fast and slow EMA of price (default 12/26), plus a signal-line EMA (9) and a histogram of MACD minus signal. Classic momentum and trend-change indicator.")]
 [IndicatorCategory(IndicatorCategory.Momentum)]
@@ -37,9 +37,9 @@ public sealed class Macd : IndicatorBase, IIndicatorPanelHint
     private IndicatorOutputSeries? _signalWrap;
     private IndicatorOutputSeries? _histogramWrap;
 
-    // Inlined recursive EMAs — NT computes all three (fast, slow,
+    // Inlined recursive EMAs — the original computes all three (fast, slow,
     // signal) in OnBarUpdate without intermediate Series allocations
-    // for the EMA states. We do the same; faster + matches the NT
+    // for the EMA states. We do the same; faster + matches the original
     // bar-0 behaviour exactly (no NaN warmup).
     private double _fastEma;
     private double _slowEma;
@@ -52,10 +52,10 @@ public sealed class Macd : IndicatorBase, IIndicatorPanelHint
     public Macd(IIndicator? parent = null, ISeries<double>? input = null)
         : base(parent, input)
     {
-        AddPlot(new Plot("MACD",   _macd,      PlotStyle.Line,      NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Avg",    _signal,    PlotStyle.Line,      NTColors.Crimson,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddPlot(new Plot("Diff",   _histogram, PlotStyle.Histogram, NTColors.DarkGray, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("MACD",   _macd,      PlotStyle.Line,      PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Avg",    _signal,    PlotStyle.Line,      PlotColors.Crimson,  1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("Diff",   _histogram, PlotStyle.Histogram, PlotColors.DarkGray, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, null) });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast",   Description = "Period of the fast EMA.",   MinValue = 1, MaxValue = int.MaxValue, Step = 1)]
@@ -70,10 +70,10 @@ public sealed class Macd : IndicatorBase, IIndicatorPanelHint
     /// <summary>MACD line — <c>EMA(Fast) − EMA(Slow)</c> of the input.</summary>
     public ISeries<double> Default => _macdWrap   ??= new IndicatorOutputSeries(_macd,      Bars);
 
-    /// <summary>Signal line — <c>EMA(Smooth)</c> of the MACD line. NT alias: <c>Avg</c>.</summary>
+    /// <summary>Signal line — <c>EMA(Smooth)</c> of the MACD line. The original alias: <c>Avg</c>.</summary>
     public ISeries<double> Avg     => _signalWrap ??= new IndicatorOutputSeries(_signal,    Bars);
 
-    /// <summary>Histogram = MACD − Signal. NT alias: <c>Diff</c>.</summary>
+    /// <summary>Histogram = MACD − Signal. The original alias: <c>Diff</c>.</summary>
     public ISeries<double> Diff    => _histogramWrap ??= new IndicatorOutputSeries(_histogram, Bars);
 
     public override void OnInit(IIndicatorContext ctx)
@@ -117,7 +117,7 @@ public sealed class Macd : IndicatorBase, IIndicatorPanelHint
     {
         if (!_hasValue)
         {
-            // NT bar 0: all EMAs seed with the first input;
+            // The original bar 0: all EMAs seed with the first input;
             // MACD line + signal + histogram all start at 0.
             _fastEma = input;
             _slowEma = input;

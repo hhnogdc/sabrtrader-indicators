@@ -4,7 +4,7 @@ using SabrTrader.Pipeline.Series;
 
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
-/// <summary>MA flavour used by <see cref="MaEnvelopes"/>. Matches NT's integer mapping
+/// <summary>MA flavour used by <see cref="MaEnvelopes"/>. Matches the original's integer mapping
 /// (1=EMA, 2=HMA, 3=SMA, 4=TMA, 5=TEMA, 6=WMA).</summary>
 public enum MaEnvelopesType
 {
@@ -12,7 +12,7 @@ public enum MaEnvelopesType
 }
 
 /// <summary>
-/// Moving Average Envelopes — 1-on-1 port of NT @MAEnvelopes.
+/// Moving Average Envelopes.
 /// Middle = MA(Input, Period) using one of 6 MA flavours.
 /// Upper = Middle · (1 + EnvelopePercentage/100).
 /// Lower = Middle · (1 − EnvelopePercentage/100).
@@ -33,9 +33,9 @@ public sealed class MaEnvelopes : IndicatorBase
 
     public MaEnvelopes(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("Upper",  _upper,  PlotStyle.Line,   NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Middle", _middle, PlotStyle.Dashed, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("Lower",  _lower,  PlotStyle.Line,   NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Upper",  _upper,  PlotStyle.Line,   PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Middle", _middle, PlotStyle.Dashed, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Lower",  _lower,  PlotStyle.Line,   PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "EnvelopePercentage", Description = "Band width as % of MA.",
@@ -57,7 +57,7 @@ public sealed class MaEnvelopes : IndicatorBase
     {
         base.OnInit(ctx);
         if (Period < 1) throw new ArgumentOutOfRangeException(nameof(Period));
-        // HMA requires Period ≥ 2; NT clamps. Match.
+        // HMA requires Period ≥ 2; the original clamps. Match.
         int p = MAType == MaEnvelopesType.Hma ? Math.Max(2, Period) : Period;
         _ma = MAType switch
         {

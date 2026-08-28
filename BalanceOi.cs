@@ -50,12 +50,12 @@ public sealed class BalanceOi : IndicatorBase, IIndicatorPanelHint
     public BalanceOi(IIndicator? parent = null, IBarSeries? bars = null)
         : base(parent, bars: bars)
     {
-        AddPlot(new Plot("BalanceOI", _output, PlotStyle.Histogram, NTColors.DodgerBlue, 1.0)
+        AddPlot(new Plot("BalanceOI", _output, PlotStyle.Histogram, PlotColors.DodgerBlue, 1.0)
         {
             Semantics = new PlotSemantics(PlotKind.Oscillator, null, null,
                 PlotValueUnit.Raw, PlotBullishDirection.Up, "0 centerline")
         });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Lookback",

@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Arnaud Legoux Moving Average (ALMA) — 1-on-1 port of Skender Alma.
+/// Arnaud Legoux Moving Average (ALMA) — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Gaussian-weighted MA over the last Period bars:
 ///   m = Offset · (Period − 1)
 ///   s = Period / Sigma
@@ -29,7 +29,7 @@ public sealed class Alma : IndicatorBase
 
     public Alma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("ALMA", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("ALMA", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

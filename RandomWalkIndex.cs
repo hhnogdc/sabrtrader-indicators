@@ -44,9 +44,9 @@ public sealed class RandomWalkIndex : IndicatorBase, IIndicatorPanelHint
 
     public RandomWalkIndex(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("RWI High", _high, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up,   "1.0 = random-walk threshold") });
-        AddPlot(new Plot("RWI Low",  _low,  PlotStyle.Line, NTColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, "1.0 = random-walk threshold") });
-        AddLine("Trend threshold", 1.0, NTColors.DarkCyan, participatesInAutoScale: false);
+        AddPlot(new Plot("RWI High", _high, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up,   "1.0 = random-walk threshold") });
+        AddPlot(new Plot("RWI Low",  _low,  PlotStyle.Line, PlotColors.Crimson,    1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Down, "1.0 = random-walk threshold") });
+        AddLine("Trend threshold", 1.0, PlotColors.DarkCyan, participatesInAutoScale: false);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Maximum lookback k for the random-walk comparison.", MinValue = 2, MaxValue = int.MaxValue, Step = 1)]

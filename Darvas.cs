@@ -8,7 +8,7 @@ using SabrTrader.Pipeline.Indicators;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Darvas Boxes — 1-on-1 port of NT @Darvas.
+/// Darvas Boxes.
 /// 6-state machine on bar highs/lows:
 ///   0 → 1: arm (boxTop = high, boxBottom = +Inf)
 ///   1 → 2 if new high &lt; boxTop, else stay
@@ -44,8 +44,8 @@ public sealed class Darvas : IndicatorBase, IChartCustomRender
     public Darvas(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
         var darvasEdge = new PlotSemantics(PlotKind.Band, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null);
-        AddPlot(new Plot("Lower", _lower, PlotStyle.Dots, NTColors.Crimson,  2.0) { Semantics = darvasEdge });
-        AddPlot(new Plot("Upper", _upper, PlotStyle.Dots, NTColors.DarkCyan, 2.0) { Semantics = darvasEdge });
+        AddPlot(new Plot("Lower", _lower, PlotStyle.Dots, PlotColors.Crimson,  2.0) { Semantics = darvasEdge });
+        AddPlot(new Plot("Upper", _upper, PlotStyle.Dots, PlotColors.DarkCyan, 2.0) { Semantics = darvasEdge });
     }
 
     public bool BuySignal  { get; private set; }

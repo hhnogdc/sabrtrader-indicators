@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// True Strength Index — 1-on-1 port of NT @TSI (Blau).
+/// True Strength Index.
 /// Double-EMA(Slow,Fast) of momentum / double-EMA(Slow,Fast) of |momentum|, ·100.
 /// Defaults Fast=3, Slow=14, DarkCyan, sub-panel.
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class Tsi : IndicatorBase, IIndicatorPanelHint
 
     public Tsi(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("TSI", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("TSI", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Fast", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

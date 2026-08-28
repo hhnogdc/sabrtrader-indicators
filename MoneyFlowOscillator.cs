@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Money Flow Oscillator — 1-on-1 port of NT @MoneyFlowOscillator.
+/// Money Flow Oscillator.
 /// dvs = (H − prevL) + (prevH − L). If H[0] &lt; prevL → mltp = −1;
 /// elif L[0] &gt; prevH → mltp = +1; else mltp = ((H−prevL)−(prevH−L))/dvs.
 /// MFV = mltp · Volume. Output = ΣMFV / ΣVolume over Period.
@@ -27,8 +27,8 @@ public sealed class MoneyFlowOscillator : IndicatorBase, IIndicatorPanelHint
 
     public MoneyFlowOscillator(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Money Flow", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("Money Flow", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

@@ -29,8 +29,8 @@ public sealed class Osma : IndicatorBase, IIndicatorPanelHint
 
     public Osma(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("OsMA", _output, PlotStyle.Histogram, NTColors.DarkGray, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("OsMA", _output, PlotStyle.Histogram, PlotColors.DarkGray, 2.0) { Semantics = new PlotSemantics(PlotKind.Histogram, null, null, PlotValueUnit.Raw, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Fast", Description = "Fast EMA period of the underlying MACD.", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

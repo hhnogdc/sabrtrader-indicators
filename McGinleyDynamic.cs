@@ -18,7 +18,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public sealed class McGinleyDynamic : IndicatorBase
 {
     private readonly ChunkedSeries<double> _output = new();
-    // Per-bar line colour (NT PlotBrushes): green when the line rises bar-over-bar,
+    // Per-bar line colour (the original PlotBrushes): green when the line rises bar-over-bar,
     // red when it falls. Appended in lockstep with _output; the recalc reset clears
     // both together (IndicatorBase.ClearPlotSeries reflects over "PerBarColors").
     private readonly ChunkedSeries<ChartColor> _colors = new();
@@ -28,7 +28,7 @@ public sealed class McGinleyDynamic : IndicatorBase
 
     public McGinleyDynamic(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("McGinley", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0)
+        AddPlot(new Plot("McGinley", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0)
         { PerBarColors = _colors, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
@@ -40,11 +40,11 @@ public sealed class McGinleyDynamic : IndicatorBase
 
     [IndicatorParameter(DisplayName = "Rising", Group = "02. Colors", Order = 1,
         Description = "Line colour on bars where the line is rising versus the prior bar.")]
-    public ChartColor RisingColor { get; set; } = NTColors.ForestGreen;
+    public ChartColor RisingColor { get; set; } = PlotColors.ForestGreen;
 
     [IndicatorParameter(DisplayName = "Falling", Group = "02. Colors", Order = 2,
         Description = "Line colour on bars where the line is falling versus the prior bar.")]
-    public ChartColor FallingColor { get; set; } = NTColors.Crimson;
+    public ChartColor FallingColor { get; set; } = PlotColors.Crimson;
 
     public ISeries<double> Output => _wrap ??= new IndicatorOutputSeries(_output, Bars);
 

@@ -8,7 +8,7 @@ namespace SabrTrader.Pipeline.Indicators.Builtin;
 public enum AtrStopEndType { Close, HighLow }
 
 /// <summary>
-/// ATR Trailing Stop — 1-on-1 port of Skender AtrStop.
+/// ATR Trailing Stop — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Trend-aware trailing stop that flips between upper and lower band based on Close vs band.
 /// Bands are computed from Close (EndType=Close) or High/Low (EndType=HighLow) ± Multiplier·ATR.
 /// Upper band can only tighten (decrease) or reset when prevClose breaks it; same for lower.
@@ -38,9 +38,9 @@ public sealed class AtrStop : IndicatorBase
 
     public AtrStop(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("AtrStop",  _atrStop,  PlotStyle.Line, NTColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
-        AddPlot(new Plot("BuyStop",  _buyStop,  PlotStyle.Dots, NTColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
-        AddPlot(new Plot("SellStop", _sellStop, PlotStyle.Dots, NTColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
+        AddPlot(new Plot("AtrStop",  _atrStop,  PlotStyle.Line, PlotColors.Goldenrod, 1.0) { Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("BuyStop",  _buyStop,  PlotStyle.Dots, PlotColors.LimeGreen, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Up, null) });
+        AddPlot(new Plot("SellStop", _sellStop, PlotStyle.Dots, PlotColors.Red,       2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.Down, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period",     MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

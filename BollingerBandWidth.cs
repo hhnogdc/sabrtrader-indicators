@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Bollinger Band Width — 1-on-1 port of NT @BollingerBandWidth.
+/// Bollinger Band Width.
 /// Width = 100 · (Upper − Lower) / Middle, where Upper/Middle/Lower
 /// come from BollingerBands(Period, NumStdDev). Defaults Period=14,
 /// NumStdDev=2, DarkCyan, sub-panel.
@@ -23,7 +23,7 @@ public sealed class BollingerBandWidth : IndicatorBase, IIndicatorPanelHint
 
     public BollingerBandWidth(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("BBW", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Percent, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("BBW", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Percent, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "Bollinger window.",

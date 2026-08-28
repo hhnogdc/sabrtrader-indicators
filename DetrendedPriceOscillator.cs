@@ -5,7 +5,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Detrended Price Oscillator — 1-on-1 port of NT @DetrendedPriceOscillator.
+/// Detrended Price Oscillator.
 /// lookback = Period/2 + 1. Value = Input[lookback] − SMA(Period)[0].
 /// Bar &lt; lookback → 0.
 /// Period=14, DodgerBlue, zero reference line, sub-panel.
@@ -24,8 +24,8 @@ public sealed class DetrendedPriceOscillator : IndicatorBase, IIndicatorPanelHin
 
     public DetrendedPriceOscillator(IIndicator? parent = null, ISeries<double>? input = null) : base(parent, input)
     {
-        AddPlot(new Plot("DPO", _output, PlotStyle.Line, NTColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
-        AddLine("Zero line", 0, NTColors.DarkGray);
+        AddPlot(new Plot("DPO", _output, PlotStyle.Line, PlotColors.DodgerBlue, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddLine("Zero line", 0, PlotColors.DarkGray);
     }
 
     [IndicatorParameter(DisplayName = "Period", Description = "SMA window.",

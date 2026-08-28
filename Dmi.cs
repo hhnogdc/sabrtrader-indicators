@@ -7,7 +7,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Directional Movement Index (Wilder) — 1-on-1 port of NT @DMI.
+/// Directional Movement Index (Wilder).
 /// (DI+ − DI−) / (DI+ + DI−) where DI± = SMA(DM±)/SMA(TR) over Period.
 /// Bar 0 → 0.
 /// Default Period=14, DarkCyan, sub-panel.
@@ -26,7 +26,7 @@ public sealed class Dmi : IndicatorBase, IIndicatorPanelHint
 
     public Dmi(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("DMI", _output, PlotStyle.Line, NTColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
+        AddPlot(new Plot("DMI", _output, PlotStyle.Line, PlotColors.DarkCyan, 1.0) { Semantics = new PlotSemantics(PlotKind.Oscillator, null, null, PlotValueUnit.Ratio, PlotBullishDirection.Up, "0 centerline") });
     }
 
     [IndicatorParameter(DisplayName = "Period", MinValue = 1, MaxValue = int.MaxValue, Step = 1)]

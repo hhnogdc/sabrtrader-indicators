@@ -11,9 +11,9 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Moving-average type for the <see cref="SslChannel"/> high/low channel — a 1-on-1
-/// match of the NinjaTrader TDU SSL Channel's <c>Moving Average type</c> dropdown
-/// (same options, same declaration order). The NT default is <see cref="VWMA"/>.
+/// Moving-average type for the <see cref="SslChannel"/> high/low channel — a 
+/// match of the original TDU SSL Channel's <c>Moving Average type</c> dropdown
+/// (same options, same declaration order). The original default is <see cref="VWMA"/>.
 /// </summary>
 public enum SslMaType
 {
@@ -21,47 +21,47 @@ public enum SslMaType
     EMA,
     DEMA,
     HMA,
-    /// <summary>MESA Adaptive MA (Ehlers), fed the high / low price — NT calls MAMA(series, 0.5, 0.5).</summary>
+    /// <summary>MESA Adaptive MA (Ehlers), fed the high / low price — the original calls MAMA(series, 0.5, 0.5).</summary>
     MAMA,
-    /// <summary>Tim Tillson T3 — NT calls T3(series, period, 3, 0.7).</summary>
+    /// <summary>Tim Tillson T3 — the original calls T3(series, period, 3, 0.7).</summary>
     T3,
     TEMA,
     TMA,
-    /// <summary>EMA of bar volume — matches NT @VOLMA verbatim (both lines collapse to the volume EMA).</summary>
+    /// <summary>EMA of bar volume — matches the original @VOLMA verbatim (both lines collapse to the volume EMA).</summary>
     VOLMA,
-    /// <summary>Volume-weighted MA — Σ(price·vol)/Σ(vol). The NT default.</summary>
+    /// <summary>Volume-weighted MA — Σ(price·vol)/Σ(vol). The original default.</summary>
     VWMA,
     WMA,
     ZLEMA,
-    /// <summary>McGinley Dynamic, NT's custom smoothing (÷ 0.6·period·(p/prev)⁴), fed high / low.</summary>
+    /// <summary>McGinley Dynamic, the original's custom smoothing (÷ 0.6·period·(p/prev)⁴), fed high / low.</summary>
     McGinley,
 }
 
 /// <summary>
-/// SSL Channel (Semaphore Signal Level) — a faithful port of the NinjaTrader 8
+/// SSL Channel (Semaphore Signal Level) — a faithful port of the original
 /// TDU SSL Channel study: the high/low moving-average channel, trend paint, the
-/// reversal / pull-back signal engine, AND the NT on-chart trade overlay — per-entry
+/// reversal / pull-back signal engine, AND the original on-chart trade overlay — per-entry
 /// reversal (R) / pull-back (PB) markers, entry &amp; target lines with tick labels, and
 /// the win-ratio / profit-factor / expected-value statistics table.
 ///
 /// <para><b>Channel.</b> Two moving averages — one of the highs, one of the lows — of
-/// the selected <see cref="MAType"/> (all 13 NT types). A trend flag <c>hlv</c> flips
+/// the selected <see cref="MAType"/> (all 13 the original types). A trend flag <c>hlv</c> flips
 /// to +1 when Close closes above the high-MA, −1 below the low-MA, else carries. The
 /// drawn lines swap on the flag and are spread by an optional ATR offset
-/// (<c>ATR(ATRPeriod)·ATRMultiplier</c>, NT default 0).</para>
+/// (<c>ATR(ATRPeriod)·ATRMultiplier</c>, the original default 0).</para>
 ///
 /// <para><b>Signals &amp; trades.</b> On the bar after a trend flip a reversal fires and
 /// a tracked trade entry is opened (entry = prior bar extreme ± 1 tick); a pull-back
 /// fires when price closes back inside the channel and breaks out again. Each entry is
 /// simulated against <see cref="StoplossTicks"/> / <see cref="TargetTicks"/> to drive the
-/// markers, the max-favourable target line and the statistics table — a 1-on-1 port of
-/// NT's <c>HandleEntries</c> / <c>HandleLastReversal</c> / <c>IsEntryActive</c> /
+/// markers, the max-favourable target line and the statistics table — a port of
+/// the original's <c>HandleEntries</c> / <c>HandleLastReversal</c> / <c>IsEntryActive</c> /
 /// <c>RenderEntry</c> / <c>RenderStatistics</c>.</para>
 ///
-/// <para>NT processes <c>OnEachTick</c>; this port runs on the platform's closed-bar
+/// <para>The original processes <c>OnEachTick</c>; this port runs on the platform's closed-bar
 /// cadence (the same model the rest of the built-ins use), so the simulated trade
-/// statistics match NT bar-for-bar on history and differ only in intrabar stop/target
-/// tie-breaks. The NT licence scaffolding is intentionally not ported.</para>
+/// statistics match the original bar-for-bar on history and differ only in intrabar stop/target
+/// tie-breaks. The original licence scaffolding is intentionally not ported.</para>
 ///
 /// Price overlay. Defaults MAType=VWMA, Period=20, ATRPeriod=20, ATRMultiplier=0.
 /// </summary>
@@ -70,7 +70,7 @@ public enum SslMaType
 [IndicatorInput(IndicatorInputKind.Bars)]
 public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBarColorSource
 {
-    // ─── Plots (NT Values[0..7]) — channel lines custom-rendered (per-bar trend
+    // ─── Plots (the original Values[0..7]) — channel lines custom-rendered (per-bar trend
     //     colour); trend/signal/reversal/pullback are data-box-only signal series ──
     private readonly ChunkedSeries<double> _up   = new();
     private readonly ChunkedSeries<double> _down = new();
@@ -90,15 +90,15 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     private readonly List<sbyte> _trendDir = new();   // +1 up / −1 down / 0 warmup
     private readonly List<bool> _computed = new();
 
-    // ─── Internal primary-bar history (NT Opens/Highs/Lows/Closes/Times view) ─
+    // ─── Internal primary-bar history (the original Opens/Highs/Lows/Closes/Times view) ─
     private readonly List<double> _opens = new(), _highs = new(), _lows = new(), _closes = new();
     private readonly List<DateTime> _times = new();
 
-    // ─── Tracked trade entries (NT _entries) ────────────────────────────────
+    // ─── Tracked trade entries (the original _entries) ────────────────────────────────
     private readonly List<SslEntry> _entries = new();
 
     /// <summary>Guards collections shared between the calc thread and the render
-    /// pass (which — exactly like NT's OnRender — also reads the entry list).</summary>
+    /// pass (which — exactly like the original's OnRender — also reads the entry list).</summary>
     private readonly object _gate = new();
 
     // ─── MA sources: either composed child MAs (scalar types) or streaming cores ──
@@ -124,9 +124,9 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         // the standard pass skips them (no double-draw); Visible = true so the settings
         // show/hide toggle gates the custom render and the line-style picker works. Kept
         // for the data box. Trend/Signal/Reversal/Pullback: transparent signal series.
-        AddPlot(new Plot("Upper line", _up, PlotStyle.Line, NTColors.DodgerBlue, 3.0)
+        AddPlot(new Plot("Upper line", _up, PlotStyle.Line, PlotColors.DodgerBlue, 3.0)
         { Visible = true, IsCustomRendered = true, PerBarColors = _upColors, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "upper SSL channel line") });
-        AddPlot(new Plot("Lower line", _down, PlotStyle.Line, NTColors.DodgerBlue, 3.0)
+        AddPlot(new Plot("Lower line", _down, PlotStyle.Line, PlotColors.DodgerBlue, 3.0)
         { Visible = true, IsCustomRendered = true, PerBarColors = _downColors, Semantics = new PlotSemantics(PlotKind.Overlay, null, null, PlotValueUnit.Price, PlotBullishDirection.None, "lower SSL channel line") });
         AddPlot(new Plot("Trend", _trend, PlotStyle.Line, ChartColor.Transparent, 1.0)
         { Visible = false, ShowPriceMarker = false, Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Raw, PlotBullishDirection.None, "+1 uptrend / -1 downtrend") });
@@ -145,7 +145,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     // ─── 01. Parameters ─────────────────────────────────────────────────────
 
     [IndicatorParameter(DisplayName = "Moving Average type", Group = "01. Parameters", Order = 1,
-        Description = "Average used for the high/low channel. NT default: VWMA.")]
+        Description = "Average used for the high/low channel. The original default: VWMA.")]
     public SslMaType MAType { get; set; } = SslMaType.VWMA;
 
     [IndicatorParameter(DisplayName = "Moving Average Period", Group = "01. Parameters", Order = 2,
@@ -157,7 +157,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     public int ATRPeriod { get; set; } = 20;
 
     [IndicatorParameter(DisplayName = "ATR Multiplier", Group = "01. Parameters", Order = 4,
-        Description = "Spreads the channel by ATR·multiplier. 0 (NT default) = lines sit on the raw MAs.",
+        Description = "Spreads the channel by ATR·multiplier. 0 (the original default) = lines sit on the raw MAs.",
         MinValue = 0, MaxValue = double.MaxValue, Step = 0.5)]
     public double ATRMultiplier { get; set; } = 0;
 
@@ -165,7 +165,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     public bool FillBands { get; set; } = true;
 
     [IndicatorParameter(DisplayName = "Paint Bars", Group = "01. Parameters", Order = 6)]
-    public bool PaintBars { get; set; } = true;   // NT default
+    public bool PaintBars { get; set; } = true;   // the original default
 
     [IndicatorParameter(DisplayName = "Show Pullbacks", Group = "01. Parameters", Order = 7)]
     public bool ShowPullbacks { get; set; } = true;
@@ -210,10 +210,10 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     public LineStyle TargetLineStyle { get; set; } = LineStyle.Dashed;
 
     [IndicatorParameter(DisplayName = "Target Winner Color", Group = "02. Stats", Order = 10)]
-    public ChartColor TargetWinnerColor { get; set; } = NTColors.LimeGreen;
+    public ChartColor TargetWinnerColor { get; set; } = PlotColors.LimeGreen;
 
     [IndicatorParameter(DisplayName = "Target Loser Color", Group = "02. Stats", Order = 11)]
-    public ChartColor TargetLoserColor { get; set; } = NTColors.Crimson;
+    public ChartColor TargetLoserColor { get; set; } = PlotColors.Crimson;
 
     [IndicatorParameter(DisplayName = "Target text size", Group = "02. Stats", Order = 12,
         MinValue = 4, MaxValue = 72, Step = 1)]
@@ -222,25 +222,25 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     // ─── 03. Colors ─────────────────────────────────────────────────────────
 
     [IndicatorParameter(DisplayName = "OutLine Uptrend", Group = "03. Colors", Order = 1)]
-    public ChartColor UptrendColor { get; set; } = NTColors.ForestGreen;
+    public ChartColor UptrendColor { get; set; } = PlotColors.ForestGreen;
 
     [IndicatorParameter(DisplayName = "OutLine Downtrend", Group = "03. Colors", Order = 2)]
-    public ChartColor DowntrendColor { get; set; } = NTColors.Crimson;
+    public ChartColor DowntrendColor { get; set; } = PlotColors.Crimson;
 
     [IndicatorParameter(DisplayName = "Candle Uptrend", Group = "03. Colors", Order = 3)]
-    public ChartColor CandleUptrendColor { get; set; } = NTColors.ForestGreen;
+    public ChartColor CandleUptrendColor { get; set; } = PlotColors.ForestGreen;
 
     [IndicatorParameter(DisplayName = "Candle Downtrend", Group = "03. Colors", Order = 4)]
-    public ChartColor CandleDowntrendColor { get; set; } = NTColors.Crimson;
+    public ChartColor CandleDowntrendColor { get; set; } = PlotColors.Crimson;
 
     [IndicatorParameter(DisplayName = "Fill Up bands", Group = "03. Colors", Order = 5)]
-    public ChartColor FillUptrendColor { get; set; } = NTColors.ForestGreen;
+    public ChartColor FillUptrendColor { get; set; } = PlotColors.ForestGreen;
 
     [IndicatorParameter(DisplayName = "Fill Lower bands", Group = "03. Colors", Order = 6)]
-    public ChartColor FillDowntrendColor { get; set; } = NTColors.Crimson;
+    public ChartColor FillDowntrendColor { get; set; } = PlotColors.Crimson;
 
     [IndicatorParameter(DisplayName = "Fill opacity %", Group = "03. Colors", Order = 7,
-        Description = "Channel fill opacity (NT FillUpTrend/FillDownTrend opacity = 15).",
+        Description = "Channel fill opacity (the original FillUpTrend/FillDownTrend opacity = 15).",
         MinValue = 0, MaxValue = 100, Step = 1)]
     public int FillOpacity { get; set; } = 15;
 
@@ -250,14 +250,14 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
 
     [IndicatorParameter(DisplayName = "Text Color", Group = "03. Colors", Order = 9,
         Description = "Marker label + statistics text.")]
-    public ChartColor TextColor { get; set; } = NTColors.White;
+    public ChartColor TextColor { get; set; } = PlotColors.White;
 
     [IndicatorParameter(DisplayName = "Text size", Group = "03. Colors", Order = 10,
-        Description = "Reversal/pull-back marker label size (NT Text Font = 8).", MinValue = 4, MaxValue = 72, Step = 1)]
+        Description = "Reversal/pull-back marker label size (the original Text Font = 8).", MinValue = 4, MaxValue = 72, Step = 1)]
     public double FontSize { get; set; } = 8;
 
     [IndicatorParameter(DisplayName = "Statistics size", Group = "03. Colors", Order = 11,
-        Description = "Statistics panel text size (NT Statistics Font = 12).", MinValue = 4, MaxValue = 72, Step = 1)]
+        Description = "Statistics panel text size (the original Statistics Font = 12).", MinValue = 4, MaxValue = 72, Step = 1)]
     public double StatFontSize { get; set; } = 12;
 
     [IndicatorParameter(DisplayName = "Font family", Group = "03. Colors", Order = 12,
@@ -265,15 +265,15 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     public string FontFamilyName { get; set; } = "";
 
     [IndicatorParameter(DisplayName = "Statistics Background", Group = "03. Colors", Order = 13)]
-    public ChartColor StatsBGColor { get; set; } = NTColors.Gray;
+    public ChartColor StatsBGColor { get; set; } = PlotColors.Gray;
 
     [IndicatorParameter(DisplayName = "Pullback", Group = "03. Colors", Order = 14,
         Description = "Pull-back (PB) marker fill.")]
-    public ChartColor PullbackColor { get; set; } = NTColors.DarkSeaGreen;
+    public ChartColor PullbackColor { get; set; } = PlotColors.DarkSeaGreen;
 
     [IndicatorParameter(DisplayName = "Up Trend Reversal", Group = "03. Colors", Order = 15,
         Description = "Long reversal (R) marker fill.")]
-    public ChartColor UpTrendReversalColor { get; set; } = NTColors.DeepSkyBlue;
+    public ChartColor UpTrendReversalColor { get; set; } = PlotColors.DeepSkyBlue;
 
     [IndicatorParameter(DisplayName = "Down Trend Reversal", Group = "03. Colors", Order = 16,
         Description = "Short reversal (R) marker fill.")]
@@ -285,7 +285,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
 
     [IndicatorParameter(DisplayName = "Short entry", Group = "03. Colors", Order = 18,
         Description = "Short entry-price tick line.")]
-    public ChartColor ShortEntryColor { get; set; } = NTColors.Magenta;
+    public ChartColor ShortEntryColor { get; set; } = PlotColors.Magenta;
 
     [IndicatorParameter(DisplayName = "Entry line thickness", Group = "03. Colors", Order = 19,
         MinValue = 0.5, MaxValue = 20, Step = 0.5)]
@@ -294,16 +294,16 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     // ─── 04. Alerts ─────────────────────────────────────────────────────────
 
     [IndicatorParameter(DisplayName = "Trend reversal alert", Group = "04. Alerts", Order = 1)]
-    public bool TrendAlertEnabled { get; set; } = true;   // NT default
+    public bool TrendAlertEnabled { get; set; } = true;   // the original default
 
     [IndicatorParameter(DisplayName = "Pullback alert", Group = "04. Alerts", Order = 2)]
-    public bool PullbackAlertEnabled { get; set; } = true;   // NT default
+    public bool PullbackAlertEnabled { get; set; } = true;   // the original default
 
     [IndicatorParameter(DisplayName = "Sound", Group = "04. Alerts", Order = 3,
         Editor = ParameterEditorKind.FilePicker, FileFilter = "WAV Files (*.wav)|*.wav")]
     public string? AlertSound { get; set; } = BuiltinAlertSounds.Default;
 
-    // ─── Chainable outputs (mirror the NT Series properties) ────────────────
+    // ─── Chainable outputs (mirror the original Series properties) ────────────────
     public ISeries<double> UpLine        => _upW    ??= new IndicatorOutputSeries(_up, Bars);
     public ISeries<double> DownLine      => _downW  ??= new IndicatorOutputSeries(_down, Bars);
     public ISeries<double> Trend         => _trendW ??= new IndicatorOutputSeries(_trend, Bars);
@@ -313,7 +313,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
     public ISeries<double> PullbackLong  => _plW    ??= new IndicatorOutputSeries(_pullLong, Bars);
     public ISeries<double> PullbackShort => _psW    ??= new IndicatorOutputSeries(_pullShort, Bars);
 
-    // ─── NT-style accessors over the internal history ───────────────────────
+    // ─── original-style accessors over the internal history ───────────────────────
     private double TickSize => _tickSize;
     private int CurrentBar => _closes.Count - 1;
     private double High(int barsAgo) => _highs[_highs.Count - 1 - barsAgo];
@@ -414,18 +414,18 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>Process one bar — 1-on-1 with the NT <c>OnBarUpdate</c> body.</summary>
+    /// <summary>Process one bar — with the original <c>OnBarUpdate</c> body.</summary>
     private void Consume(in Bar bar, int barsAgo, IIndicatorContext ctx, bool live)
     {
         lock (_gate)
         {
-            // Mirror the bar (NT Opens/Highs/Lows/Closes/Times[0]).
+            // Mirror the bar (the original Opens/Highs/Lows/Closes/Times[0]).
             _opens.Add(bar.Open); _highs.Add(bar.High); _lows.Add(bar.Low);
             _closes.Add(bar.Close); _times.Add(bar.Start);
             _price = bar.Close;
             _dateNow = bar.Start;
 
-            // Feed the streaming cores every bar (NT advances every child indicator each bar).
+            // Feed the streaming cores every bar (the original advances every child indicator each bar).
             double atrRaw = _atr.Add(bar.High, bar.Low, bar.Close);
             double smaHi, smaLo;
             switch (_core)
@@ -443,7 +443,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                     smaLo = _mamaLow.Add(bar.Low);
                     break;
                 case CoreKind.Volma:
-                    // NT @VOLMA is an EMA of bar volume — both high & low collapse to it (verbatim).
+                    // The original @VOLMA is an EMA of bar volume — both high & low collapse to it (verbatim).
                     smaHi = smaLo = _volEma.Add(bar.Volume);
                     break;
                 default:
@@ -461,7 +461,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                 return;
             }
 
-            // NT: at the top of every new bar — simulate open trades + track MFE.
+            // The original: at the top of every new bar — simulate open trades + track MFE.
             HandleEntries();
             HandleLastReversal();
 
@@ -480,13 +480,13 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
 
             AppendBar(top, bottom, trend, computed: true);
 
-            // ── Reversal: a trend flip is confirmed one bar later (NT: Trend[1] != Trend[2],
+            // ── Reversal: a trend flip is confirmed one bar later (the original: Trend[1] != Trend[2],
             //    which also fires on the first computed bar after the warm-up zero — faithful). ──
             int cur = _trendDir.Count - 1;
             bool reversal = cur >= 2 && _trendDir[cur - 1] != _trendDir[cur - 2];
             if (reversal)
             {
-                // NT sets the Reversal signal plots unconditionally (Trend[1] != Trend[2]);
+                // The original sets the Reversal signal plots unconditionally (Trend[1] != Trend[2]);
                 // ShowReversals only gates the on-chart marker in RenderEntry.
                 if (trend > 0) _revLong.UpdateLast(1);
                 else if (trend < 0) _revShort.UpdateLast(-1);
@@ -494,7 +494,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                 _signal.UpdateLast(trend);
 
                 double entryPrice = trend > 0 ? High(1) + TickSize : Low(1) - TickSize;
-                // NT: IsEntryActive closes any open reversal trade (computing its result), then
+                // The original: IsEntryActive closes any open reversal trade (computing its result), then
                 // always returns false, so a new reversal trade is opened.
                 if (!IsEntryActive(entryPrice))
                 {
@@ -518,7 +518,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                         AlertSound, AlertSeverity.Warning);
             }
 
-            // ── Pull-back state machine on the PRIOR bar's channel + close (NT DownLine[1]/UpLine[1]). ──
+            // ── Pull-back state machine on the PRIOR bar's channel + close (the original DownLine[1]/UpLine[1]). ──
             if (cur >= 1)
             {
                 double prevBottom = _downV[cur - 1];
@@ -535,7 +535,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
                         if (outsidePrev)
                         {
                             _pullbackState = 0;
-                            // NT sets the Pullback signal plots unconditionally; ShowPullbacks
+                            // The original sets the Pullback signal plots unconditionally; ShowPullbacks
                             // only gates the on-chart marker in RenderEntry.
                             _signal.UpdateLast(trend > 0 ? 2 : -2);
                             if (trend > 0) _pullLong.UpdateLast(1);
@@ -588,9 +588,9 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         _upV.Add(up); _downV.Add(down); _trendDir.Add(trend); _computed.Add(computed);
     }
 
-    // ─── Entry simulation (NT HandleEntries / HandleLastReversal / IsEntryActive) ──
+    // ─── Entry simulation (the original HandleEntries / HandleLastReversal / IsEntryActive) ──
 
-    /// <summary>NT <c>IsEntryActive</c>: closes every open reversal trade against
+    /// <summary>The original <c>IsEntryActive</c>: closes every open reversal trade against
     /// <paramref name="price"/> (computing winner / profit), then returns false so the
     /// caller always opens a fresh reversal trade.</summary>
     private bool IsEntryActive(double price)
@@ -610,7 +610,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         return false;
     }
 
-    /// <summary>NT <c>HandleLastReversal</c>: extends the last winning reversal's
+    /// <summary>The original <c>HandleLastReversal</c>: extends the last winning reversal's
     /// max-favourable-excursion with the current bar and propagates it to the pull-back
     /// trades that followed it.</summary>
     private void HandleLastReversal()
@@ -647,7 +647,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>NT <c>HandleEntries</c>: resolve every open trade against the current
+    /// <summary>The original <c>HandleEntries</c>: resolve every open trade against the current
     /// bar's stop / target (verbatim, incl. the engulfing-bar tie-break).</summary>
     private void HandleEntries()
     {
@@ -720,7 +720,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         SslMaType.TEMA  => new Tema(this, input) { Period = period },
         SslMaType.TMA   => new Tma(this, input) { Period = period },
         SslMaType.ZLEMA => new Zlema(this, input) { Period = period },
-        SslMaType.T3    => new T3(this, input) { Period = period, TCount = 3, VFactor = 0.7 }, // NT T3(series, period, 3, 0.7)
+        SslMaType.T3    => new T3(this, input) { Period = period, TCount = 3, VFactor = 0.7 }, // the original T3(series, period, 3, 0.7)
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Non-scalar type uses a dedicated core."),
     };
 
@@ -758,7 +758,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>NT TDU's custom McGinley line, fed High/Low: seeded with price, then
+    /// <summary>The original TDU's custom McGinley line, fed High/Low: seeded with price, then
     /// <c>v = prev + (price − prev) / (0.6·period·(price/prev)⁴)</c> per bar. NOTE the
     /// 0.6 smoothing constant — this differs from the platform's standard <see cref="McGinleyDynamic"/>.</summary>
     private sealed class McGinleyCore
@@ -777,7 +777,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>EMA core over a scalar stream (NT @VOLMA fed bar volume).</summary>
+    /// <summary>EMA core over a scalar stream (the original @VOLMA fed bar volume).</summary>
     private sealed class EmaCore
     {
         private readonly double _alpha, _oneMinusAlpha;
@@ -791,7 +791,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>NT @ATR (Wilder): bar 0 = High−Low, then running-mean → Wilder smoothing.</summary>
+    /// <summary>The original @ATR (Wilder): bar 0 = High−Low, then running-mean → Wilder smoothing.</summary>
     private sealed class NtAtr
     {
         private readonly int _period;
@@ -812,7 +812,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    /// <summary>Ehlers MESA Adaptive MA fed a scalar price (NT MAMA(High/Low, 0.5, 0.5)) —
+    /// <summary>Ehlers MESA Adaptive MA fed a scalar price (the original MAMA(High/Low, 0.5, 0.5)) —
     /// the same Hilbert-transform discriminator as the platform <see cref="Mama"/>, but with
     /// the input series as price (not the bar median) so the high/low channel separates.</summary>
     private sealed class MamaPriceCore
@@ -888,7 +888,7 @@ public sealed partial class SslChannel : IndicatorBase, IChartCustomRender, IBar
         }
     }
 
-    // ─── SSL trade entry (NT TDUSSLEntry) ────────────────────────────────────
+    // ─── SSL trade entry (the original TDUSSLEntry) ────────────────────────────────────
 
     private enum SslPointType { ReversalUp, ReversalDown, Pullback }
 

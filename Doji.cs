@@ -6,7 +6,7 @@ using SabrTrader.Pipeline.Series;
 namespace SabrTrader.Pipeline.Indicators.Builtin;
 
 /// <summary>
-/// Doji single-bar candlestick pattern — 1-on-1 port of Skender Doji.
+/// Doji single-bar candlestick pattern — derived from Skender.Stock.Indicators (Apache-2.0).
 /// Detects when |Close/Open − 1| ≤ MaxPriceChangePercent/100. On match, emits Close as
 /// the match price (otherwise NaN). Yellow Dot at the close price, no panel hint (overlay).
 /// Defaults MaxPriceChangePercent=0.1 (i.e. 0.1%).
@@ -21,7 +21,7 @@ public sealed class Doji : IndicatorBase
 
     public Doji(IIndicator? parent = null, IBarSeries? bars = null) : base(parent, bars: bars)
     {
-        AddPlot(new Plot("Doji", _output, PlotStyle.Dots, NTColors.Yellow, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
+        AddPlot(new Plot("Doji", _output, PlotStyle.Dots, PlotColors.Yellow, 2.0) { Semantics = new PlotSemantics(PlotKind.Signal, null, null, PlotValueUnit.Price, PlotBullishDirection.None, null) });
     }
 
     [IndicatorParameter(DisplayName = "MaxPriceChangePercent",

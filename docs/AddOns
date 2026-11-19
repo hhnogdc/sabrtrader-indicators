@@ -1,0 +1,92 @@
+Add-ons
+Add-ons INTERFACE
+Give the platform its own window and its own main-menu entry. An add-on is the plugin kind for tooling that is not tied to a single chart.
+
+On this page
+What an add-on is
+The shape of one
+What you can contribute
+Where your entries land
+Lifecycle
+Isolation
+A tour of the chapter
+What an add-on is
+An indicator lives on a chart. An add-on lives in the Control Center: it is the plugin kind for tooling that is not tied to one chart, one instrument or one timeframe. A scanner across your whole watchlist, a risk dashboard, a journal, a position calculator, a bridge to something you run in-house. It gets its own window, its own entry in the main menu, and read or write access to accounts, orders, live ticks and historical bars.
+
+It is one DLL, discovered exactly like every other plugin. The manifest is a property in your code and the host needs no configuration: implement IAddOn, drop the DLL in your plugins folder, and your window is in the menu.
+
+Package. Add-ons live in SabrTrader.Pipeline.AddOns.Contracts, namespace SabrTrader.Pipeline.AddOns. It comes with the SabrTrader.Sdk meta-package, so if you already reference the SDK you have it.
+The shape of one
+Three members, one of which is optional. You say who you are, you get handed the platform, and you return what you contribute.
+
+VolumeScannerAddOn.cs
+using SabrTrader.Pipeline.AddOns;
+
+public sealed class VolumeScannerAddOn : IAddOn
+{
+    public AddOnManifest Manifest { get; } =
+        new("acme.volume-scanner", "Volume Scanner", "Acme", "1.0.0")
+        {
+            Description = "Flags unusual volume across your watchlist.",
+        };
+
+    public AddOnContributions Initialize(IAddOnHost host) => new(
+        windows: new[]
+        {
+            new AddOnWindowKind("main", () => new ScannerWindow(host))
+            {
+                MenuTitle   = "Volume Scanner",
+                MenuSection = AddOnMenuSection.New,
+            },
+        });
+
+    public void Shutdown() { }          // optional; default does nothing
+}
+Initialize takes the host and returns the contributions in one call, so there is no ordering to get wrong. A window factory or a command you build in there can simply capture host.
+
+The manifest
+AddOnManifest is a pure value, read at discovery before anything is initialised. Its Id is your identity for the life of the installation: it roots your settings folder on disk and keys your windows in a saved workspace. Pick a stable, vendor-scoped id like acme.volume-scanner and never change it, or a later release orphans both.
+
+Field	What it is for
+Id	Stable identity. Roots your settings, keys your windows in a workspace.
+Name	Display name. Also the category your log lines are filed under, so users can tell whose message they are reading.
+Vendor	Who wrote it, shown beside the name.
+Version	Your own version string. Informational.
+Description	Optional one-liner for the add-on list.
+What you can contribute
+AddOnContributions carries two lists, both optional.
+
+AddOnWindowKind
+A window the host can open: from your menu entry, from your own code, or when a workspace that had it open is restored. Most add-ons declare exactly one.
+
+AddOnCommand
+A menu entry that runs an action instead of opening a window. Re-run a scan, clear a cache, flatten everything.
+
+Return AddOnContributions.None and you have a background add-on: no window, no menu entry, just work between Initialize and Shutdown. That is a legitimate shape, and it is how you would write a bridge that pushes fills into your own system.
+
+Where your entries land
+Set MenuSection and the host puts your entry in an Add-ons sub-menu at the bottom of that menu:
+
+Section	Where it shows
+AddOnMenuSection.New	The New menu, beside Chart, SuperDOM and Market Analyzer. Use it for a window a trader opens during a session.
+AddOnMenuSection.Settings	The Settings menu, beside Preferences and Risk Master. Use it for configuration and one-off tools.
+AddOnMenuSection.None	No entry. The window is yours to open from code, and a workspace can still restore it. This is the default on a window kind.
+Grouping your entries under Add-ons rather than mixing them into the platform's own items keeps two promises: users can always see which entries came from outside, and no add-on can shadow or reorder a platform item. Your entry's tooltip carries your add-on name, so an unfamiliar item always says who put it there.
+
+Lifecycle
+Discovery. The loader finds every public, concrete, parameterless-constructor IAddOn in your DLL and reads its Manifest.
+Initialize. Called once, on the Control Center's UI thread, after the platform services are up. Wire yourself up and return your contributions. Do not block here: start network or disk work on your own thread and let the window show a status until it lands.
+Running. Everything else happens through what you contributed. The host calls nothing else on the add-on object itself.
+Shutdown. Called on app exit, and again whenever a rebuilt DLL replaces you. Release threads, subscriptions and files. Your windows are already closed by then.
+Hot reload works. Rebuild your DLL into the plugins folder while the platform is running and the host retires the running generation (windows closed, Shutdown called) before it initialises the new one, so you iterate without restarting the app.
+Isolation
+An add-on is third-party code and the platform treats it that way. If your Initialize throws, your add-on is dropped and the reason goes to the activity log, while every other add-on keeps running. If a button handler throws, it is caught, logged against your add-on name, and the window carries on. Failures are always surfaced, never swallowed, so a broken add-on tells the user what happened instead of quietly doing nothing.
+
+On the Windows desktop host, each add-on window also gets its own UI thread. Slow work in a handler costs your own window a frame, not the Control Center.
+
+A tour of the chapter
+Windows & views is the one to read next: what a window is, and how you describe its contents without touching a UI framework.
+Platform services covers IAddOnHost: accounts and orders, historical bars, the live tape, instruments, logging.
+Settings & workspace state covers the two kinds of state an add-on keeps, and which one you want.
+A complete add-on is every file of a working one.
+Reference › Add-ons lists every type and member.

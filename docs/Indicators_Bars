@@ -1,0 +1,139 @@
+Indicators
+Reading bars & series
+How you read price data inside a callback: bars-ago indexing, the Bar fields, the cached price projections that save you materialising whole bars, and how to read safely during warmup.
+
+On this page
+The context is your data window
+Bars-ago indexing
+The Bar struct
+Cached price projections
+Reading safely during warmup
+Bars from before the chart
+Zero-copy column spans
+The context is your data window
+Every lifecycle hook receives an IIndicatorContext. It is your window onto the data: ctx.Bars(0) is the primary bar series, ctx.SeriesCount tells you how many series are subscribed, and ctx.BarsInProgress tells you which series fired the current callback. IndicatorBase also exposes the resolved primary as the Bars property and the resolved scalar source as Input; base.OnInit sets both.
+
+Bars-ago indexing
+Series use NinjaTrader-style bars-ago indexing: this[0] is the newest bar, this[1] the bar before it, and so on. During history the newest bar is the last closed one. Live, it is the bar the callback is about: in a closed-bar update (ctx.IsBarClosed true, always the case for OnBarClose) it is the bar that just closed, in an intra-bar update it is the bar still forming. Count is the number of bars in the series.
+
+reading bars
+public override void OnBarUpdate(IIndicatorContext ctx)
+{
+    IBarSeries bars = ctx.Bars(0);
+
+    Bar current  = bars[0];        // the bar that just closed
+    Bar previous = bars[1];        // the one before it
+
+    double range = current.High - current.Low;
+    bool   up    = current.Close >= previous.Close;
+
+    int lastIndex = ctx.CurrentBar;            // == bars.Count - 1, or -1 before any bar
+}
+ctx.CurrentBar is the index of the most recent bar on the firing series, equal to Bars(BarsInProgress).Count - 1, and returns -1 when the series has no bars yet. For multi-series indicators, ctx.CurrentBars[n] gives the last-bar index of any local series (see Multi-timeframe).
+
+The Bar struct
+A Bar (namespace SabrTrader.Pipeline.Bars) is a readonly record struct: allocation-free and passed by value. It has two pairs of timestamps. StartUtc / EndUtc are venue UTC. Start / End are the chart timeline: the display-zone wall-clock when the host has stamped StartDisplay / EndDisplay, otherwise the UTC values. TickCount is the number of trades in the bar, which tick and orderflow bar types depend on.
+
+Bar.cs (excerpt)
+public readonly record struct Bar(
+    DateTime StartUtc,      // true venue UTC open
+    DateTime EndUtc,        // true venue UTC close (closing tick for non-time bars)
+    double Open,
+    double High,
+    double Low,
+    double Close,
+    long Volume,
+    long TickCount,
+    DateTime StartDisplay = default,   // display-zone stamp (default when unstamped)
+    DateTime EndDisplay   = default)
+{
+    public DateTime Start { get; }   // display if stamped, else StartUtc
+    public DateTime End   { get; }
+}
+Two clocks. StartUtc / EndUtc are venue UTC on every chart. Session time-of-day, axis labels, bar countdowns and chart ISessionIterator queries use Bar.Start / Bar.End. To compare an external UTC instant (a news event, OrderFlowBarStats.FirstTradeUtc) with Bar.Start, convert it first with ChartDisplayTime.FromUtc(utc, ctx.DisplayTimeZone) (namespace SabrTrader.Pipeline.Time; a null zone returns the instant unchanged). Keep every *Utc field in UTC. Full member list: Bars & series.
+Cached price projections
+Most indicators need one column rather than a whole Bar. IBarSeries exposes ISeries<double> views over each component, so you read a scalar stream without materialising a bar per access. Each series creates one view per component and returns the same instance on every read, so views compare equal by reference.
+
+Projection	Value
+Close / Open / High / Low	The raw OHLC components.
+Volume	Per-bar volume (projected to double for arithmetic).
+Median	(High + Low) / 2, also called HL2.
+Typical	(High + Low + Close) / 3, also called HLC3.
+Weighted	(High + Low + 2×Close) / 4.
+OHLC4	(Open + High + Low + Close) / 4.
+using a projection
+// Inside OnInit: run MySma (from "Your first indicator") on the median price
+// instead of the close, as a child of this indicator.
+_median = new MySma(this, input: ctx.Bars(0).Median, period: 20);
+
+// Read a projection directly:
+double typical0 = ctx.Bars(0).Typical[0];
+IndicatorBase.Input defaults to Bars(0).Close. An indicator whose maths reads Input follows whatever the user picks in the "Input series" editor, including another indicator's output.
+
+Reading safely during warmup
+Early in a session, or near the start of the backfill, a lookback can exceed the bars available. There are two tools. First, the platform-wide NaN convention: any series of double holds double.NaN at positions that aren't computed yet, the renderer skips NaN, and NaN propagates cleanly through arithmetic into a gap in the plot. Second, the non-throwing TryGet accessor.
+
+warmup-safe reads
+public override void OnBarUpdate(IIndicatorContext ctx)
+{
+    var close = ctx.Bars(0).Close;
+
+    // Guard a lookback explicitly...
+    if (close.Count < Period) { _output.Append(double.NaN); return; }
+
+    // ...or read tentatively with TryGet.
+    if (close.TryGet(Period - 1, out double oldest))
+        _output.Append((close[0] - oldest) / Period);
+    else
+        _output.Append(double.NaN);
+}
+Bars from before the chart
+A series only holds what the chart loaded. When a calculation needs data from further back (a monthly or yearly VWAP on a chart that loads a few days, a prior-year range, a seasonal average), ctx.LoadHistoricalBars(spec, fromUtc, toUtcExclusive) reads the closed bars for that window, independent of the chart's own history.
+
+reading a year of daily bars
+using System;
+using System.Collections.Generic;
+using SabrTrader.Pipeline.Bars;
+using SabrTrader.Pipeline.Indicators;
+
+public sealed class YearlyAnchor : IndicatorBase, IRecalculateNotifier
+{
+    public event Action? RecalculateRequested;
+
+    private IReadOnlyList<Bar>? _priorYear;
+
+    public override void OnDataLoaded(IIndicatorContext ctx)
+    {
+        string symbol = ctx.Bars(0).Spec.InstrumentId;
+        var spec = new TimeBarSpec(symbol, TimeSpan.FromDays(1));
+
+        var from = new DateTime(DateTime.UtcNow.Year - 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var to   = new DateTime(DateTime.UtcNow.Year,     1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        ctx.LoadHistoricalBars(spec, from, to).ContinueWith(t =>
+        {
+            if (!t.IsCompletedSuccessfully) return;
+            _priorYear = t.Result;               // do NOT write plots here
+            RecalculateRequested?.Invoke();      // ask for a reprocess instead
+        });
+    }
+}
+The host treats spec exactly like an AddDataSeries request: a same-instrument spec inherits the primary series' trading-hours template and continuous-futures root, and the read goes through the host's cache. Nothing is subscribed and no series slot is created. It is a one-shot read, so call it when your inputs change, not per bar.
+
+The bars carry the same timeline as the primary series (Bar.Start is the display stamp, Bar.StartUtc true UTC). The venue may return a few bars outside the window; filter what you count. Hosts that serve no history beyond their own series fault the task with NotSupportedException, so check for a faulted task before using the result.
+
+The task usually completes on another thread. Write plots and series only from your lifecycle callbacks. In the continuation, store the result and raise IRecalculateNotifier.RecalculateRequested; the runtime then re-runs OnInit and OnDataLoaded on its own thread, where writing is safe. See Repaint vs. recalculate.
+Zero-copy column spans
+For vectorised or SIMD work over one column, the span accessors expose the underlying storage with no per-bar materialisation. The storage is split into fixed-size chunks, so a slice that crosses a chunk boundary comes back as two spans in chronological order (older first); treat them as one sequence.
+
+span accessors
+// Add up the last `n` closes without allocating.
+if (bars.TryReadCloseSpan(fromBarsAgo: 0, count: n,
+        out ReadOnlySpan<double> first, out ReadOnlySpan<double> second))
+{
+    double sum = 0;
+    foreach (double c in first)  sum += c;
+    foreach (double c in second) sum += c;   // empty when the slice didn't wrap
+}
+The full set is TryReadCloseSpan, TryReadOpenSpan, TryReadHighSpan, TryReadLowSpan (all ReadOnlySpan<double>) and TryReadVolumeSpan (ReadOnlySpan<long>). Each returns false when the requested range exceeds the bars in the series or would need more than two spans (long lookbacks of several thousand bars); read those through the indexer instead. The spans are live views over storage the runtime writes to: use them inside your lifecycle callback and never keep them past it.
+

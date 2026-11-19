@@ -1,0 +1,147 @@
+Indicators
+Parameters
+Expose user-tunable inputs (periods, colours, toggles, file paths) that the settings dialog renders, the workspace persists, and the engine uses to tell two indicators apart.
+
+On this page
+What a parameter is
+Declaring parameters
+Conditional visibility & primary knobs
+Row formatting
+Editor types
+Groups and ordering
+Reading parameters in your code
+The content key
+Parameters from a nested object
+Built-in parameters you inherit
+What a parameter is
+A parameter is a public read/write property tagged with [IndicatorParameter] (from SabrTrader.Pipeline.Indicators). The framework reads these through reflection to:
+
+Render an editor. The settings dialog shows one row per attributed property.
+Persist and restore. The value round-trips through the chart template and workspace.
+Form the content key. The indicator's ContentKey is built from its type and parameter values, so a 14-period and a 50-period SMA are distinct instances, and two requests with the same key resolve to one shared instance (see The content key).
+Every parameter needs a real default. The host constructs the indicator with its defaults first, then applies the saved value. A parameter with no sensible default value will misbehave the moment a template is loaded.
+Declaring parameters
+declaring parameters
+[IndicatorParameter(
+    DisplayName = "Period",
+    Description = "Number of bars in the lookback window.",
+    Group = "Parameters",
+    Order = 0,
+    MinValue = 1, MaxValue = 5000, Step = 1)]
+public int Period { get; set; } = 14;
+
+[IndicatorParameter(DisplayName = "Smoothing", Group = "Parameters", Order = 1)]
+public SmoothingMode Smoothing { get; set; } = SmoothingMode.Exponential;   // enum -> dropdown
+
+[IndicatorParameter(DisplayName = "Show midline", Group = "Display", Order = 0)]
+public bool ShowMidline { get; set; } = true;
+DisplayName defaults to the property name split into words; Description becomes the editor tooltip. MinValue, MaxValue and Step are advisory: the editor enforces them, while a programmatic assignment keeps whatever value the caller passes. If you need a hard bound, validate and throw in OnInit.
+
+Conditional visibility & primary knobs
+VisibleWhen shows a parameter row only while another parameter has a matching value. The rule is "ParamName=Value" or "ParamName=Val1|Val2", compared case-insensitively against the other parameter's invariant string form. It affects the settings dialog only; malformed rules and unknown names leave the row visible.
+
+Primary = true marks a decision-level parameter for the AI assistant. When an indicator declares any primary parameters, the indicator schema the AI reads lists only those (plus the "Input series" and orderflow "Resolution" rows). The settings dialog, persistence and the content key treat primary and other parameters the same.
+
+Visibility.cs
+[IndicatorParameter(DisplayName = "Fill mode", Group = "Display", Order = 0, Primary = true)]
+public FillMode Mode { get; set; } = FillMode.Solid;
+
+[IndicatorParameter(DisplayName = "Fill opacity", Group = "Display", Order = 1,
+    MinValue = 0.0, MaxValue = 1.0, Step = 0.05,
+    VisibleWhen = "Mode=Solid|Gradient")]
+public double Opacity { get; set; } = 0.4;
+Row formatting
+Three optional fields make a long settings list easier to read. Bold = true draws the setting's label bold. LabelSize = ParameterLabelSize.Large draws it one size larger than the regular Normal. SeparatorBefore = true draws a thin line above the setting, which splits a list into blocks without starting a new Group. You can combine them on one setting, and a setting that sets none of them is drawn as a plain row.
+
+Formatting changes how the row looks and nothing else: the value, persistence and the content key are the same with or without it. It applies wherever the platform lists the indicator's settings.
+
+Formatting.cs
+[IndicatorParameter(DisplayName = "Risk per trade", Group = "Risk", Order = 0,
+    Bold = true, LabelSize = ParameterLabelSize.Large)]
+public double RiskPercent { get; set; } = 1.0;
+
+[IndicatorParameter(DisplayName = "Stop distance", Group = "Risk", Order = 1)]
+public int StopTicks { get; set; } = 12;
+
+[IndicatorParameter(DisplayName = "Alert sound", Group = "Risk", Order = 2,
+    SeparatorBefore = true)]
+public bool AlertSound { get; set; }
+Editor types
+By default the editor is inferred from the property's CLR type. Override it with the Editor field (a ParameterEditorKind) when the type alone is ambiguous.
+
+Property type	Editor
+int / double	Numeric spinner (honours Min/Max/Step).
+bool	Checkbox.
+string	Text box.
+any enum	Dropdown of the enum members.
+ChartColor	Colour picker.
+string + Editor = ParameterEditorKind.FilePicker	Path field + Browse button (use FileFilter for the dialog filter).
+string + Editor = ParameterEditorKind.SymbolPicker	Symbol field + Browse into the host's instrument picker (for a benchmark / comparison symbol).
+string + Editor = ParameterEditorKind.FontPicker	Font list, like the chart properties' font picker. The box stays editable, so a font this machine lacks can be typed; an empty value keeps the host's default font.
+any type + Editor = ParameterEditorKind.Hidden	No editor row. The value still persists and still counts toward the content key. Use it for a value edited through another surface, such as a property that mirrors a plot's colour.
+non-obvious editors
+[IndicatorParameter(DisplayName = "Blueprint file",
+    Editor = ParameterEditorKind.FilePicker,
+    FileFilter = "Blueprint (*.algo)|*.algo|All files (*.*)|*.*")]
+public string BlueprintPath { get; set; } = "";
+
+[IndicatorParameter(DisplayName = "Benchmark", Editor = ParameterEditorKind.SymbolPicker)]
+public string BenchmarkSymbol { get; set; } = "ES";
+
+[IndicatorParameter(DisplayName = "Label font", Editor = ParameterEditorKind.FontPicker)]
+public string LabelFont { get; set; } = "";
+Groups and ordering
+Group puts parameters under a header in the dialog (matched by exact string), and Order sequences rows within a group (lower first; ties keep reflection order, which is normally declaration order). Use a few stable group names, such as "Parameters", "Display" and "Calculation", so related controls sit together.
+
+Reading parameters in your code
+Read parameter values in OnInit (after base.OnInit), not in the constructor. The host constructs the indicator, applies the saved values, then calls OnInit: the constructor sees only defaults, OnInit sees the user's choices. Validate and size buffers there.
+
+validate in OnInit
+public override void OnInit(IIndicatorContext ctx)
+{
+    base.OnInit(ctx);
+    if (Period < 1)
+        throw new System.ArgumentOutOfRangeException(nameof(Period), "Period must be >= 1.");
+    _window = new double[Period];   // allocate state from the resolved parameter
+}
+When the user edits a parameter that affects the calculation, the host runs OnReset, OnInit and OnDataLoaded again, so the whole history recomputes with the new value. Allocating your buffers in OnInit is what makes that work.
+
+The content key
+ContentKey is the indicator's full type name followed by every parameter as Name=Value, sorted by name and formatted with the invariant culture, for example MyIndicators.MySma[Period=14,ShowPriceMarkers=True] (the exact terms depend on the parameters). Two instances with the same key are the same computation, and the host can share one instance between them. IndicatorBase computes it on demand; override ContentKey only if your indicator's identity depends on something other than its parameters.
+
+Adding a parameter changes the key of every saved instance of that indicator. To keep existing keys unchanged, set ContentKeyDefault to the parameter's default value: while the value equals it, the parameter contributes no term. The value must be a compile-time constant that equals the property's runtime default.
+
+a parameter added later
+[IndicatorParameter(DisplayName = "Offset (bars)", Group = "Parameters", Order = 2,
+    ContentKeyDefault = 0)]
+public int Offset { get; set; } = 0;
+Parameters from a nested object
+A large indicator can keep its parameters in a separate settings class instead of declaring dozens of properties on the indicator. Tag the indicator with [ParameterContainer(typeof(...))] and implement IParameterContainerProvider, returning the live settings instance; the platform discovers, edits and persists the container's tagged properties the same way it does for properties on the indicator.
+
+parameter container
+public sealed class BandSettings
+{
+    [IndicatorParameter(DisplayName = "Width (std dev)", Group = "Bands")]
+    public double Width { get; set; } = 2.0;
+
+    [IndicatorParameter(DisplayName = "Fill", Group = "Bands")]
+    public ChartColor Fill { get; set; } = new(33, 150, 243, 40);
+}
+
+[ParameterContainer(typeof(BandSettings))]
+public sealed class MyBands : IndicatorBase, IParameterContainerProvider
+{
+    public BandSettings Settings { get; } = new();
+    public object ParameterContainer => Settings;   // IParameterContainerProvider
+}
+Set AllProperties = true on the attribute to surface every public read/write property of the container as a parameter without tagging each one. This covers properties of type bool, string, any enum, the numeric types, ChartColor, TimeSpan, DateTime and TimeOnly. A property that does carry [IndicatorParameter] still uses its display name, group, order and editor; the rest get a display name derived from the property name.
+
+Built-in parameters you inherit
+IndicatorBase declares two parameters for every indicator, grouped under "Display":
+
+ShowPriceMarkers (bool, default true): a master toggle for this indicator's price-axis labels; off hides every marker regardless of per-plot settings.
+Displacement (int, default 0, range -1000 to 1000): shifts the indicator's plots horizontally by N bars (positive to the right, into the future; negative to the left). The shift is visual only: the computed series keep their values, so alerts and strategies read the undisplaced numbers.
+Two more rows are added only where they apply:
+
+Input series (IndicatorBase.InputSource, an InputSourceDescriptor): appears on indicators declared [IndicatorInput(IndicatorInputKind.Scalar)]. It lets the user feed the indicator a price (Close, Open, High, Low, Median, Typical, Weighted, OHLC4, Volume, OpenInterest) or another indicator's plot. base.OnInit resolves the choice into Input; an input passed to the constructor takes precedence.
+Resolution (IndicatorBase.OrderFlowResolution): appears on indicators marked [RequiresOrderFlow] (see Orderflow).
